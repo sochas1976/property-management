@@ -1,0 +1,1377 @@
+/* PropPulse PMS — Wealthsimple Design System
+   Source Reference: Wealthsimple Web & Mobile App (wealthsimple.ca)
+   Aesthetic: Clean Minimalist Fintech, Warm Stone Backdrop, Pure White Cards,
+              Bold High-Contrast Figures, Soft Rounded Pill Controls, Marigold Accent (#f5a623)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   Design Tokens (Wealthsimple Palette)
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+    color-scheme: light;
+
+    /* Wealthsimple Warm Light Palette (Iconic https://wealthsimple.ca/ style) */
+    --ws-bg: #f7f6f2;
+    --ws-surface: #ffffff;
+    --ws-surface-subtle: #faf9f6;
+    --ws-raised: #f1efe9;
+    --ws-border: #ebe7df;
+    --ws-border-subtle: #f2efe9;
+    --ws-border-strong: #d8d3c7;
+
+    /* Typography */
+    --ws-text: #111111;
+    --ws-text-secondary: #4a4a4a;
+    --ws-text-muted: #737373;
+    --ws-text-dim: #9e9e9e;
+
+    /* Wealthsimple Marigold / Honey Ochre Accent (seen in "Fund this account" CTA) */
+    --ws-accent: #f5a623;
+    --ws-accent-hover: #e69512;
+    --ws-accent-active: #d68507;
+    --ws-accent-subtle: rgba(245, 166, 35, 0.12);
+    --ws-accent-glow: 0 4px 16px rgba(245, 166, 35, 0.32);
+    --ws-ink: #ffffff;
+
+    /* Wealthsimple Charcoal Pill & Active Elements */
+    --ws-charcoal: #191919;
+    --ws-charcoal-subtle: #3a3a3a;
+
+    /* Semantic Status Accents */
+    --ws-success: #15803d;
+    --ws-success-bg: #eaf7ee;
+    --ws-success-border: #c6edd1;
+
+    --ws-warning: #b45309;
+    --ws-warning-bg: #fff6e5;
+    --ws-warning-border: #fed7aa;
+
+    --ws-danger: #dc2626;
+    --ws-danger-bg: #fee2e2;
+    --ws-danger-border: #fca5a5;
+
+    --ws-info: #1d4ed8;
+    --ws-info-bg: #eff6ff;
+    --ws-info-border: #bfdbfe;
+
+    /* Component Speciﬁcs */
+    --navbar-bg: #ffffff;
+    --navbar-border: #eeece6;
+    --card-bg: #ffffff;
+    --card-header-bg: #ffffff;
+    --card-footer-bg: #faf9f6;
+    --table-th-bg: #ece8df;
+    --table-th-text: #423e37;
+    --table-th-border: #ded8cd;
+    --table-row-hover: #f9f7f2;
+    --table-row-selected: #f3efe6;
+    --input-bg: #ffffff;
+    --input-border: #dcd8d0;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(18, 18, 18, 0.45);
+
+    /* Typography */
+    --ws-font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ws-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+    /* Radii — Wealthsimple signature roundness */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-pill: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.07);
+}
+
+:root[data-theme="dark"],
+html[data-theme="dark"],
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Wealthsimple Dark Mode Palette (Obsidian & Charcoal with Marigold Accents) */
+    --ws-bg: #0e0f12;
+    --ws-surface: #191b1f;
+    --ws-surface-subtle: #21242a;
+    --ws-raised: #282b33;
+    --ws-border: #353a47;
+    --ws-border-subtle: rgba(255, 255, 255, 0.12);
+    --ws-border-strong: #4a5060;
+
+    --ws-text: #f5f6f8;
+    --ws-text-secondary: #a0a6b2;
+    --ws-text-muted: #717784;
+    --ws-text-dim: #545963;
+
+    --ws-accent: #f5a623;
+    --ws-accent-hover: #ffbd59;
+    --ws-accent-active: #e69512;
+    --ws-accent-subtle: rgba(245, 166, 35, 0.16);
+    --ws-accent-glow: 0 4px 18px rgba(245, 166, 35, 0.35);
+    --ws-ink: #111111;
+
+    --ws-charcoal: #ffffff;
+    --ws-charcoal-subtle: #dcdcdc;
+
+    --ws-success: #4ade80;
+    --ws-success-bg: rgba(74, 222, 128, 0.14);
+    --ws-success-border: rgba(74, 222, 128, 0.28);
+
+    --ws-warning: #fbbf24;
+    --ws-warning-bg: rgba(251, 191, 36, 0.14);
+    --ws-warning-border: rgba(251, 191, 36, 0.28);
+
+    --ws-danger: #f87171;
+    --ws-danger-bg: rgba(248, 113, 113, 0.14);
+    --ws-danger-border: rgba(248, 113, 113, 0.28);
+
+    --ws-info: #60a5fa;
+    --ws-info-bg: rgba(96, 165, 250, 0.14);
+    --ws-info-border: rgba(96, 165, 250, 0.28);
+
+    --navbar-bg: rgba(20, 22, 26, 0.94);
+    --navbar-border: #262930;
+    --card-bg: #191b1f;
+    --card-header-bg: #191b1f;
+    --card-footer-bg: #202329;
+    --table-th-bg: #21242b;
+    --table-th-text: #cfd3da;
+    --table-th-border: #2c3039;
+    --table-row-hover: #22262d;
+    --table-row-selected: #2a2e37;
+    --input-bg: #131417;
+    --input-border: #2e323b;
+    --modal-bg: #191b1f;
+    --modal-overlay: rgba(5, 6, 8, 0.78);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    font-family: var(--ws-font);
+    font-weight: 400;
+    background-color: var(--ws-bg);
+    color: var(--ws-text);
+    line-height: 1.55;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+body, .navbar, .card, .table th, .table td, .btn, .form-control, .metric-card, .tab-link, .modal-card, .document-item, .auth-card {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Headings — High-contrast, clean & confident */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--ws-font);
+    font-weight: 700;
+    color: var(--ws-text);
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+}
+
+h1 { font-size: clamp(2rem, 4vw, 2.6rem); font-weight: 800; }
+h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 700; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.15rem; }
+h5 { font-size: 1rem; }
+small { font-size: 0.8rem; }
+
+a {
+    color: var(--ws-accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+a:hover {
+    color: var(--ws-accent-hover);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+:focus-visible {
+    outline: 2px solid var(--ws-accent);
+    outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Layout Shell
+   ========================================================================== */
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--ws-bg);
+}
+
+.main-content {
+    flex: 1;
+    padding: 36px 24px 60px;
+}
+
+.content-container {
+    max-width: 1220px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   Navigation Bar (Wealthsimple Header)
+   ========================================================================== */
+
+.navbar {
+    background-color: var(--navbar-bg);
+    border-bottom: 1px solid var(--navbar-border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-container {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Wealthsimple Monogram Badge */
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 19px;
+    color: var(--ws-text);
+    letter-spacing: -0.03em;
+    flex-shrink: 0;
+}
+
+.brand-logo:hover {
+    text-decoration: none;
+    color: var(--ws-text);
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    background-color: var(--ws-charcoal);
+    color: #ffffff;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .logo-icon {
+    background-color: #242730;
+    color: #f5f6f8;
+    border: 1px solid #383c46;
+}
+
+.brand-badge {
+    background-color: var(--ws-raised);
+    color: var(--ws-text-secondary);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--ws-border);
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: var(--ws-text-secondary);
+    font-size: 14.5px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    transition: all 0.15s ease;
+}
+
+.nav-item:hover {
+    color: var(--ws-text);
+    background-color: var(--ws-raised);
+    text-decoration: none;
+}
+
+.nav-item.active {
+    color: var(--ws-text);
+    font-weight: 700;
+    background-color: var(--ws-raised);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 12.5px;
+}
+
+.user-info strong {
+    color: var(--ws-text);
+    font-weight: 600;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: var(--ws-surface);
+    border: 1.5px solid var(--ws-border);
+    color: var(--ws-text);
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-sm);
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 0;
+    outline: none;
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--ws-accent);
+    transform: scale(1.08);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.92);
+}
+
+.theme-toggle-btn span {
+    pointer-events: none;
+    line-height: 1;
+}
+
+[data-theme="dark"] .theme-toggle-btn,
+html[data-theme="dark"] .theme-toggle-btn {
+    background: #20232a;
+    border-color: #383c46;
+    color: #f5a623;
+    box-shadow: 0 0 12px rgba(245, 166, 35, 0.25);
+}
+
+:root[data-theme="dark"] .theme-icon-dark,
+html[data-theme="dark"] .theme-icon-dark,
+[data-theme="dark"] .theme-icon-dark { display: none !important; }
+
+:root[data-theme="dark"] .theme-icon-light,
+html[data-theme="dark"] .theme-icon-light,
+[data-theme="dark"] .theme-icon-light { display: inline-flex !important; }
+
+:root[data-theme="light"] .theme-icon-dark,
+html[data-theme="light"] .theme-icon-dark,
+[data-theme="light"] .theme-icon-dark { display: inline-flex !important; }
+
+:root[data-theme="light"] .theme-icon-light,
+html[data-theme="light"] .theme-icon-light,
+[data-theme="light"] .theme-icon-light { display: none !important; }
+
+/* ==========================================================================
+   Page Headers & Breadcrumbs
+   ========================================================================== */
+
+.breadcrumb {
+    margin-bottom: 18px;
+}
+
+.breadcrumb a {
+    color: var(--ws-text-secondary);
+    font-size: 13.5px;
+    font-weight: 500;
+}
+
+.breadcrumb a:hover {
+    color: var(--ws-accent);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-bottom: 12px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--ws-text);
+    letter-spacing: -0.03em;
+}
+
+.page-subtitle {
+    color: var(--ws-text-muted);
+    font-size: 15px;
+    margin-top: 6px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Wealthsimple Cards & Surfaces
+   ========================================================================== */
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--ws-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    padding: 22px 28px;
+    background-color: var(--card-header-bg);
+    border-bottom: 1px solid var(--ws-border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ws-text);
+    letter-spacing: -0.01em;
+}
+
+.card-body {
+    padding: 28px;
+}
+
+.card-footer {
+    padding: 16px 28px;
+    background-color: var(--card-footer-bg);
+    border-top: 1px solid var(--ws-border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+
+.dashboard-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   Wealthsimple KPI & Metric Cards
+   ========================================================================== */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 34px;
+}
+
+.metric-card {
+    background: var(--card-bg);
+    border: 1px solid var(--ws-border);
+    border-radius: var(--radius-lg);
+    padding: 24px 26px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--ws-text-muted);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.metric-label {
+    letter-spacing: -0.01em;
+}
+
+.metric-icon {
+    font-size: 18px;
+    opacity: 0.85;
+}
+
+.metric-value {
+    font-family: var(--ws-font);
+    font-size: 34px;
+    font-weight: 800;
+    margin: 12px 0 8px;
+    color: var(--ws-text);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+
+.metric-footer {
+    font-size: 13px;
+    color: var(--ws-text-muted);
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==========================================================================
+   Property Cards
+   ========================================================================== */
+
+.property-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.property-card-body {
+    padding: 26px;
+    flex: 1;
+}
+
+.property-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.property-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.property-card-photo {
+    flex-shrink: 0;
+}
+
+.property-thumbnail {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--ws-border-subtle);
+}
+
+.property-thumbnail-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    background: var(--ws-raised);
+    border: 1px dashed var(--ws-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    opacity: 0.5;
+}
+
+.property-detail-photo {
+    width: 90px;
+    height: 90px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--ws-border-subtle);
+    flex-shrink: 0;
+}
+
+.property-type-tag {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--ws-accent);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.property-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.property-title a {
+    color: var(--ws-text);
+    text-decoration: none;
+}
+
+.property-title a:hover {
+    color: var(--ws-accent);
+}
+
+.property-address {
+    color: var(--ws-text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.property-stats {
+    display: flex;
+    gap: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--ws-border-subtle);
+}
+
+.prop-stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-num {
+    font-family: var(--ws-font);
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--ws-text);
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 11.5px;
+    color: var(--ws-text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ws-border-subtle);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+/* ==========================================================================
+   Tables (Clean Minimalist Wealthsimple Data Grid)
+   ========================================================================== */
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14.5px;
+}
+
+.table th {
+    background-color: var(--table-th-bg);
+    padding: 14px 22px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--table-th-text);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1.5px solid var(--table-th-border);
+    white-space: nowrap;
+}
+
+.table th:first-child {
+    border-top-left-radius: calc(var(--radius-lg) - 1px);
+}
+
+.table th:last-child {
+    border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
+
+.table td {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--ws-border-subtle);
+    vertical-align: middle;
+    color: var(--ws-text);
+    background-color: var(--card-bg);
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover td {
+    background-color: var(--table-row-hover);
+}
+
+.table tbody tr.selected td,
+.table tbody tr:active td {
+    background-color: var(--table-row-selected);
+}
+
+/* ==========================================================================
+   Badges (Wealthsimple Rounded Status Pills)
+   ========================================================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.badge-subtle {
+    background: var(--ws-raised);
+    color: var(--ws-text-secondary);
+    border: 1px solid var(--ws-border);
+}
+
+.badge-success {
+    background: var(--ws-success-bg);
+    color: var(--ws-success);
+    border: 1px solid var(--ws-success-border);
+}
+
+.badge-warning {
+    background: var(--ws-warning-bg);
+    color: var(--ws-warning);
+    border: 1px solid var(--ws-warning-border);
+}
+
+.badge-danger {
+    background: var(--ws-danger-bg);
+    color: var(--ws-danger);
+    border: 1px solid var(--ws-danger-border);
+}
+
+.badge-info {
+    background: var(--ws-info-bg);
+    color: var(--ws-info);
+    border: 1px solid var(--ws-info-border);
+}
+
+.badge-primary {
+    background: var(--ws-accent-subtle);
+    color: var(--ws-accent);
+    border: 1px solid var(--ws-accent);
+}
+
+/* ==========================================================================
+   Buttons (Wealthsimple Pill CTA Controls)
+   ========================================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--ws-font);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 22px;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    line-height: 1.25;
+    gap: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Wealthsimple Marigold / Honey Button ("Fund this account") */
+.btn-primary {
+    background-color: var(--ws-accent);
+    color: var(--ws-ink);
+    border-color: var(--ws-accent);
+}
+
+.btn-primary:hover {
+    background-color: var(--ws-accent-hover);
+    border-color: var(--ws-accent-hover);
+    color: var(--ws-ink);
+    text-decoration: none;
+    box-shadow: var(--ws-accent-glow);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    background-color: var(--ws-accent-active);
+    transform: translateY(0);
+}
+
+/* Clean White / Slate Outline Pill Button */
+.btn-outline {
+    background-color: var(--ws-surface);
+    border-color: var(--ws-border-strong);
+    color: var(--ws-text);
+}
+
+.btn-outline:hover {
+    border-color: var(--ws-text);
+    color: var(--ws-text);
+    background-color: var(--ws-surface-subtle);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: var(--ws-danger);
+    color: #ffffff;
+    border-color: var(--ws-danger);
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-outline.btn-danger {
+    background-color: transparent;
+    border-color: var(--ws-danger-border);
+    color: var(--ws-danger);
+}
+
+.btn-outline.btn-danger:hover {
+    background-color: var(--ws-danger-bg);
+    border-color: var(--ws-danger);
+    color: var(--ws-danger);
+    text-decoration: none;
+}
+
+.btn-link {
+    background: none;
+    color: var(--ws-accent);
+    padding: 0;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.btn-link:hover {
+    color: var(--ws-accent-hover);
+    text-decoration: underline;
+}
+
+.btn-sm { padding: 6px 14px; font-size: 12.5px; }
+.btn-xs { padding: 4px 10px; font-size: 11.5px; }
+.btn-lg { padding: 13px 26px; font-size: 15.5px; }
+.btn-block { width: 100%; }
+
+/* ==========================================================================
+   Forms & Inputs
+   ========================================================================== */
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ws-text);
+}
+
+.form-control {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 14.5px;
+    font-family: var(--ws-font);
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background-color: var(--input-bg);
+    color: var(--ws-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+textarea.form-control.auto-expand {
+    min-height: 48px;
+    resize: none;
+    overflow-y: hidden;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--ws-accent);
+    box-shadow: 0 0 0 3px var(--ws-accent-subtle);
+}
+
+select.form-control option {
+    background-color: var(--ws-surface);
+    color: var(--ws-text);
+}
+
+select.form-control option[value=""],
+select.form-control option.placeholder-option {
+    color: var(--ws-text-dim);
+}
+
+select.form-control.placeholder-selected {
+    color: var(--ws-text-dim);
+}
+
+.form-control::placeholder {
+    color: var(--ws-text-dim);
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+.form-control::-webkit-input-placeholder {
+    color: var(--ws-text-dim);
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+.form-control::-moz-placeholder {
+    color: var(--ws-text-dim);
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+.form-control:-ms-input-placeholder {
+    color: var(--ws-text-dim);
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+.col-4 { flex: 1; }
+.col-6 { flex: 1; }
+.col-8 { flex: 2; }
+.col-12 { flex: 100%; width: 100%; }
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ws-border);
+}
+
+/* ==========================================================================
+   Filter Tabs / Segmented Pill Controls ("Plan | History" style)
+   ========================================================================== */
+
+.filter-tabs {
+    display: inline-flex;
+    background: var(--ws-raised);
+    border-radius: var(--radius-pill);
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 24px;
+    border: 1px solid var(--ws-border);
+}
+
+.tab-link {
+    text-decoration: none;
+    color: var(--ws-text-secondary);
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    border: none;
+    font-size: 13.5px;
+    transition: all 0.18s ease;
+}
+
+.tab-link:hover {
+    color: var(--ws-text);
+    text-decoration: none;
+}
+
+.tab-link.active {
+    background: var(--ws-charcoal);
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .tab-link.active {
+    background: #ffffff;
+    color: #111111;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Document Vault List
+   ========================================================================== */
+
+.document-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--radius-md);
+    background: var(--ws-surface);
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.document-item:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.document-icon {
+    font-size: 26px;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-name {
+    font-weight: 700;
+    color: var(--ws-text);
+}
+
+.document-meta {
+    font-family: var(--ws-mono);
+    font-size: 11.5px;
+    color: var(--ws-text-muted);
+    margin-top: 3px;
+}
+
+.document-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   Alerts & Notifications
+   ========================================================================== */
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.alert-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.alert-success {
+    background: var(--ws-success-bg);
+    color: var(--ws-success);
+    border: 1px solid var(--ws-success-border);
+}
+
+.alert-danger {
+    background: var(--ws-danger-bg);
+    color: var(--ws-danger);
+    border: 1px solid var(--ws-danger-border);
+}
+
+.alert-warning {
+    background: var(--ws-warning-bg);
+    color: var(--ws-warning);
+    border: 1px solid var(--ws-warning-border);
+}
+
+/* ==========================================================================
+   Modals & Overlays
+   ========================================================================== */
+
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--modal-overlay);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-backdrop.active {
+    display: flex;
+}
+
+.modal-card {
+    background: var(--modal-bg);
+    border: 1px solid var(--ws-border);
+    border-radius: var(--radius-lg);
+    max-width: 560px;
+    width: 92%;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: wsModalSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes wsModalSlide {
+    from { transform: translateY(-16px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-header {
+    padding: 22px 28px;
+    background-color: var(--card-header-bg);
+    border-bottom: 1px solid var(--ws-border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--ws-text-muted);
+    transition: color 0.15s ease;
+}
+
+.modal-close:hover {
+    color: var(--ws-text);
+}
+
+.modal-card form {
+    padding: 26px;
+}
+
+/* ==========================================================================
+   Auth / Login Screen
+   ========================================================================== */
+
+.auth-card-container {
+    min-height: calc(100vh - 160px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+}
+
+.auth-card {
+    background: var(--card-bg);
+    border: 1px solid var(--ws-border);
+    border-radius: 24px;
+    padding: 42px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 24px;
+    right: 24px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--ws-accent), #f5c26b);
+    border-radius: var(--radius-pill);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-icon {
+    font-size: 40px;
+    margin-bottom: 14px;
+}
+
+.auth-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--ws-text);
+    letter-spacing: -0.03em;
+}
+
+.auth-header p {
+    color: var(--ws-text-muted);
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.auth-demo-notice {
+    margin-top: 26px;
+    padding: 16px;
+    background: var(--ws-surface-subtle);
+    border: 1px dashed var(--ws-border);
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    text-align: center;
+    color: var(--ws-text-secondary);
+}
+
+.auth-demo-notice code {
+    font-family: var(--ws-mono);
+    background: var(--ws-raised);
+    color: var(--ws-text);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.app-footer {
+    background: var(--ws-surface);
+    border-top: 1px solid var(--ws-border);
+    padding: 28px 24px;
+    font-size: 13px;
+    color: var(--ws-text-muted);
+    transition: background-color 0.2s ease;
+}
+
+.footer-container {
+    max-width: 1220px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.footer-meta {
+    display: flex;
+    gap: 10px;
+    font-family: var(--ws-mono);
+    color: var(--ws-text-dim);
+    font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.text-center { text-align: center; }
+.text-muted { color: var(--ws-text-muted); }
+.text-success { color: var(--ws-success) !important; }
+.text-warning { color: var(--ws-warning) !important; }
+.text-danger { color: var(--ws-danger) !important; }
+.text-primary { color: var(--ws-accent) !important; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.text-xs { font-size: 12px; }

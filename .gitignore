@@ -1,0 +1,15 @@
+# Environment & Local Secrets
+.env
+.env.local
+
+# OS & Editor Metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Temporary Files
+*.tmp
+*.log
+*.bak
