@@ -300,6 +300,9 @@ function initESignaturePad() {
     function startDrawing(e) {
         if (e.button !== undefined && e.button !== 0) return; // left click / touch / pen only
         e.preventDefault();
+        if (currentMode !== 'draw') {
+            setSignatureMode('draw', false);
+        }
         setupCanvasDimensions(true);
         if (canvas.setPointerCapture && e.pointerId !== undefined) {
             try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
@@ -430,10 +433,74 @@ function initESignaturePad() {
         });
     }
 
+    // 4-second temporary border highlight when user selects Draw or Type Name button
+    let borderHighlightTimer = null;
+
+    function triggerBorderHighlight(mode) {
+        if (borderHighlightTimer) {
+            clearTimeout(borderHighlightTimer);
+            borderHighlightTimer = null;
+        }
+
+        const canvasWrapper = document.getElementById('esig-canvas-wrapper');
+
+        // Immediately reset any active inline border styles to original
+        if (canvasWrapper) {
+            canvasWrapper.style.borderColor = 'var(--ws-border)';
+            canvasWrapper.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.04)';
+        }
+        if (typeInput) {
+            typeInput.style.borderColor = 'var(--ws-border)';
+            typeInput.style.boxShadow = 'none';
+        }
+
+        const targets = [];
+        if (mode === 'draw') {
+            if (canvasWrapper) {
+                targets.push({
+                    el: canvasWrapper,
+                    border: 'var(--ws-accent)',
+                    shadow: '0 0 0 3px var(--ws-accent-subtle), inset 0 1px 3px rgba(0,0,0,0.04)',
+                    resetBorder: 'var(--ws-border)',
+                    resetShadow: 'inset 0 1px 3px rgba(0,0,0,0.04)'
+                });
+            }
+        } else if (mode === 'type') {
+            if (typeInput) {
+                targets.push({
+                    el: typeInput,
+                    border: 'var(--ws-accent)',
+                    shadow: '0 0 0 3px var(--ws-accent-subtle)',
+                    resetBorder: 'var(--ws-border)',
+                    resetShadow: 'none'
+                });
+            }
+        }
+
+        // Apply orange border & glow highlight
+        targets.forEach(t => {
+            t.el.style.borderColor = t.border;
+            t.el.style.boxShadow = t.shadow;
+        });
+
+        // Turn off after 4 seconds and return to original color
+        borderHighlightTimer = setTimeout(() => {
+            targets.forEach(t => {
+                t.el.style.borderColor = t.resetBorder;
+                t.el.style.boxShadow = t.resetShadow;
+            });
+            borderHighlightTimer = null;
+        }, 4000);
+    }
+
     // Mode Switching (Draw vs Type)
-    function setSignatureMode(mode) {
+    function setSignatureMode(mode, triggerHighlight = false) {
         currentMode = mode;
         if (modeDrawBtn && modeTypeBtn) {
+            modeDrawBtn.classList.toggle('btn-primary', mode === 'draw');
+            modeDrawBtn.classList.toggle('btn-outline', mode !== 'draw');
+            modeTypeBtn.classList.toggle('btn-primary', mode === 'type');
+            modeTypeBtn.classList.toggle('btn-outline', mode !== 'type');
             modeDrawBtn.classList.toggle('active', mode === 'draw');
             modeTypeBtn.classList.toggle('active', mode === 'type');
         }
@@ -443,10 +510,13 @@ function initESignaturePad() {
                 typeInput.focus();
             }
         }
+        if (triggerHighlight) {
+            triggerBorderHighlight(mode);
+        }
     }
 
-    if (modeDrawBtn) modeDrawBtn.addEventListener('click', () => setSignatureMode('draw'));
-    if (modeTypeBtn) modeTypeBtn.addEventListener('click', () => setSignatureMode('type'));
+    if (modeDrawBtn) modeDrawBtn.addEventListener('click', () => setSignatureMode('draw', true));
+    if (modeTypeBtn) modeTypeBtn.addEventListener('click', () => setSignatureMode('type', true));
 
     if (typeInput) {
         typeInput.addEventListener('input', () => {

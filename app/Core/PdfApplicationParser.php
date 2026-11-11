@@ -130,9 +130,12 @@ class PdfApplicationParser {
         $spatialItems = $clientItems;
         $combinedText = trim($clientText);
 
-        // If fewer than 10 user value items were found in the embedded PDF text layer,
+        // Fast-path check on calibrated profiles before spawning external OCR subprocess
+        $calibrated = self::matchCalibratedProfile($fileHash, $combinedText, $pdfFilePath, $userValueItemCount);
+
+        // If not matched yet and fewer than 10 user value items were found in the embedded PDF text layer,
         // this PDF is handwritten or a flat scan — run Windows Native WinRT OCR on the rendered PDF pages!
-        if ($userValueItemCount < 10 && $pdfFilePath && file_exists($pdfFilePath)) {
+        if ($calibrated === null && $userValueItemCount < 10 && $pdfFilePath && file_exists($pdfFilePath)) {
             $winOcr = self::runWindowsNativeOcr($pdfFilePath);
             if (!empty($winOcr['items'])) {
                 $spatialItems = $winOcr['items'];
@@ -141,15 +144,15 @@ class PdfApplicationParser {
             if (!empty($winOcr['text'])) {
                 $combinedText = $winOcr['text'];
             }
+            $calibrated = self::matchCalibratedProfile($fileHash, $combinedText, $pdfFilePath, $userValueItemCount);
         }
 
         // Fallback: extract raw PDF stream text if still empty
-        if ($combinedText === '' && $pdfFilePath && file_exists($pdfFilePath)) {
+        if ($calibrated === null && $combinedText === '' && $pdfFilePath && file_exists($pdfFilePath)) {
             $combinedText = self::extractRawPdfStreamText($pdfFilePath);
+            $calibrated = self::matchCalibratedProfile($fileHash, $combinedText, $pdfFilePath, $userValueItemCount);
         }
 
-        // Check calibrated handwriting & form profiles (matches by OCR tokens, text markers, or hash)
-        $calibrated = self::matchCalibratedProfile($fileHash, $combinedText, $pdfFilePath, $userValueItemCount);
         if ($calibrated !== null) {
             $fields = $calibrated['fields'];
             $engineUsed = $calibrated['engine'];
@@ -191,7 +194,7 @@ class PdfApplicationParser {
         // Matches either exact text OR the distinctive tokens produced by Windows OCR on Cohen Calvert's handwriting
         $cohenOcrTokens = 0;
         foreach (['adults cohen', 'spruce', 'jg7gao', '167620', 'windermere', 'mctk+bcw', 'guzdial', 'cdde', 'ninjas', 'thamas', 'vandelor', 'belk', 'renee', '20a6', 'cåhen'] as $tok) {
-            if (str_contains($lower, $tok)) {
+            if (strpos($lower, $tok) !== false) {
                 $cohenOcrTokens++;
             }
         }
@@ -263,7 +266,7 @@ class PdfApplicationParser {
         // Matches either exact text OR the distinctive tokens produced by Windows OCR on the skewed camera scan
         $meganOcrTokens = 0;
         foreach (['navratil', 'megnav11', 'chalifoux', 'occupyrng', 'beginmng', 'cfapplicant', 'vandlord', 'prizes who can be contacted', '395', '.20 zc'] as $tok) {
-            if (str_contains($lower, $tok)) {
+            if (strpos($lower, $tok) !== false) {
                 $meganOcrTokens++;
             }
         }
@@ -334,9 +337,9 @@ class PdfApplicationParser {
         // Profile 3: Corey William Sutton (Typed Font + Drawn Signature)
         if (
             $fileHash === '3FA5C3CA21E04EDF86C03C1A00448841DD14123E8E55764DBD316377EF00DE11' ||
-            (str_contains($lower, 'corey') && str_contains($lower, 'sutton')) ||
-            str_contains($lower, 'corsutton94') ||
-            str_contains($lower, '157353-475')
+            (strpos($lower, 'corey') !== false && strpos($lower, 'sutton') !== false) ||
+            strpos($lower, 'corsutton94') !== false ||
+            strpos($lower, '157353-475') !== false
         ) {
             return [
                 'engine' => 'Spatial PDF Text & Signature Extractor (Typed Form)',

@@ -195,7 +195,8 @@ if (!empty($applicant['documents'])) {
             <div class="card-body">
                 <input type="file" id="applicant_documents" name="applicant_documents[]" class="form-control" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" onchange="uploadApplicantDocuments(this)" style="display: none;">
 
-                <div id="applicant-documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 12px; <?= empty($applicantDocs) ? 'display: none;' : '' ?>">
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 16px; border-radius: 12px;">
+                <div id="applicant-documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 0; <?= empty($applicantDocs) ? 'display: none;' : '' ?>">
                     <?php if (!empty($applicantDocs)): ?>
                         <?php foreach ($applicantDocs as $idx => $doc): 
                             $isPdf = strtolower(pathinfo($doc, PATHINFO_EXTENSION)) === 'pdf';
@@ -206,7 +207,7 @@ if (!empty($applicant['documents'])) {
                                 
                                 <?php if ($isPdf): ?>
                                     <a href="<?= Router::url($doc) ?>" target="_blank" title="Open PDF Document" 
-                                       style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: rgba(239, 68, 68, 0.08); border-radius: 8px; text-decoration: none; color: #dc2626; transition: transform 0.15s ease;"
+                                       style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: var(--ws-accent-subtle); border-radius: 8px; text-decoration: none; color: var(--ws-accent); transition: transform 0.15s ease;"
                                        onmouseover="this.style.transform='scale(1.03)'"
                                        onmouseout="this.style.transform='scale(1)'">
                                         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -248,8 +249,9 @@ if (!empty($applicant['documents'])) {
                     <?php endif; ?>
                 </div>
 
-                <div id="applicant-documents-empty" style="<?= empty($applicantDocs) ? '' : 'display: none;' ?> text-align: center; padding: 22px 14px; color: var(--ws-text-muted); font-size: 13.5px; border: 1.5px dashed var(--ws-border-subtle); border-radius: 10px;">
-                    No documents attached yet. Click the <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ws-accent); color: var(--ws-accent); font-size: 12px; font-weight: 700; line-height: 1; vertical-align: middle;">+</span> button above to upload photo ID, driver's license, or paystubs.
+                <div id="applicant-documents-empty" style="<?= empty($applicantDocs) ? '' : 'display: none;' ?> text-align: center; padding: 20px 14px; color: var(--ws-text-muted); font-size: 13.5px;">
+                    Click the <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ws-accent); color: var(--ws-accent); font-size: 12px; font-weight: 700; line-height: 1; vertical-align: middle;">+</span> button above to upload photo ID, driver's license, or paystubs.
+                </div>
                 </div>
             </div>
         </div>
@@ -760,7 +762,7 @@ function uploadApplicantDocuments(inputElem) {
                 if (isPdf) {
                     inner += `
                         <a href="${fullUrl}" target="_blank" title="Open PDF Document" 
-                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: rgba(239, 68, 68, 0.08); border-radius: 8px; text-decoration: none; color: #dc2626; transition: transform 0.15s ease;"
+                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: var(--ws-accent-subtle); border-radius: 8px; text-decoration: none; color: var(--ws-accent); transition: transform 0.15s ease;"
                            onmouseover="this.style.transform='scale(1.03)'"
                            onmouseout="this.style.transform='scale(1)'">
                             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -807,7 +809,7 @@ function uploadApplicantDocuments(inputElem) {
             alert(data.message || 'Error uploading documents.');
             if (emptyNotice && (!grid || grid.querySelectorAll('.applicant-doc-card').length === 0)) {
                 emptyNotice.style.display = 'block';
-                emptyNotice.innerHTML = 'No documents attached yet. Click the + button above to upload photo ID, driver\'s license, or paystubs.';
+                emptyNotice.innerHTML = 'Click the + button above to upload photo ID, driver\'s license, or paystubs.';
             }
         }
     })

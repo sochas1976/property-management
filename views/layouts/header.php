@@ -74,7 +74,7 @@ $cssVersion = defined('ROOT_PATH') && file_exists(ROOT_PATH . '/public/css/app.c
                         <?php if (defined('TEST_MODE_AVAILABLE') && TEST_MODE_AVAILABLE): ?>
                             <button type="button" class="pp-test-mode-nav-btn" id="navbar-test-mode-btn" title="Development Test Mode (Auto-Fill Forms)">
                                 <span class="pp-test-mode-dot"></span>
-                                <span>🧪 Test Mode: <strong class="pp-test-state-label">OFF</strong></span>
+                                <span>Test Mode: <strong class="pp-test-state-label">OFF</strong></span>
                             </button>
                         <?php endif; ?>
                         <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleAppTheme(event)" title="Toggle Light / Dark mode" aria-label="Toggle Theme">

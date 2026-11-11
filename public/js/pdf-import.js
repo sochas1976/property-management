@@ -258,8 +258,8 @@
             const origShadow = input.style.boxShadow;
 
             input.style.transition = 'border-color 0.3s ease, box-shadow 0.3s ease';
-            input.style.borderColor = '#10b981';
-            input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.16)';
+            input.style.borderColor = 'var(--ws-accent, #f5a623)';
+            input.style.boxShadow = '0 0 0 3px rgba(245, 166, 35, 0.28)';
 
             setTimeout(() => {
                 input.style.borderColor = origBorder;
@@ -854,9 +854,16 @@
         if (previewToggleBtn) {
             previewToggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const openedPopup = openDetachedCarouselWindow(importedFileName, importedPageUrls, currentCarouselPage);
-                if (!openedPopup) {
-                    openPdfModal();
+                if (importedPageUrls && importedPageUrls.length > 0) {
+                    const openedPopup = openDetachedCarouselWindow(importedFileName, importedPageUrls, currentCarouselPage);
+                    if (!openedPopup) {
+                        openPdfModal();
+                    }
+                } else {
+                    const existingLink = document.getElementById('pdf-import-download-link');
+                    if (existingLink && existingLink.href) {
+                        window.open(existingLink.href, '_blank');
+                    }
                 }
             });
         }
@@ -937,39 +944,16 @@
             }
         });
 
-        const cardHeader = document.querySelector('.card > .card-header');
-        if (cardHeader && !document.getElementById('card-header-pdf-import-btn')) {
-            cardHeader.style.display = 'flex';
-            cardHeader.style.alignItems = 'center';
-            cardHeader.style.justifyContent = 'space-between';
-            cardHeader.style.flexWrap = 'wrap';
-            cardHeader.style.gap = '10px';
+        const fileContainer = document.getElementById('pdf-import-file-container');
+        const fileNameElem = document.getElementById('pdf-import-file-name');
+        const fileMetaElem = document.getElementById('pdf-import-file-meta');
 
-            let rightGroup = cardHeader.querySelector('.pp-card-header-actions');
-            if (!rightGroup) {
-                rightGroup = document.createElement('div');
-                rightGroup.className = 'pp-card-header-actions';
-                rightGroup.style.display = 'flex';
-                rightGroup.style.alignItems = 'center';
-                rightGroup.style.gap = '8px';
-                const existingTestBtn = document.getElementById('pp-card-header-test-btn');
-                if (existingTestBtn) {
-                    rightGroup.appendChild(existingTestBtn);
-                }
-                cardHeader.appendChild(rightGroup);
-            }
-
-            const headerImportBtn = document.createElement('button');
-            headerImportBtn.type = 'button';
-            headerImportBtn.id = 'card-header-pdf-import-btn';
-            headerImportBtn.className = 'btn btn-outline btn-sm';
-            headerImportBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; padding: 6px 12px; border-radius: 999px;';
-            headerImportBtn.innerHTML = '📄 Import PDF Application';
-            headerImportBtn.addEventListener('click', () => {
-                dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                fileInput.click();
+        if (fileContainer) {
+            fileContainer.style.cursor = 'pointer';
+            fileContainer.addEventListener('click', (e) => {
+                if (e.target.closest('button, a')) return;
+                if (previewToggleBtn) previewToggleBtn.click();
             });
-            rightGroup.insertBefore(headerImportBtn, rightGroup.firstChild);
         }
 
         if (browseBtn) {
@@ -978,11 +962,6 @@
                 fileInput.click();
             });
         }
-
-        dropzone.addEventListener('click', (e) => {
-            if (e.target.closest('button, input, label, a')) return;
-            fileInput.click();
-        });
 
         dropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -1023,6 +1002,9 @@
             if (statusText) {
                 statusText.textContent = message;
                 statusText.style.color = isError ? '#dc2626' : (isSuccess ? '#059669' : 'var(--ws-text-primary)');
+            }
+            if (isError && !statusBox) {
+                alert(message);
             }
         }
 
@@ -1070,6 +1052,19 @@
                     openDetachedCarouselWindow(importedFileName, importedPageUrls, 0);
                 }
 
+                if (fileContainer) {
+                    fileContainer.style.display = 'flex';
+                }
+                const emptyHint = document.getElementById('pdf-import-empty-hint');
+                if (emptyHint) {
+                    emptyHint.style.display = 'none';
+                }
+                if (fileNameElem) {
+                    fileNameElem.textContent = file.name;
+                }
+                if (fileMetaElem) {
+                    fileMetaElem.textContent = 'Extracting application fields...';
+                }
                 if (previewToggleBtn) {
                     previewToggleBtn.style.display = 'inline-flex';
                 }
@@ -1112,10 +1107,12 @@
                 const filledCount = populateApplicationForm(result.fields, croppedSigDataUrl);
 
                 let attachedMsg = '';
-                if (!attachCheckbox || attachCheckbox.checked) {
-                    if (attachPdfToDocumentsInput(file)) {
-                        attachedMsg = ' + attached PDF to Documents';
-                    }
+                if (attachPdfToDocumentsInput(file)) {
+                    attachedMsg = ' + attached PDF to Documents';
+                }
+
+                if (fileMetaElem) {
+                    fileMetaElem.textContent = `PDF Rental Application • ${filledCount} fields populated`;
                 }
 
                 const applicantName = [result.fields.first_name, result.fields.middle_name, result.fields.last_name].filter(Boolean).join(' ');
@@ -1127,7 +1124,12 @@
                 );
             } catch (err) {
                 console.error('PDF import error:', err);
+                if (fileMetaElem) {
+                    fileMetaElem.textContent = 'PDF Rental Application';
+                }
                 updateProgress(100, '⚠️ Error communicating with PDF extraction service: ' + (err.message || 'Unknown error'), true);
+            } finally {
+                fileInput.value = '';
             }
         }
     }

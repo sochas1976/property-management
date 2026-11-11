@@ -512,27 +512,27 @@
         presets: [
             {
                 id: 'random',
-                label: '🎲 Random Realistic Applicant (Auto-Generate)',
+                label: '-- Random Realistic Applicant --',
                 generate: () => generateRandomApplicantData()
             },
             {
                 id: 'executive_fixed',
-                label: '🌟 Profile 1: High-Income Executive (Fixed 1-Yr)',
+                label: 'Profile 1: High-Income Executive (Fixed 1-Yr)',
                 generate: () => getPresetApplicantData('executive_fixed')
             },
             {
                 id: 'family_household',
-                label: '👨‍👩‍👧‍👦 Profile 2: Family Household (2 Adults, 2 Children)',
+                label: 'Profile 2: Family Household (2 Adults, 2 Children)',
                 generate: () => getPresetApplicantData('family_household')
             },
             {
                 id: 'periodic_trades',
-                label: '🔄 Profile 3: Skilled Trades Renter (Periodic Month-to-Month)',
+                label: 'Profile 3: Skilled Trades Renter (Periodic Month-to-Month)',
                 generate: () => getPresetApplicantData('periodic_trades')
             },
             {
                 id: 'first_time_grad',
-                label: '🎓 Profile 4: Recent Graduate / First-Time Renter',
+                label: 'Profile 4: Recent Graduate / First-Time Renter',
                 generate: () => getPresetApplicantData('first_time_grad')
             }
         ],
@@ -582,7 +582,7 @@
         presets: [
             {
                 id: 'random_property',
-                label: '🎲 Random Residential Property',
+                label: 'Random Residential Property',
                 generate: () => {
                     const names = ['River Valley Terrace', 'Glenora Park Estates', 'Strathcona Heritage Lofts', 'Crestwood Garden Villas', 'Oliver Square Towers'];
                     const types = ['apartment', 'multi_family', 'single_family', 'condo'];
@@ -623,7 +623,7 @@
         presets: [
             {
                 id: 'random_unit',
-                label: '🎲 Random Apartment / Suite Unit',
+                label: 'Random Apartment / Suite Unit',
                 generate: () => {
                     const floor = randInt(1, 8);
                     const unitNum = `${floor}0${randInt(1, 9)}`;
@@ -672,7 +672,7 @@
         presets: [
             {
                 id: 'random_tenant',
-                label: '🎲 Random Tenant Profile',
+                label: 'Random Tenant Profile',
                 generate: () => {
                     const fn = pick(FIRST_NAMES).trim();
                     const ln = pick(LAST_NAMES).trim();
@@ -697,7 +697,7 @@
         presets: [
             {
                 id: 'random_maintenance',
-                label: '🎲 Random Maintenance Ticket',
+                label: 'Random Maintenance Ticket',
                 generate: () => {
                     const tickets = [
                         { category: 'plumbing', priority: 'high', title: 'Kitchen under-sink P-trap slow leak', description: '[TEST DATA] Tenant reported water droplets accumulating under the kitchen sink cabinet when running the dishwasher.', assigned_to: 'Capital City Plumbing & Heating' },
@@ -727,6 +727,102 @@
                 if (setFieldValue(k, data[k])) filledCount++;
             });
             return { filledCount, summary: data.title };
+        }
+    });
+
+    // --- MODULE 6: Leases (Create) ---
+    registerModule('leases', {
+        label: 'Lease Agreement Form',
+        match: () => Boolean(document.getElementById('rent_amount') && document.getElementById('start_date') && document.getElementById('deposit_held') && document.getElementById('unit_id')),
+        presets: [
+            {
+                id: 'standard_1yr',
+                label: 'Standard 1-Year Fixed Lease',
+                generate: () => {
+                    const start = getNextMonthFirstDate();
+                    const end = calculateFixedEndDate(start);
+                    return {
+                        start_date: formatDateYMD(start),
+                        end_date: formatDateYMD(end),
+                        rent_amount: '1850.00',
+                        deposit_held: '1850.00'
+                    };
+                }
+            },
+            {
+                id: 'immediate_lease',
+                label: 'Immediate Move-In Lease',
+                generate: () => {
+                    const today = new Date();
+                    const end = calculateFixedEndDate(today);
+                    return {
+                        start_date: formatDateYMD(today),
+                        end_date: formatDateYMD(end),
+                        rent_amount: '2200.00',
+                        deposit_held: '2200.00'
+                    };
+                }
+            }
+        ],
+        customApply: (data) => {
+            let filledCount = 0;
+            const unitSelect = document.getElementById('unit_id');
+            if (unitSelect && unitSelect.options.length > 1) {
+                const validOptions = Array.from(unitSelect.options).filter(o => o.value !== '');
+                if (validOptions.length > 0) {
+                    const chosen = pick(validOptions);
+                    unitSelect.value = chosen.value;
+                    unitSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    filledCount++;
+                    const targetRent = chosen.getAttribute('data-rent');
+                    const targetDep = chosen.getAttribute('data-deposit');
+                    if (targetRent) data.rent_amount = parseFloat(targetRent).toFixed(2);
+                    if (targetDep) data.deposit_held = parseFloat(targetDep).toFixed(2);
+                }
+            }
+            const tenantSelect = document.getElementById('tenant_id');
+            if (tenantSelect && tenantSelect.options.length > 1) {
+                const validTenants = Array.from(tenantSelect.options).filter(o => o.value !== '');
+                if (validTenants.length > 0) {
+                    tenantSelect.value = pick(validTenants).value;
+                    tenantSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    filledCount++;
+                }
+            }
+            Object.keys(data).forEach(k => {
+                if (setFieldValue(k, data[k])) filledCount++;
+            });
+            return { filledCount, summary: `Lease for Unit (${data.rent_amount}/mo)` };
+        }
+    });
+
+    // --- MODULE 7: Applicant Conversion to Tenant ---
+    registerModule('applicant_convert', {
+        label: 'Convert Applicant to Tenant Form',
+        match: () => Boolean(document.getElementById('modal_unit_id')),
+        formSelector: 'form[action*="/convert"]',
+        presets: [
+            {
+                id: 'convert_auto',
+                label: 'Auto-Select Available Unit & Co-Applicants',
+                generate: () => ({})
+            }
+        ],
+        customApply: () => {
+            const unitSel = document.getElementById('modal_unit_id');
+            let filledCount = 0;
+            if (unitSel && unitSel.options.length > 1) {
+                if (!unitSel.value) {
+                    unitSel.selectedIndex = 1;
+                    unitSel.dispatchEvent(new Event('change', { bubbles: true }));
+                    filledCount++;
+                }
+            }
+            document.querySelectorAll('input[name="co_applicant_ids[]"]').forEach(cb => {
+                cb.checked = true;
+                filledCount++;
+            });
+            return { filledCount, summary: 'Unit & Co-Applicants Selected' };
         }
     });
 
@@ -814,11 +910,10 @@
             }
             .pp-test-toolbar-top {
                 display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-bottom: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                margin-bottom: 12px;
             }
             .pp-test-badge {
                 display: inline-flex;
@@ -838,6 +933,21 @@
                 color: #fbbf24;
                 background: rgba(245, 158, 11, 0.22);
             }
+            .pp-test-status {
+                font-size: 12.5px;
+                font-weight: 600;
+                color: #059669;
+                display: none;
+                align-items: center;
+                gap: 5px;
+                padding-left: 2px;
+            }
+            html[data-theme="dark"] .pp-test-status {
+                color: #34d399;
+            }
+            .pp-test-status.active {
+                display: inline-flex;
+            }
             .pp-test-controls {
                 display: flex;
                 align-items: center;
@@ -850,12 +960,32 @@
                 height: 38px;
                 padding: 6px 12px;
                 border-radius: 8px;
-                border: 1px solid var(--ws-border);
-                background: var(--card-bg);
-                color: var(--ws-text);
+                border: 1px solid rgba(245, 158, 11, 0.24);
+                background: rgba(245, 158, 11, 0.04);
+                color: rgba(180, 83, 9, 0.72);
                 font-size: 13.5px;
                 font-weight: 600;
                 cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .pp-test-select option {
+                color: #92400e;
+                background: var(--card-bg);
+            }
+            .pp-test-select:focus, .pp-test-select:hover {
+                border-color: #f59e0b;
+                background: rgba(245, 158, 11, 0.12);
+                color: #78350f;
+                outline: none;
+            }
+            html[data-theme="dark"] .pp-test-select {
+                background: rgba(245, 158, 11, 0.06);
+                border-color: rgba(245, 158, 11, 0.22);
+                color: rgba(253, 230, 138, 0.68);
+            }
+            html[data-theme="dark"] .pp-test-select option {
+                color: #fde68a;
+                background: #1f2937;
             }
             .pp-test-btn {
                 display: inline-flex;
@@ -867,24 +997,46 @@
                 font-size: 13px;
                 font-weight: 700;
                 cursor: pointer;
-                border: 1px solid var(--ws-border);
-                background: var(--card-bg);
-                color: var(--ws-text);
+                border: 1px solid rgba(245, 158, 11, 0.4);
+                background: rgba(245, 158, 11, 0.10);
+                color: #92400e;
                 transition: all 0.15s ease;
                 white-space: nowrap;
             }
             .pp-test-btn:hover {
-                border-color: var(--ws-accent);
+                background: rgba(245, 158, 11, 0.20);
+                border-color: #f59e0b;
+                color: #78350f;
                 transform: translateY(-1px);
             }
+            html[data-theme="dark"] .pp-test-btn {
+                background: rgba(245, 158, 11, 0.14);
+                border-color: rgba(245, 158, 11, 0.35);
+                color: #fde68a;
+            }
+            html[data-theme="dark"] .pp-test-btn:hover {
+                background: rgba(245, 158, 11, 0.24);
+                border-color: #f59e0b;
+                color: #fef3c7;
+            }
             .pp-test-btn-primary {
-                background: #d97706;
-                color: #ffffff;
-                border-color: #b45309;
+                background: rgba(245, 158, 11, 0.24);
+                color: #78350f;
+                border: 1.5px solid #f59e0b;
             }
             .pp-test-btn-primary:hover {
-                background: #b45309;
-                border-color: #92400e;
+                background: rgba(245, 158, 11, 0.36);
+                border-color: #d97706;
+                color: #78350f;
+            }
+            html[data-theme="dark"] .pp-test-btn-primary {
+                background: rgba(245, 158, 11, 0.28);
+                color: #fef3c7;
+                border: 1.5px solid #f59e0b;
+            }
+            html[data-theme="dark"] .pp-test-btn-primary:hover {
+                background: rgba(245, 158, 11, 0.40);
+                border-color: #fbbf24;
                 color: #ffffff;
             }
             .pp-test-status {
@@ -902,7 +1054,7 @@
                 display: inline-flex;
             }
             @keyframes ppFieldFlash {
-                0% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.38); border-color: #10b981; }
+                0% { box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.38); border-color: var(--ws-accent, #f5a623); }
                 100% { box-shadow: none; }
             }
             .pp-test-filled-flash {
@@ -932,7 +1084,7 @@
 
         const statusEl = document.getElementById('pp-test-status-msg');
         if (statusEl) {
-            statusEl.textContent = `✓ Filled ${result.filledCount} fields — ${result.summary}`;
+            statusEl.textContent = `Filled ${result.filledCount} fields — ${result.summary}`;
             statusEl.classList.add('active');
         }
     }
@@ -968,46 +1120,21 @@
 
         const statusEl = document.getElementById('pp-test-status-msg');
         if (statusEl) {
-            statusEl.textContent = '✓ Form fields cleared';
+            statusEl.textContent = 'Form Cleared';
             statusEl.classList.add('active');
         }
     }
 
     function mountModuleUI(module) {
+        if (!module) return;
         const form = document.querySelector(module.formSelector);
         if (!form) return;
 
-        // 1. Inject inline Test Mode toggle button into the form Card Header
-        const cardHeader = document.querySelector(module.headerSelector);
-        if (cardHeader && !document.getElementById('pp-card-header-test-btn')) {
-            cardHeader.style.display = 'flex';
-            cardHeader.style.alignItems = 'center';
-            cardHeader.style.justifyContent = 'space-between';
-            cardHeader.style.flexWrap = 'wrap';
-            cardHeader.style.gap = '10px';
+        // Ensure any old card-header test mode button is completely removed
+        const oldHeaderBtn = document.getElementById('pp-card-header-test-btn');
+        if (oldHeaderBtn) oldHeaderBtn.remove();
 
-            // Wrap existing title+subtitle if multiple children exist and not already wrapped
-            const existingChildren = Array.from(cardHeader.children);
-            if (existingChildren.length > 1) {
-                const wrapper = document.createElement('div');
-                existingChildren.forEach(ch => wrapper.appendChild(ch));
-                cardHeader.appendChild(wrapper);
-            }
-
-            const headerToggleBtn = document.createElement('button');
-            headerToggleBtn.type = 'button';
-            headerToggleBtn.id = 'pp-card-header-test-btn';
-            headerToggleBtn.className = 'pp-test-mode-nav-btn';
-            headerToggleBtn.title = 'Toggle Development Test Mode for this form';
-            headerToggleBtn.innerHTML = `
-                <span class="pp-test-mode-dot"></span>
-                <span>🧪 Test Mode: <strong class="pp-test-state-label">OFF</strong></span>
-            `;
-            headerToggleBtn.addEventListener('click', toggleTestMode);
-            cardHeader.appendChild(headerToggleBtn);
-        }
-
-        // 2. Inject the Test Mode Auto-Fill Toolbar at the top of the form
+        // Inject the Test Mode Auto-Fill Toolbar directly above the form
         if (!document.getElementById('pp-test-mode-toolbar')) {
             const toolbar = document.createElement('div');
             toolbar.id = 'pp-test-mode-toolbar';
@@ -1017,29 +1144,25 @@
                 `<option value="${p.id}">${p.label}</option>`
             ).join('');
 
+            const initialStatus = 'Form Cleared';
+
             toolbar.innerHTML = `
                 <div class="pp-test-toolbar-top">
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <span class="pp-test-badge">🧪 DEV TEST MODE — ${module.label}</span>
-                        <span style="font-size: 12.5px; color: var(--ws-text-muted);">
-                            Select a profile below to automatically generate and fill all form values
-                        </span>
-                    </div>
-                    <span id="pp-test-status-msg" class="pp-test-status"></span>
+                    <span class="pp-test-badge">DEV TEST MODE — ${module.label}</span>
+                    <span id="pp-test-status-msg" class="pp-test-status active">${initialStatus}</span>
                 </div>
                 <div class="pp-test-controls">
                     <select id="pp-test-preset-select" class="pp-test-select" aria-label="Select Test Data Profile">
-                        <option value="">-- Select Test Data Profile to Auto-Fill --</option>
                         ${optionsHtml}
                     </select>
                     <button type="button" id="pp-test-fill-btn" class="pp-test-btn pp-test-btn-primary" title="Generate and populate all form fields using the selected profile">
-                        ⚡ Generate & Fill All
+                        Generate and Fill All
                     </button>
                     <button type="button" id="pp-test-random-btn" class="pp-test-btn" title="Generate fresh random values and fill all fields immediately">
-                        🎲 New Random
+                        New Random
                     </button>
                     <button type="button" id="pp-test-clear-btn" class="pp-test-btn" title="Clear all form fields">
-                        🧹 Clear
+                        Clear
                     </button>
                 </div>
             `;
@@ -1068,8 +1191,10 @@
 
             // "New Random" button
             randomBtn.addEventListener('click', () => {
-                selectEl.value = module.presets[0].id;
-                applySelectedPreset(module, module.presets[0].id);
+                if (module.presets.length > 0) {
+                    selectEl.value = module.presets[0].id;
+                    applySelectedPreset(module, module.presets[0].id);
+                }
             });
 
             // "Clear" button
@@ -1080,42 +1205,108 @@
         }
     }
 
+    function detectActiveModule() {
+        for (const id of Object.keys(modules)) {
+            if (modules[id].match()) {
+                return modules[id];
+            }
+        }
+        return null;
+    }
+
+    function handleNavbarBtnClick(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+        // Single button toggle between ON and OFF
+        const willEnable = !isTestModeEnabled();
+        setTestModeEnabled(willEnable);
+
+        if (willEnable) {
+            // Turning ON: detect view module and mount UI for this view's dataset
+            activeModule = detectActiveModule();
+            if (activeModule) {
+                mountModuleUI(activeModule);
+                const selectEl = document.getElementById('pp-test-preset-select');
+                if (selectEl && !selectEl.value && activeModule.presets.length > 0) {
+                    selectEl.value = activeModule.presets[0].id;
+                }
+            }
+            // Set status under DEV TEST MODE badge
+            const statusEl = document.getElementById('pp-test-status-msg');
+            if (statusEl) {
+                statusEl.textContent = 'Form Cleared';
+                statusEl.classList.add('active');
+            }
+        }
+    }
+
     function syncTestModeUI() {
         const enabled = isTestModeEnabled();
 
-        // Update all toggle buttons (navbar + card header)
-        document.querySelectorAll('.pp-test-mode-nav-btn').forEach(btn => {
-            btn.classList.toggle('active', enabled);
-            const label = btn.querySelector('.pp-test-state-label');
+        // Update navbar button (single button toggling between ON and OFF)
+        const navBtn = document.getElementById('navbar-test-mode-btn');
+        if (navBtn) {
+            navBtn.classList.toggle('active', enabled);
+            const label = navBtn.querySelector('.pp-test-state-label');
             if (label) label.textContent = enabled ? 'ON' : 'OFF';
-        });
+
+            // Ensure no extra icon is attached; keep it as a clean single button
+            const offBtn = navBtn.querySelector('.pp-test-mode-turn-off');
+            if (offBtn) offBtn.remove();
+
+            navBtn.title = enabled
+                ? 'Test Mode is ON — Click to toggle OFF'
+                : 'Test Mode is OFF — Click to toggle ON and auto-fill dataset for this view';
+        }
 
         // Show/hide toolbar
         const toolbar = document.getElementById('pp-test-mode-toolbar');
         if (toolbar) {
             toolbar.classList.toggle('visible', enabled);
+            const statusEl = document.getElementById('pp-test-status-msg');
+            if (statusEl) {
+                if (!enabled) {
+                    statusEl.classList.remove('active');
+                } else if (!statusEl.textContent) {
+                    statusEl.textContent = 'Form Cleared';
+                    statusEl.classList.add('active');
+                }
+            }
         }
     }
 
     function init() {
         injectStyles();
 
+        // Remove any old card header button if it was in the markup
+        const oldHeaderBtn = document.getElementById('pp-card-header-test-btn');
+        if (oldHeaderBtn) oldHeaderBtn.remove();
+
         // Bind navbar toggle button if present
         const navBtn = document.getElementById('navbar-test-mode-btn');
         if (navBtn) {
-            navBtn.addEventListener('click', toggleTestMode);
+            navBtn.addEventListener('click', handleNavbarBtnClick);
         }
 
         // Detect which registered module matches the current view
-        for (const id of Object.keys(modules)) {
-            if (modules[id].match()) {
-                activeModule = modules[id];
-                mountModuleUI(activeModule);
-                break;
+        activeModule = detectActiveModule();
+        if (activeModule) {
+            mountModuleUI(activeModule);
+            const selectEl = document.getElementById('pp-test-preset-select');
+            if (selectEl && !selectEl.value && activeModule.presets.length > 0) {
+                selectEl.value = activeModule.presets[0].id;
             }
         }
 
         syncTestModeUI();
+
+        const statusEl = document.getElementById('pp-test-status-msg');
+        if (statusEl && isTestModeEnabled()) {
+            if (!statusEl.textContent) {
+                statusEl.textContent = 'Form Cleared';
+                statusEl.classList.add('active');
+            }
+        }
     }
 
     // Expose global API for expandability across custom views

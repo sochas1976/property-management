@@ -15,60 +15,88 @@ if (!empty($applicant['documents'])) {
 </div>
 
 <div class="card" style="max-width: 900px; margin: 0 auto;">
-    <div class="card-header">
-        <h2 class="card-title">Edit Rental Application — <?= htmlspecialchars($applicant['full_name']) ?></h2>
+    <div class="card-header" style="display: flex; flex-direction: column; align-items: stretch; padding: 22px 28px 10px 28px;">
+        <h2 class="card-title" style="margin: 0; text-align: left;">Application for Rental Accommodation — <?= htmlspecialchars($applicant['full_name']) ?></h2>
+        <div style="font-size: 13px; color: var(--ws-text-muted); margin-top: 14px; text-align: center; width: 100%;">The Landlord acknowledges the confidentiality of this document</div>
     </div>
     <div class="card-body">
-        <!-- PDF Application Import & OCR / Handwriting Extractor -->
-        <div id="pdf-import-dropzone" data-parse-url="<?= Router::url('/applicants/parse-pdf') ?>" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(16, 185, 129, 0.04) 100%); border: 2px dashed var(--ws-border); border-radius: 12px; padding: 16px 18px; margin-bottom: 24px; transition: border-color 0.2s ease, background 0.2s ease; cursor: pointer;">
-            <input type="file" id="pdf-import-file-input" accept=".pdf,application/pdf" style="display: none;">
-
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(37, 99, 235, 0.1); color: var(--ws-accent, #2563eb); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                    </div>
-                    <div>
-                        <div style="font-size: 14.5px; font-weight: 700; color: var(--ws-text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span>Import Paper / Scanned PDF Application</span>
-                            <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(37, 99, 235, 0.12); color: var(--ws-accent, #2563eb);">Handwriting &bull; Print &bull; Typed OCR</span>
-                        </div>
-                        <div style="font-size: 12.5px; color: var(--ws-text-secondary); margin-top: 2px;">
-                            Drop a completed PDF rental application here or click to browse — automatically reads handwritten, printed, or typed fields &amp; signature.
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" id="pdf-import-preview-toggle" class="btn btn-outline btn-xs" title="Open imported PDF in a separate movable window (can be dragged to a 2nd monitor)" style="display: none; padding: 6px 12px; font-size: 12.5px; font-weight: 600;">
-                        👁️ View Imported PDF &#8599;
-                    </button>
-                    <button type="button" id="pdf-import-browse-btn" class="btn btn-primary btn-sm" style="padding: 7px 14px; font-size: 13px; font-weight: 600;">
-                        📄 Select PDF to Import
-                    </button>
-                </div>
-            </div>
-
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ws-border-subtle); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <label style="display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ws-text-secondary); cursor: pointer; margin: 0;">
-                    <input type="checkbox" id="pdf-import-attach-doc" checked style="width: 15px; height: 15px; accent-color: var(--ws-accent);">
-                    <span>Also attach imported PDF to <strong>Documents &amp; Identification</strong></span>
+        <!-- Import PDF Application -->
+        <?php
+        $existingAppPdf = null;
+        if (!empty($applicantDocs)) {
+            foreach ($applicantDocs as $doc) {
+                if (strtolower(pathinfo($doc, PATHINFO_EXTENSION)) === 'pdf') {
+                    $existingAppPdf = $doc;
+                    break;
+                }
+            }
+        }
+        ?>
+        <div class="form-group" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 2px solid var(--ws-border-subtle); padding-bottom: 8px;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Import PDF Application</h3>
+                <label for="pdf-import-file-input" title="Import PDF Application" 
+                       style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px solid var(--ws-accent); color: var(--ws-accent); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease; padding: 0;"
+                       onmouseover="this.style.transform='scale(1.12)'; this.style.background='var(--ws-accent-subtle)';"
+                       onmouseout="this.style.transform='scale(1)'; this.style.background='transparent';">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                 </label>
-                <span style="font-size: 11.5px; color: var(--ws-text-muted);">Supports multi-page scanned images, stylus forms &amp; digital PDFs</span>
             </div>
 
-            <!-- Extraction Progress & Status Bar -->
-            <div id="pdf-import-status" style="display: none; margin-top: 12px;">
-                <div style="height: 6px; width: 100%; background: rgba(148, 163, 184, 0.2); border-radius: 999px; overflow: hidden; margin-bottom: 6px;">
-                    <div id="pdf-import-progress-bar" style="height: 100%; width: 0%; background: #2563eb; transition: width 0.25s ease, background 0.25s ease;"></div>
+            <div id="pdf-import-dropzone" data-parse-url="<?= Router::url('/applicants/parse-pdf') ?>" style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); border-radius: 12px; padding: 16px; transition: border-color 0.2s ease, background 0.2s ease;">
+                <input type="file" id="pdf-import-file-input" accept=".pdf,application/pdf" style="display: none;">
+
+                <!-- Container showing the imported file once completed -->
+                <div id="pdf-import-file-container" data-doc="<?= !empty($existingAppPdf) ? htmlspecialchars($existingAppPdf) : '' ?>" style="<?= empty($existingAppPdf) ? 'display: none;' : 'display: flex;' ?> align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: var(--ws-accent-subtle); color: var(--ws-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div id="pdf-import-file-name" style="font-size: 13.5px; font-weight: 700; color: var(--ws-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <?= !empty($existingAppPdf) ? htmlspecialchars(basename($existingAppPdf)) : 'Application.pdf' ?>
+                            </div>
+                            <div id="pdf-import-file-meta" style="font-size: 11.5px; color: var(--ws-text-muted);">
+                                PDF Rental Application
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" id="pdf-import-preview-toggle" class="btn btn-outline btn-xs" title="View Imported PDF" 
+                                style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--ws-text); cursor: pointer; transition: all 0.15s ease;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                        <button type="button" id="pdf-import-delete-btn" class="btn btn-outline btn-xs" title="Delete Imported PDF" 
+                                onclick="deleteImportedApplicationPdf()"
+                                style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--ws-text-muted); cursor: pointer; transition: all 0.15s ease;"
+                                onmouseover="this.style.color='#dc2626'; this.style.borderColor='#dc2626'; this.style.background='rgba(220, 38, 38, 0.08)';"
+                                onmouseout="this.style.color='var(--ws-text-muted)'; this.style.borderColor=''; this.style.background='';">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                        <a id="pdf-import-download-link" href="<?= !empty($existingAppPdf) ? Router::url($existingAppPdf) : '#' ?>" target="_blank" style="display: none;"></a>
+                    </div>
                 </div>
-                <div id="pdf-import-status-text" style="font-size: 12.5px; font-weight: 600; color: var(--ws-text-primary);"></div>
+
+                <div id="pdf-import-empty-hint" style="<?= empty($existingAppPdf) ? '' : 'display: none;' ?> text-align: center; color: var(--ws-text-muted); font-size: 13.5px; padding: 16px 14px;">
+                    Click the <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ws-accent); color: var(--ws-accent); font-size: 12px; font-weight: 700; line-height: 1; vertical-align: middle;">+</span> button above to upload application.
+                </div>
             </div>
         </div>
 
@@ -474,27 +502,37 @@ if (!empty($applicant['documents'])) {
                                 Awaiting Signature
                             </span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                            <button type="button" id="esig-mode-draw-btn" class="btn btn-outline btn-xs active" style="padding: 4px 10px; font-size: 12px;">
-                                ✍️ Draw (Mouse / Stylus)
-                            </button>
-                            <button type="button" id="esig-mode-type-btn" class="btn btn-outline btn-xs" style="padding: 4px 10px; font-size: 12px;">
-                                ⌨️ Type Name
-                            </button>
-                            <button type="button" id="esig-undo-btn" class="btn btn-outline btn-xs" title="Undo last stroke" style="padding: 4px 10px; font-size: 12px;">
-                                ↩️ Undo
-                            </button>
-                            <button type="button" id="esig-clear-btn" class="btn btn-outline btn-danger btn-xs" title="Clear signature pad" style="padding: 4px 10px; font-size: 12px;">
-                                🧹 Clear
-                            </button>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <!-- Mode Group (Draw vs Type) -->
+                            <div style="display: inline-flex; align-items: center; gap: 5px;">
+                                <button type="button" id="esig-mode-draw-btn" class="btn btn-primary btn-sm" style="padding: 5px 13px; font-size: 12px;">
+                                    Draw
+                                </button>
+                                <button type="button" id="esig-mode-type-btn" class="btn btn-outline btn-sm" style="padding: 5px 13px; font-size: 12px;">
+                                    Type Name
+                                </button>
+                            </div>
+
+                            <!-- Subtle Vertical Divider -->
+                            <div style="width: 1px; height: 18px; background: var(--ws-border-strong); margin: 0 4px;"></div>
+
+                            <!-- Actions Group (Undo / Clear) -->
+                            <div style="display: inline-flex; align-items: center; gap: 5px;">
+                                <button type="button" id="esig-undo-btn" class="btn btn-outline btn-sm" title="Undo last stroke" style="padding: 5px 13px; font-size: 12px;">
+                                    Undo
+                                </button>
+                                <button type="button" id="esig-clear-btn" class="btn btn-outline btn-sm" title="Clear signature pad" style="padding: 5px 13px; font-size: 12px;">
+                                    Clear
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div id="esig-type-panel" style="display: none; margin-bottom: 10px;">
-                        <input type="text" id="esig-type-input" class="form-control" placeholder="Type full legal name to generate cursive e-signature..." autocomplete="off">
+                        <input type="text" id="esig-type-input" class="form-control" placeholder="Type full legal name to generate cursive e-signature..." autocomplete="off" style="transition: border-color 0.4s ease, box-shadow 0.4s ease;">
                     </div>
 
-                    <div style="position: relative; width: 100%; height: 150px; background: #ffffff; border: 1.5px solid var(--ws-border); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);">
+                    <div id="esig-canvas-wrapper" style="position: relative; width: 100%; height: 150px; background: #ffffff; border: 1.5px solid var(--ws-border); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); transition: border-color 0.4s ease, box-shadow 0.4s ease;">
                         <canvas id="esig-canvas" style="width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none;"></canvas>
 
                         <!-- Signature Baseline & X Mark -->
@@ -528,7 +566,8 @@ if (!empty($applicant['documents'])) {
                 
                 <input type="file" id="applicant_documents" name="applicant_documents[]" class="form-control" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" onchange="uploadApplicantDocuments(this)" style="display: none;">
 
-                <div id="applicant-documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 16px; <?= empty($applicantDocs) ? 'display: none;' : '' ?>">
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 16px; border-radius: 12px;">
+                <div id="applicant-documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 0; <?= empty($applicantDocs) ? 'display: none;' : '' ?>">
                     <?php if (!empty($applicantDocs)): ?>
                         <?php foreach ($applicantDocs as $idx => $doc): 
                             $isPdf = strtolower(pathinfo($doc, PATHINFO_EXTENSION)) === 'pdf';
@@ -539,7 +578,7 @@ if (!empty($applicant['documents'])) {
                                 
                                 <?php if ($isPdf): ?>
                                     <a href="<?= Router::url($doc) ?>" target="_blank" title="Open PDF Document" 
-                                       style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: rgba(239, 68, 68, 0.08); border-radius: 8px; text-decoration: none; color: #dc2626; transition: transform 0.15s ease;"
+                                       style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: var(--ws-accent-subtle); border-radius: 8px; text-decoration: none; color: var(--ws-accent); transition: transform 0.15s ease;"
                                        onmouseover="this.style.transform='scale(1.03)'"
                                        onmouseout="this.style.transform='scale(1)'">
                                         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -581,8 +620,9 @@ if (!empty($applicant['documents'])) {
                     <?php endif; ?>
                 </div>
 
-                <div id="applicant-documents-empty" style="<?= empty($applicantDocs) ? '' : 'display: none;' ?> text-align: center; padding: 22px 14px; color: var(--ws-text-muted); font-size: 13.5px; border: 1.5px dashed var(--ws-border-subtle); border-radius: 10px; margin-bottom: 16px;">
-                    No documents attached yet. Click the <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ws-accent); color: var(--ws-accent); font-size: 12px; font-weight: 700; line-height: 1; vertical-align: middle;">+</span> button above to upload driver's license photo, government ID, or paystubs.
+                <div id="applicant-documents-empty" style="<?= empty($applicantDocs) ? '' : 'display: none;' ?> text-align: center; padding: 20px 14px; color: var(--ws-text-muted); font-size: 13.5px;">
+                    Click the <span style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ws-accent); color: var(--ws-accent); font-size: 12px; font-weight: 700; line-height: 1; vertical-align: middle;">+</span> button above to upload photo ID, driver's license, or paystubs.
+                </div>
                 </div>
             </div>
 
@@ -771,6 +811,14 @@ function uploadApplicantDocuments(inputElem) {
 
             data.uploaded.forEach(doc => {
                 const isPdf = doc.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                    const importContainer = document.getElementById('pdf-import-file-container');
+                    if (importContainer) {
+                        importContainer.setAttribute('data-doc', doc);
+                        const dlLink = document.getElementById('pdf-import-download-link');
+                        if (dlLink) dlLink.href = '<?= Router::url('') ?>' + (doc.startsWith('/') ? doc : '/' + doc);
+                    }
+                }
                 const card = document.createElement('div');
                 card.className = 'applicant-doc-card';
                 card.setAttribute('data-doc', doc);
@@ -783,7 +831,7 @@ function uploadApplicantDocuments(inputElem) {
                 if (isPdf) {
                     inner += `
                         <a href="${fullUrl}" target="_blank" title="Open PDF Document" 
-                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: rgba(239, 68, 68, 0.08); border-radius: 8px; text-decoration: none; color: #dc2626; transition: transform 0.15s ease;"
+                           style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 95px; background: var(--ws-accent-subtle); border-radius: 8px; text-decoration: none; color: var(--ws-accent); transition: transform 0.15s ease;"
                            onmouseover="this.style.transform='scale(1.03)'"
                            onmouseout="this.style.transform='scale(1)'">
                             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -830,7 +878,7 @@ function uploadApplicantDocuments(inputElem) {
             alert(data.message || 'Error uploading documents.');
             if (emptyNotice && (!grid || grid.querySelectorAll('.applicant-doc-card').length === 0)) {
                 emptyNotice.style.display = 'block';
-                emptyNotice.innerHTML = 'No documents attached yet. Click the + button above to upload driver\'s license photo, government ID, or paystubs.';
+                emptyNotice.innerHTML = 'Click the + button above to upload photo ID, driver\'s license, or paystubs.';
             }
         }
     })
@@ -844,6 +892,86 @@ function uploadApplicantDocuments(inputElem) {
     .finally(() => {
         inputElem.value = '';
     });
+}
+
+function deleteImportedApplicationPdf() {
+    if (!confirm('Are you sure you want to remove this imported PDF application?')) {
+        return;
+    }
+
+    const container = document.getElementById('pdf-import-file-container');
+    let docPath = container ? (container.getAttribute('data-doc') || '') : '';
+
+    // Find the matching card in Documents & Identification grid
+    const grid = document.getElementById('applicant-documents-grid');
+    let matchingCard = null;
+    if (grid) {
+        if (docPath) {
+            matchingCard = grid.querySelector(`.applicant-doc-card[data-doc="${docPath}"]`);
+        }
+        if (!matchingCard) {
+            const cards = grid.querySelectorAll('.applicant-doc-card');
+            for (const c of cards) {
+                const cDoc = c.getAttribute('data-doc') || '';
+                if (cDoc.toLowerCase().endsWith('.pdf')) {
+                    matchingCard = c;
+                    docPath = cDoc;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 1. Remove from database and server storage if saved
+    const applicantId = <?= (int)$applicant['id'] ?>;
+    if (docPath && applicantId) {
+        const formData = new FormData();
+        formData.append('document', docPath);
+        fetch('<?= Router::url('/applicants/') ?>' + applicantId + '/delete-document', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        }).catch(err => console.error('Error deleting document on server:', err));
+    }
+
+    // 2. Remove the card from Documents & Identification view with smooth transition
+    if (matchingCard) {
+        matchingCard.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        matchingCard.style.transform = 'scale(0.8)';
+        matchingCard.style.opacity = '0';
+        setTimeout(() => {
+            matchingCard.remove();
+            if (grid && grid.querySelectorAll('.applicant-doc-card').length === 0) {
+                grid.style.display = 'none';
+                const emptyNotice = document.getElementById('applicant-documents-empty');
+                if (emptyNotice) emptyNotice.style.display = 'block';
+            }
+        }, 220);
+    }
+
+    // 3. Clear file inputs
+    const pdfFileInput = document.getElementById('pdf-import-file-input');
+    if (pdfFileInput) pdfFileInput.value = '';
+    const docsInput = document.getElementById('applicant_documents');
+    if (docsInput) docsInput.value = '';
+
+    // 4. Remove from user view under Import PDF Application
+    if (container) {
+        container.style.display = 'none';
+        container.removeAttribute('data-doc');
+    }
+    const emptyHint = document.getElementById('pdf-import-empty-hint');
+    if (emptyHint) {
+        emptyHint.style.display = 'block';
+    }
+
+    // 5. Reset download link if present
+    const dlLink = document.getElementById('pdf-import-download-link');
+    if (dlLink) dlLink.removeAttribute('href');
+
+    // 6. Close carousel preview if open
+    const modal = document.getElementById('pdf-preview-modal');
+    if (modal) modal.style.display = 'none';
 }
 
 function deleteApplicantDocumentDynamically(applicantId, docPath, buttonElem) {
@@ -873,6 +1001,18 @@ function deleteApplicantDocumentDynamically(applicantId, docPath, buttonElem) {
                     grid.style.display = 'none';
                     const emptyNotice = document.getElementById('applicant-documents-empty');
                     if (emptyNotice) emptyNotice.style.display = 'block';
+                }
+
+                // If deleted document is the imported PDF, reset header container
+                const importContainer = document.getElementById('pdf-import-file-container');
+                if (importContainer) {
+                    const currentImportDoc = importContainer.getAttribute('data-doc');
+                    if (currentImportDoc === docPath || (docPath && docPath.toLowerCase().endsWith('.pdf'))) {
+                        importContainer.style.display = 'none';
+                        importContainer.removeAttribute('data-doc');
+                        const emptyHint = document.getElementById('pdf-import-empty-hint');
+                        if (emptyHint) emptyHint.style.display = 'block';
+                    }
                 }
             }, 250);
         } else {
