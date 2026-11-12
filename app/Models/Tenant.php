@@ -15,7 +15,7 @@ class Tenant {
                    p.id AS property_id,
                    p.name AS property_name
             FROM tenants t
-            LEFT JOIN leases l ON t.id = l.tenant_id AND l.status = 'active'
+            LEFT JOIN leases l ON t.id = l.tenant_id AND l.status IN ('active', 'expiring_soon')
             LEFT JOIN units u ON l.unit_id = u.id
             LEFT JOIN properties p ON u.property_id = p.id
             ORDER BY t.last_name ASC, t.first_name ASC
@@ -33,7 +33,7 @@ class Tenant {
                    p.id AS property_id,
                    p.name AS property_name
             FROM tenants t
-            LEFT JOIN leases l ON t.id = l.tenant_id AND l.status = 'active'
+            LEFT JOIN leases l ON t.id = l.tenant_id AND l.status IN ('active', 'expiring_soon')
             LEFT JOIN units u ON l.unit_id = u.id
             LEFT JOIN properties p ON u.property_id = p.id
             WHERE t.id = ? LIMIT 1

@@ -1,9 +1,21 @@
 <?php
 use App\Core\Router;
+
+$from = $_GET['from'] ?? '';
+if (empty($from) && !empty($_SERVER['HTTP_REFERER'])) {
+    if (strpos($_SERVER['HTTP_REFERER'], '/applicants/history') !== false) {
+        $from = 'history';
+    }
+}
+$fromHistory = ($from === 'history');
 ?>
 
 <div class="breadcrumb">
-    <a href="<?= Router::url('/tenants') ?>">&larr; Back to Tenant Directory</a>
+    <?php if ($fromHistory): ?>
+        <a href="<?= Router::url('/applicants/history') ?>">&larr; Back to Historical Applications</a>
+    <?php else: ?>
+        <a href="<?= Router::url('/tenants') ?>">&larr; Back to Tenant Directory</a>
+    <?php endif; ?>
 </div>
 
 <div class="page-header">
@@ -20,7 +32,7 @@ use App\Core\Router;
     </div>
     <div class="action-buttons">
         <?php if (!empty($tenant['active_lease_id'])): ?>
-            <a href="<?= Router::url('/leases/' . $tenant['active_lease_id']) ?>" class="btn btn-primary">View Active Lease</a>
+            <a href="<?= Router::url('/leases/' . $tenant['active_lease_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-primary">View Active Lease</a>
         <?php else: ?>
             <a href="<?= Router::url('/leases/create') ?>" class="btn btn-outline">+ Assign to Lease</a>
         <?php endif; ?>

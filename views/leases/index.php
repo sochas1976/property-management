@@ -1,15 +1,26 @@
 <?php
 use App\Core\Router;
+use App\Core\AppDate;
 ?>
 
 <div class="page-header">
     <div>
         <h1 class="page-title">Lease Agreements</h1>
-        <p class="page-subtitle">Manage contract terms, security deposits, and stored lease PDF documents</p>
+        <p class="page-subtitle">Manage contract terms, security deposits, and Word (.docx) lease templates</p>
     </div>
     <div>
         <a href="<?= Router::url('/leases/create') ?>" class="btn btn-primary">+ Create New Lease</a>
     </div>
+</div>
+
+<!-- View Segmented Tabs -->
+<div style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center;">
+    <a href="<?= Router::url('/leases') ?>" class="btn btn-primary btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Lease Agreements
+    </a>
+    <a href="<?= Router::url('/leases/templates') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Lease Templates
+    </a>
 </div>
 
 <div class="card">
@@ -40,15 +51,30 @@ use App\Core\Router;
                         <tr>
                             <td>
                                 <?php
+                                $endDate = !empty($lease['end_date']) ? new DateTime($lease['end_date']) : null;
+                                $daysLeft = null;
+                                if ($endDate) {
+                                    $diff = AppDate::today()->diff($endDate);
+                                    $daysLeft = $diff->invert ? -$diff->days : $diff->days;
+                                }
+                                $isExpiringSoon = ($daysLeft !== null && $daysLeft >= 0 && $daysLeft <= 45);
+
+                                $effStatus = $lease['status'];
+                                if ($effStatus === 'active' && $isExpiringSoon) {
+                                    $effStatus = 'expiring_soon';
+                                }
+
                                 $leaseStatusMap = [
-                                    'active'     => 'badge-success',
-                                    'draft'      => 'badge-info',
-                                    'expired'    => 'badge-warning',
-                                    'terminated' => 'badge-danger',
+                                    'active'        => 'badge-success',
+                                    'expiring_soon' => 'badge-warning',
+                                    'draft'         => 'badge-info',
+                                    'expired'       => 'badge-warning',
+                                    'terminated'    => 'badge-danger',
                                 ];
-                                $statusClass = $leaseStatusMap[$lease['status']] ?? 'badge-subtle';
+                                $statusClass = $leaseStatusMap[$effStatus] ?? 'badge-subtle';
+                                $statusLabel = ($effStatus === 'expiring_soon') ? 'Expiring Soon' : ucfirst(str_replace('_', ' ', $effStatus));
                                 ?>
-                                <span class="badge <?= $statusClass ?>"><?= ucfirst($lease['status']) ?></span>
+                                <span class="badge <?= $statusClass ?>" <?= $isExpiringSoon ? 'title="' . ($daysLeft === 0 ? 'Expires today' : ($daysLeft === 1 ? '1 day left' : $daysLeft . ' days left')) . '"' : '' ?>><?= $statusLabel ?></span>
                             </td>
                             <td>
                                 <strong><?= htmlspecialchars($lease['property_name']) ?></strong>

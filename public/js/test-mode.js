@@ -91,7 +91,7 @@
     }
 
     function getNextMonthFirstDate() {
-        const now = new Date();
+        const now = (typeof getEffectiveDate === 'function') ? getEffectiveDate() : new Date();
         return new Date(now.getFullYear(), now.getMonth() + 1, 1);
     }
 
@@ -829,6 +829,53 @@
     // =========================================================================
     // 5. UI Injection & Test Mode State Controller
     // =========================================================================
+    const DATE_STORAGE_KEY = 'pp_test_simulated_date';
+
+    function setCookie(name, value, days = 30) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    }
+
+    function deleteCookie(name) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+    }
+
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+        return match ? decodeURIComponent(match[3]) : null;
+    }
+
+    function getSimulatedDate() {
+        try {
+            return localStorage.getItem(DATE_STORAGE_KEY) || getCookie(DATE_STORAGE_KEY) || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function setSimulatedDate(dateStr) {
+        try {
+            if (dateStr) {
+                localStorage.setItem(DATE_STORAGE_KEY, dateStr);
+                setCookie(DATE_STORAGE_KEY, dateStr);
+            } else {
+                localStorage.removeItem(DATE_STORAGE_KEY);
+                deleteCookie(DATE_STORAGE_KEY);
+            }
+        } catch (e) {}
+    }
+
+    function getEffectiveDate() {
+        const sim = getSimulatedDate();
+        if (sim && isTestModeEnabled()) {
+            const parts = sim.split('-');
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            }
+        }
+        return new Date();
+    }
+
     function isTestModeEnabled() {
         try {
             return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -840,6 +887,20 @@
     function setTestModeEnabled(enabled) {
         try {
             localStorage.setItem(STORAGE_KEY, enabled ? 'true' : 'false');
+            setCookie(STORAGE_KEY, enabled ? 'true' : 'false');
+            if (enabled) {
+                let sim = getSimulatedDate();
+                if (!sim) {
+                    const now = new Date();
+                    sim = formatDateYMD(now);
+                    setSimulatedDate(sim);
+                } else {
+                    setCookie(DATE_STORAGE_KEY, sim);
+                }
+            } else {
+                deleteCookie(DATE_STORAGE_KEY);
+                localStorage.removeItem(DATE_STORAGE_KEY);
+            }
         } catch (e) {}
         syncTestModeUI();
     }
@@ -1221,23 +1282,8 @@
         const willEnable = !isTestModeEnabled();
         setTestModeEnabled(willEnable);
 
-        if (willEnable) {
-            // Turning ON: detect view module and mount UI for this view's dataset
-            activeModule = detectActiveModule();
-            if (activeModule) {
-                mountModuleUI(activeModule);
-                const selectEl = document.getElementById('pp-test-preset-select');
-                if (selectEl && !selectEl.value && activeModule.presets.length > 0) {
-                    selectEl.value = activeModule.presets[0].id;
-                }
-            }
-            // Set status under DEV TEST MODE badge
-            const statusEl = document.getElementById('pp-test-status-msg');
-            if (statusEl) {
-                statusEl.textContent = 'Form Cleared';
-                statusEl.classList.add('active');
-            }
-        }
+        // When toggling Test Mode, reload so PHP server-side date calculations update immediately
+        window.location.reload();
     }
 
     function syncTestModeUI() {
@@ -1256,7 +1302,19 @@
 
             navBtn.title = enabled
                 ? 'Test Mode is ON — Click to toggle OFF'
-                : 'Test Mode is OFF — Click to toggle ON and auto-fill dataset for this view';
+                : 'Test Mode is OFF — Click to toggle ON and set simulated test date';
+        }
+
+        // Show/hide simulated date picker capsule in navbar
+        const dateWrap = document.getElementById('pp-test-date-picker-wrap');
+        if (dateWrap) {
+            dateWrap.style.display = enabled ? 'inline-flex' : 'none';
+        }
+
+        const dateInput = document.getElementById('pp-test-simulated-date');
+        if (dateInput && enabled) {
+            const currentSim = getSimulatedDate();
+            if (currentSim) dateInput.value = currentSim;
         }
 
         // Show/hide toolbar
@@ -1277,6 +1335,44 @@
 
     function init() {
         injectStyles();
+
+        // Ensure cookies match localStorage
+        const isEnabled = isTestModeEnabled();
+        setCookie(STORAGE_KEY, isEnabled ? 'true' : 'false');
+        if (isEnabled) {
+            const currentSim = getSimulatedDate();
+            if (currentSim) {
+                setCookie(DATE_STORAGE_KEY, currentSim);
+                const dateInput = document.getElementById('pp-test-simulated-date');
+                if (dateInput) dateInput.value = currentSim;
+            }
+        } else {
+            deleteCookie(DATE_STORAGE_KEY);
+        }
+
+        // Bind simulated date picker events in navbar
+        const dateInput = document.getElementById('pp-test-simulated-date');
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                const val = dateInput.value;
+                if (val) {
+                    setSimulatedDate(val);
+                    window.location.reload();
+                }
+            });
+        }
+
+        const todayBtn = document.getElementById('pp-test-date-today-btn');
+        if (todayBtn) {
+            todayBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const now = new Date();
+                const todayIso = formatDateYMD(now);
+                if (dateInput) dateInput.value = todayIso;
+                setSimulatedDate(todayIso);
+                window.location.reload();
+            });
+        }
 
         // Remove any old card header button if it was in the markup
         const oldHeaderBtn = document.getElementById('pp-card-header-test-btn');
@@ -1316,6 +1412,11 @@
         disable: () => setTestModeEnabled(false),
         toggle: toggleTestMode,
         isEnabled: isTestModeEnabled,
+        getSimulatedDate: getSimulatedDate,
+        setSimulatedDate: (d) => {
+            setSimulatedDate(d);
+            window.location.reload();
+        },
         fillCurrentForm: (presetId) => {
             if (activeModule) {
                 setTestModeEnabled(true);

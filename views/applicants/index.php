@@ -12,6 +12,16 @@ use App\Core\Router;
     </div>
 </div>
 
+<!-- View Segmented Tabs -->
+<div style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center;">
+    <a href="<?= Router::url('/applicants') ?>" class="btn btn-primary btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Active Applications
+    </a>
+    <a href="<?= Router::url('/applicants/history') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Historical Applications
+    </a>
+</div>
+
 <div class="card">
     <div class="table-responsive">
         <table class="table">
@@ -30,9 +40,14 @@ use App\Core\Router;
                 <?php if (empty($applicants)): ?>
                     <tr>
                         <td colspan="7" class="text-center text-muted" style="padding: 40px;">
-                            No rental applications submitted yet.
-                            <br><br>
-                            <a href="<?= Router::url('/applicants/create') ?>" class="btn btn-primary btn-sm">Add New Application</a>
+                            No active rental applications in the pipeline.
+                            <?php if (!empty($historicalApplicants)): ?>
+                                <br><br>
+                                <a href="<?= Router::url('/applicants/history') ?>" class="btn btn-outline btn-sm">View Historical Applications</a>
+                            <?php else: ?>
+                                <br><br>
+                                <a href="<?= Router::url('/applicants/create') ?>" class="btn btn-primary btn-sm">Add New Application</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php else: ?>
@@ -73,8 +88,19 @@ use App\Core\Router;
                             <td>
                                 <?php if ($app['status'] === 'approved'): ?>
                                     <span class="badge badge-success" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Approved</span>
+                                <?php elseif ($app['status'] === 'lease_created'): ?>
+                                    <span class="badge badge-info" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Lease Created</span>
+                                <?php elseif ($app['status'] === 'lease_sent'): ?>
+                                    <span class="badge badge-info" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Lease Sent</span>
+                                    <?php
+                                    $totApp = (int)($app['lease_total_applicants'] ?? 1);
+                                    $sigApp = (int)($app['lease_signed_applicants'] ?? (!empty($app['lease_signed']) ? 1 : 0));
+                                    ?>
+                                    <div class="text-muted text-xs" style="margin-top: 2px;">
+                                        <?= !empty($app['lease_signed']) ? 'Signed (' . $sigApp . '/' . $totApp . ')' : 'Awaiting Signature (' . $sigApp . '/' . $totApp . ')' ?>
+                                    </div>
                                 <?php elseif ($app['status'] === 'converted'): ?>
-                                    <span class="badge badge-success" style="background: #2563eb; color: #fff; font-size: 14px; padding: 3px 10px; font-weight: 500;">Converted to Tenant</span>
+                                    <span class="badge badge-success" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Converted to Tenant</span>
                                 <?php elseif ($app['status'] === 'rejected'): ?>
                                     <span class="badge badge-danger" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Rejected</span>
                                 <?php else: ?>

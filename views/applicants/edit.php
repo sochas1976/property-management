@@ -172,8 +172,10 @@ if (!empty($applicant['documents'])) {
                         <select id="status" name="status" class="form-control">
                             <option value="pending" <?= $applicant['status'] === 'pending' ? 'selected' : '' ?>>Pending Review</option>
                             <option value="approved" <?= $applicant['status'] === 'approved' ? 'selected' : '' ?>>Approved</option>
-                            <option value="rejected" <?= $applicant['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                            <option value="lease_created" <?= $applicant['status'] === 'lease_created' ? 'selected' : '' ?>>Lease Created</option>
+                            <option value="lease_sent" <?= $applicant['status'] === 'lease_sent' ? 'selected' : '' ?>>Lease Sent (Awaiting Signature)</option>
                             <option value="converted" <?= $applicant['status'] === 'converted' ? 'selected' : '' ?>>Converted to Tenant</option>
+                            <option value="rejected" <?= $applicant['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
                         </select>
                     </div>
                     <div class="form-group col-4">

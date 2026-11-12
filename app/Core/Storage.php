@@ -7,6 +7,8 @@ class Storage {
     /** @var array */
     private static $allowedMimes = [
         'pdf'  => 'application/pdf',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'doc'  => 'application/msword',
         'jpg'  => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png'  => 'image/png',
@@ -39,7 +41,7 @@ class Storage {
         }
 
         if ($matchedExt === null) {
-            throw new Exception("Invalid file type: {$realMime}. Only PDF and images (JPG, PNG, WebP) are allowed.");
+            throw new Exception("Invalid file type: {$realMime}. Only PDF, Word (.docx), and images (JPG, PNG, WebP) are allowed.");
         }
 
         // Target directory under protected storage

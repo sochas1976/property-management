@@ -84,6 +84,7 @@ Router::post('/tenants/{id}/delete', [TenantController::class, 'delete'], ['auth
 
 // Applicants & Applications
 Router::get('/applicants', [ApplicantController::class, 'index'], ['auth']);
+Router::get('/applicants/history', [ApplicantController::class, 'history'], ['auth']);
 Router::get('/applicants/create', [ApplicantController::class, 'create'], ['auth']);
 Router::post('/applicants/parse-pdf', [ApplicantController::class, 'parsePdf'], ['auth']);
 Router::post('/applicants', [ApplicantController::class, 'store'], ['auth']);
@@ -93,15 +94,26 @@ Router::post('/applicants/{id}/update', [ApplicantController::class, 'update'], 
 Router::post('/applicants/{id}/upload-document', [ApplicantController::class, 'uploadDocument'], ['auth']);
 Router::post('/applicants/{id}/delete-document', [ApplicantController::class, 'deleteDocument'], ['auth']);
 Router::post('/applicants/{id}/status', [ApplicantController::class, 'updateStatus'], ['auth']);
+Router::post('/applicants/{id}/create-lease', [ApplicantController::class, 'createLease'], ['auth']);
+Router::post('/applicants/{id}/cancel-lease', [ApplicantController::class, 'cancelLease'], ['auth']);
+Router::post('/applicants/{id}/send-lease', [ApplicantController::class, 'sendLease'], ['auth']);
+Router::post('/applicants/{id}/sign-lease', [ApplicantController::class, 'signLease'], ['auth']);
 Router::post('/applicants/{id}/convert', [ApplicantController::class, 'convert'], ['auth']);
 Router::post('/applicants/{id}/delete', [ApplicantController::class, 'delete'], ['auth']);
 
 // Leases
 Router::get('/leases', [LeaseController::class, 'index'], ['auth']);
+Router::get('/leases/templates', [LeaseController::class, 'templates'], ['auth']);
+Router::post('/leases/templates/upload', [LeaseController::class, 'uploadTemplate'], ['auth']);
+Router::post('/leases/templates/{templateId}/save-mapping', [LeaseController::class, 'saveTemplateMapping'], ['auth']);
+Router::post('/leases/templates/{templateId}/delete', [LeaseController::class, 'deleteTemplate'], ['auth']);
 Router::get('/leases/create', [LeaseController::class, 'create'], ['auth']);
 Router::post('/leases', [LeaseController::class, 'store'], ['auth']);
 Router::get('/leases/{id}', [LeaseController::class, 'view'], ['auth']);
 Router::post('/leases/{id}/status', [LeaseController::class, 'updateStatus'], ['auth']);
+Router::post('/leases/{id}/upload-template', [LeaseController::class, 'uploadTemplate'], ['auth']);
+Router::post('/leases/{id}/generate-document', [LeaseController::class, 'generateDocument'], ['auth']);
+Router::post('/leases/{id}/delete-template/{templateId}', [LeaseController::class, 'deleteTemplate'], ['auth']);
 
 // Maintenance & Work Orders
 Router::get('/maintenance', [MaintenanceController::class, 'index'], ['auth']);

@@ -9,12 +9,12 @@ class Unit {
         $db = Database::getConnection();
         $stmt = $db->prepare("
             SELECT u.*, 
-                   (SELECT l.id FROM leases l WHERE l.unit_id = u.id AND l.status = 'active' ORDER BY l.start_date DESC LIMIT 1) AS active_lease_id, 
+                   (SELECT l.id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS active_lease_id, 
                    (SELECT GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ')
                     FROM leases l
                     JOIN tenants t ON l.tenant_id = t.id
-                    WHERE l.unit_id = u.id AND l.status = 'active') AS current_tenant_name,
-                   (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status = 'active' ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
+                    WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon')) AS current_tenant_name,
+                   (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
             FROM units u
             WHERE u.property_id = ?
             ORDER BY u.unit_number ASC
@@ -27,12 +27,12 @@ class Unit {
         $db = Database::getConnection();
         $sql = "
             SELECT u.*, p.name AS property_name,
-                   (SELECT l.id FROM leases l WHERE l.unit_id = u.id AND l.status = 'active' ORDER BY l.start_date DESC LIMIT 1) AS active_lease_id,
+                   (SELECT l.id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS active_lease_id,
                    (SELECT GROUP_CONCAT(CONCAT(t.first_name, ' ', t.last_name) SEPARATOR ', ')
                     FROM leases l
                     JOIN tenants t ON l.tenant_id = t.id
-                    WHERE l.unit_id = u.id AND l.status = 'active') AS current_tenant_name,
-                   (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status = 'active' ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
+                    WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon')) AS current_tenant_name,
+                   (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
             FROM units u
             JOIN properties p ON u.property_id = p.id
             ORDER BY p.name ASC, u.unit_number ASC
@@ -68,8 +68,8 @@ class Unit {
     public static function create(array $data): int {
         $db = Database::getConnection();
         $stmt = $db->prepare("
-            INSERT INTO units (property_id, unit_number, floor, bedrooms, bathrooms, square_feet, target_rent, security_deposit, status, notes, appliances, photos)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO units (property_id, unit_number, floor, bedrooms, bathrooms, square_feet, target_rent, security_deposit, status, adults_only, furnished, pets, smoking, parking, available_date, tenant_insurance, utilities, notes, appliances, photos)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['property_id'],
@@ -81,6 +81,14 @@ class Unit {
             $data['target_rent'] ?? 0.00,
             $data['security_deposit'] ?? 0.00,
             $data['status'] ?? 'vacant',
+            $data['adults_only'] ?? 'no',
+            $data['furnished'] ?? 'no',
+            $data['pets'] ?? 'not_allowed',
+            $data['smoking'] ?? 'not_allowed',
+            $data['parking'] ?? 'street',
+            !empty($data['available_date']) ? $data['available_date'] : null,
+            $data['tenant_insurance'] ?? 'not_required',
+            $data['utilities'] ?: null,
             $data['notes'] ?: null,
             $data['appliances'] ?: null,
             $data['photos'] ?: null
@@ -93,7 +101,10 @@ class Unit {
         $stmt = $db->prepare("
             UPDATE units
             SET unit_number = ?, floor = ?, bedrooms = ?, bathrooms = ?,
-                square_feet = ?, target_rent = ?, security_deposit = ?, status = ?, notes = ?, appliances = ?, photos = ?
+                square_feet = ?, target_rent = ?, security_deposit = ?, status = ?,
+                adults_only = ?, furnished = ?, pets = ?, smoking = ?, parking = ?, available_date = ?,
+                tenant_insurance = ?, utilities = ?,
+                notes = ?, appliances = ?, photos = ?
             WHERE id = ?
         ");
         return $stmt->execute([
@@ -105,6 +116,14 @@ class Unit {
             $data['target_rent'] ?? 0.00,
             $data['security_deposit'] ?? 0.00,
             $data['status'] ?? 'vacant',
+            $data['adults_only'] ?? 'no',
+            $data['furnished'] ?? 'no',
+            $data['pets'] ?? 'not_allowed',
+            $data['smoking'] ?? 'not_allowed',
+            $data['parking'] ?? 'street',
+            !empty($data['available_date']) ? $data['available_date'] : null,
+            $data['tenant_insurance'] ?? 'not_required',
+            $data['utilities'] ?: null,
             $data['notes'] ?: null,
             $data['appliances'] ?: null,
             $data['photos'] ?: null,

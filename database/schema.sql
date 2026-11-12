@@ -51,6 +51,14 @@ CREATE TABLE `units` (
     `target_rent` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     `security_deposit` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     `status` ENUM('vacant', 'occupied', 'maintenance') NOT NULL DEFAULT 'vacant',
+    `adults_only` ENUM('yes', 'no') NOT NULL DEFAULT 'no',
+    `furnished` ENUM('yes', 'no') NOT NULL DEFAULT 'no',
+    `pets` ENUM('allowed', 'not_allowed') NOT NULL DEFAULT 'not_allowed',
+    `smoking` ENUM('allowed', 'not_allowed') NOT NULL DEFAULT 'not_allowed',
+    `parking` ENUM('garage', 'driveway', 'street') NOT NULL DEFAULT 'street',
+    `available_date` DATE DEFAULT NULL,
+    `tenant_insurance` ENUM('required', 'not_required') NOT NULL DEFAULT 'not_required',
+    `utilities` TEXT DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     `appliances` TEXT DEFAULT NULL,
     `photos` TEXT DEFAULT NULL,
@@ -82,13 +90,13 @@ DROP TABLE IF EXISTS `leases`;
 CREATE TABLE `leases` (
     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `unit_id` INT UNSIGNED NOT NULL,
-    `tenant_id` INT UNSIGNED NOT NULL,
+    `tenant_id` INT UNSIGNED DEFAULT NULL,
     `start_date` DATE NOT NULL,
-    `end_date` DATE NOT NULL,
+    `end_date` DATE DEFAULT NULL,
     `rent_amount` DECIMAL(10,2) NOT NULL,
     `deposit_held` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     `payment_frequency` ENUM('monthly', 'quarterly', 'yearly') NOT NULL DEFAULT 'monthly',
-    `status` ENUM('draft', 'active', 'terminated', 'expired') NOT NULL DEFAULT 'active',
+    `status` ENUM('draft', 'active', 'expiring_soon', 'terminated', 'expired') NOT NULL DEFAULT 'active',
     `terms` TEXT DEFAULT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -229,10 +237,14 @@ CREATE TABLE `applicants` (
     `applicant_signature` MEDIUMTEXT DEFAULT NULL,
     
     -- Workflow / Assignment fields
-    `status` ENUM('pending', 'approved', 'rejected', 'converted') NOT NULL DEFAULT 'pending',
+    `status` ENUM('pending', 'approved', 'lease_created', 'lease_sent', 'converted', 'rejected') NOT NULL DEFAULT 'pending',
+    `status_date` DATETIME DEFAULT NULL,
     `target_property_id` INT UNSIGNED DEFAULT NULL,
     `target_unit_id` INT UNSIGNED DEFAULT NULL,
     `tenant_id` INT UNSIGNED DEFAULT NULL,
+    `lease_id` INT UNSIGNED DEFAULT NULL,
+    `lease_signed` TINYINT(1) NOT NULL DEFAULT 0,
+    `lease_signed_at` DATETIME DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
     
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -241,6 +253,24 @@ CREATE TABLE `applicants` (
     CONSTRAINT `fk_applicants_property` FOREIGN KEY (`target_property_id`) REFERENCES `properties` (`id`) ON DELETE SET NULL,
     CONSTRAINT `fk_applicants_unit` FOREIGN KEY (`target_unit_id`) REFERENCES `units` (`id`) ON DELETE SET NULL,
     CONSTRAINT `fk_applicants_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. Lease Templates Table (Word DOCX Templates)
+DROP TABLE IF EXISTS `lease_templates`;
+CREATE TABLE `lease_templates` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `description` VARCHAR(500) DEFAULT NULL,
+    `original_name` VARCHAR(255) NOT NULL,
+    `stored_filename` VARCHAR(255) NOT NULL,
+    `file_path` VARCHAR(500) NOT NULL,
+    `file_size` INT UNSIGNED NOT NULL DEFAULT 0,
+    `placeholder_mappings` LONGTEXT DEFAULT NULL,
+    `uploaded_by_user_id` INT UNSIGNED DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY `idx_uploaded_by` (`uploaded_by_user_id`),
+    CONSTRAINT `fk_lease_templates_user` FOREIGN KEY (`uploaded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

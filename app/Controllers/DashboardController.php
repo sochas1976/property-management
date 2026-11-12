@@ -18,7 +18,7 @@ class DashboardController extends Controller {
         $tenants = Tenant::all();
         $openMaintenance = MaintenanceRequest::all('new');
         $financialTotals = Invoice::getTotals();
-        $recentPayments = Payment::recent(5);
+        $expiringLeases = Lease::getUpcomingExpirations(5);
 
         $totalUnits = count($units);
         $occupiedUnits = 0;
@@ -47,7 +47,7 @@ class DashboardController extends Controller {
             'openTicketsCount'   => MaintenanceRequest::getOpenCount(),
             'pendingApplicants'  => $pendingApplicants,
             'financialTotals'    => $financialTotals,
-            'recentPayments'     => $recentPayments,
+            'expiringLeases'     => $expiringLeases,
             'recentTickets'      => array_slice($openMaintenance, 0, 5)
         ]);
     }

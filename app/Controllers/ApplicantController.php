@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\PdfApplicationParser;
+use App\Core\AppDate;
 use App\Models\Applicant;
 use App\Models\Tenant;
 use App\Models\Property;
@@ -11,11 +12,76 @@ use App\Models\Lease;
 
 class ApplicantController extends Controller {
     public function index(): void {
-        $applicants = Applicant::all();
+        $all = Applicant::all();
+        $today = AppDate::todayString();
+
+        $activeApplicants = [];
+        $historicalApplicants = [];
+
+        foreach ($all as &$app) {
+            $requestedTermDate = !empty($app['term_start_date']) ? $app['term_start_date'] : (!empty($app['date_requested']) ? $app['date_requested'] : null);
+            $isTermPassed = (!empty($requestedTermDate) && $today > $requestedTermDate);
+
+            // Automatically reject applications whose requested term date has passed (unless already in lease workflow or converted)
+            if (!in_array($app['status'], ['converted', 'lease_created', 'lease_sent', 'rejected'], true) && $isTermPassed) {
+                $app['status'] = 'rejected';
+                $app['status_date'] = $requestedTermDate . ' 23:59:59';
+                $app['auto_rejected'] = true;
+                if (!AppDate::isSimulated()) {
+                    Applicant::updateStatus((int)$app['id'], 'rejected', $app['status_date']);
+                }
+            }
+
+            $isHistorical = false;
+
+            if ($app['status'] === 'converted') {
+                $leaseStart = !empty($app['lease_start_date']) ? $app['lease_start_date'] : (!empty($app['term_start_date']) ? $app['term_start_date'] : null);
+                if (!empty($leaseStart) && $leaseStart <= $today) {
+                    $isHistorical = true;
+                }
+            } elseif ($app['status'] === 'rejected') {
+                $rejectionTimestamp = !empty($app['status_date']) ? strtotime($app['status_date']) : strtotime($app['updated_at'] ?? $app['created_at']);
+                $rejectionDate = date('Y-m-d', $rejectionTimestamp);
+                $daysSinceRejection = (strtotime($today) - strtotime($rejectionDate)) / 86400;
+                $nowTimestamp = strtotime($today . ' ' . date('H:i:s'));
+                $elapsedSeconds = $nowTimestamp - $rejectionTimestamp;
+
+                if ($daysSinceRejection >= 1 || $elapsedSeconds >= 86400 || $isTermPassed) {
+                    $isHistorical = true;
+                }
+            }
+
+            if ($isHistorical) {
+                $historicalApplicants[] = $app;
+            } else {
+                $activeApplicants[] = $app;
+            }
+        }
+        unset($app);
+
+        $viewMode = $_GET['view'] ?? 'active';
+        if ($viewMode === 'history') {
+            $this->render('applicants.history', [
+                'title'                => 'Historical Applications',
+                'activeApplicants'     => $activeApplicants,
+                'historicalApplicants' => $historicalApplicants,
+                'isHistory'            => true,
+            ]);
+            return;
+        }
+
         $this->render('applicants.index', [
-            'title'      => 'Rental Applicants',
-            'applicants' => $applicants
+            'title'                => 'Rental Applicants',
+            'applicants'           => $activeApplicants,
+            'activeApplicants'     => $activeApplicants,
+            'historicalApplicants' => $historicalApplicants,
+            'isHistory'            => false,
         ]);
+    }
+
+    public function history(): void {
+        $_GET['view'] = 'history';
+        $this->index();
     }
 
     public function create(): void {
@@ -63,16 +129,33 @@ class ApplicantController extends Controller {
             $this->redirect('/applicants');
         }
 
+        $today = AppDate::todayString();
+        $requestedTermDate = !empty($applicant['term_start_date']) ? $applicant['term_start_date'] : (!empty($applicant['date_requested']) ? $applicant['date_requested'] : null);
+        $isTermPassed = (!empty($requestedTermDate) && $today > $requestedTermDate);
+
+        if (!in_array($applicant['status'], ['converted', 'lease_created', 'lease_sent', 'rejected'], true) && $isTermPassed) {
+            $applicant['status'] = 'rejected';
+            $applicant['status_date'] = $requestedTermDate . ' 23:59:59';
+            $applicant['auto_rejected'] = true;
+            if (!AppDate::isSimulated()) {
+                Applicant::updateStatus((int)$id, 'rejected', $applicant['status_date']);
+            }
+        }
+
         $properties = Property::all();
         $allUnits = Unit::all();
         $otherApplicants = Applicant::allPendingAndApproved();
+        $lease = !empty($applicant['lease_id']) ? Lease::findById((int)$applicant['lease_id']) : null;
+        $leaseApplicants = !empty($applicant['lease_id']) ? Applicant::getByLeaseId((int)$applicant['lease_id']) : [];
 
         $this->render('applicants.view', [
             'title'            => 'Application: ' . $applicant['full_name'],
             'applicant'        => $applicant,
             'properties'       => $properties,
             'allUnits'         => $allUnits,
-            'otherApplicants'  => $otherApplicants
+            'otherApplicants'  => $otherApplicants,
+            'lease'            => $lease,
+            'leaseApplicants'  => $leaseApplicants
         ]);
     }
 
@@ -130,6 +213,10 @@ class ApplicantController extends Controller {
             $data['documents'] = $applicant['documents'] ?? null;
         }
 
+        if (!empty($data['status']) && $data['status'] !== $applicant['status']) {
+            $data['status_date'] = AppDate::todayString() . ' ' . date('H:i:s');
+        }
+
         Applicant::update((int)$id, $data);
         $this->setFlash('success', 'Application details updated.');
         $this->redirect('/applicants/' . $id);
@@ -143,16 +230,31 @@ class ApplicantController extends Controller {
         }
 
         $status = $_POST['status'] ?? 'pending';
-        if (!in_array($status, ['pending', 'approved', 'rejected', 'converted'], true)) {
+        $allowedStatuses = ['pending', 'approved', 'lease_created', 'lease_sent', 'rejected', 'converted'];
+        if (!in_array($status, $allowedStatuses, true)) {
             $status = 'pending';
         }
 
+        $statusLabels = [
+            'pending'       => 'Pending Review',
+            'approved'      => 'Approved',
+            'lease_created' => 'Lease Created',
+            'lease_sent'    => 'Lease Sent',
+            'converted'     => 'Converted to Tenant',
+            'rejected'      => 'Rejected'
+        ];
+
         Applicant::updateStatus((int)$id, $status);
-        $this->setFlash('success', 'Applicant status updated to ' . ucfirst($status) . '.');
+        $this->setFlash('success', 'Application status updated to ' . ($statusLabels[$status] ?? ucfirst($status)) . '.');
         $this->redirect('/applicants/' . $id);
     }
 
-    public function convert(string $id): void {
+    /**
+     * Step 2 of workflow (after Approved):
+     * Create a Draft Lease Agreement with the prospective applicant(s) on it,
+     * transitioning their application status to 'lease_created'.
+     */
+    public function createLease(string $id): void {
         $primaryApplicant = Applicant::findById((int)$id);
         if (!$primaryApplicant) {
             $this->setFlash('error', 'Applicant not found.');
@@ -161,7 +263,7 @@ class ApplicantController extends Controller {
 
         $unitId = !empty($_POST['unit_id']) ? (int)$_POST['unit_id'] : null;
         if (!$unitId) {
-            $this->setFlash('error', 'Please select an apartment/unit to assign to this new tenant.');
+            $this->setFlash('error', 'Please select an apartment/unit for the lease agreement.');
             $this->redirect('/applicants/' . $id);
         }
 
@@ -171,7 +273,7 @@ class ApplicantController extends Controller {
             $this->redirect('/applicants/' . $id);
         }
 
-        // Collect all applicant IDs being converted together
+        // Collect all prospective applicant IDs to include on this lease agreement
         $applicantIds = [(int)$id];
         if (!empty($_POST['co_applicant_ids']) && is_array($_POST['co_applicant_ids'])) {
             foreach ($_POST['co_applicant_ids'] as $coId) {
@@ -190,66 +292,229 @@ class ApplicantController extends Controller {
             }
         }
 
-        $startDate = !empty($_POST['lease_start_date']) ? $_POST['lease_start_date'] : (!empty($primaryApplicant['term_start_date']) ? $primaryApplicant['term_start_date'] : date('Y-m-d'));
-        $endDate = !empty($_POST['lease_end_date']) ? $_POST['lease_end_date'] : (!empty($primaryApplicant['term_end_date']) ? $primaryApplicant['term_end_date'] : date('Y-m-d', strtotime('+1 year')));
-        $rentAmount = !empty($_POST['rent_amount']) ? (float)$_POST['rent_amount'] : (float)$unit['target_rent'];
-        $securityDeposit = !empty($_POST['security_deposit']) ? (float)$_POST['security_deposit'] : (float)$unit['security_deposit'];
+        $startDate = !empty($_POST['lease_start_date']) ? $_POST['lease_start_date'] : (!empty($primaryApplicant['term_start_date']) ? $primaryApplicant['term_start_date'] : AppDate::todayString());
+        $endDate = !empty($_POST['lease_end_date']) ? $_POST['lease_end_date'] : (!empty($primaryApplicant['term_end_date']) ? $primaryApplicant['term_end_date'] : date('Y-m-d', strtotime($startDate . ' +1 year')));
+        $rentAmount = isset($_POST['rent_amount']) && $_POST['rent_amount'] !== '' ? (float)$_POST['rent_amount'] : (float)$unit['target_rent'];
+        $securityDeposit = isset($_POST['security_deposit']) && $_POST['security_deposit'] !== '' ? (float)$_POST['security_deposit'] : (float)$unit['security_deposit'];
+        $paymentFrequency = !empty($_POST['payment_frequency']) && in_array($_POST['payment_frequency'], ['monthly', 'quarterly', 'yearly'], true) ? $_POST['payment_frequency'] : 'monthly';
 
-        $convertedTenantNames = [];
-        $firstTenantId = null;
-
-        // Loop over all selected applicants, create Tenant records and active Leases
+        $prospectiveNames = [];
         foreach ($applicantIds as $appId) {
-            $applicant = Applicant::findById($appId);
-            if (!$applicant) continue;
+            $appRow = Applicant::findById($appId);
+            if ($appRow) {
+                $prospectiveNames[] = $appRow['full_name'];
+            }
+        }
 
-            // Split full name
-            $nameParts = preg_split('/\s+/', trim($applicant['full_name']));
-            $firstName = array_shift($nameParts);
-            $lastName = !empty($nameParts) ? implode(' ', $nameParts) : '—';
+        $customTerms = trim($_POST['terms'] ?? '');
+        if ($customTerms === '') {
+            $customTerms = count($prospectiveNames) > 1
+                ? 'Residential lease agreement prepared for prospective co-applicants: ' . implode(', ', $prospectiveNames) . '.'
+                : 'Standard residential lease agreement prepared for prospective applicant: ' . ($prospectiveNames[0] ?? $primaryApplicant['full_name']) . '.';
+        }
 
-            $phone = !empty($applicant['cell_phone']) ? $applicant['cell_phone'] : (!empty($applicant['home_phone']) ? $applicant['home_phone'] : '—');
-            $email = !empty($applicant['email']) ? $applicant['email'] : strtolower($firstName . '.' . time() . rand(10,99) . '@noemail.local');
+        // Create Draft Lease Agreement (tenant_id is NULL until all prospective applicants sign)
+        $leaseId = Lease::create([
+            'unit_id'           => $unitId,
+            'tenant_id'         => null,
+            'start_date'        => $startDate,
+            'end_date'          => $endDate,
+            'rent_amount'       => $rentAmount,
+            'deposit_held'      => $securityDeposit,
+            'payment_frequency' => $paymentFrequency,
+            'status'            => 'draft',
+            'terms'             => $customTerms
+        ]);
 
-            $tenantData = [
-                'first_name'        => $firstName,
-                'last_name'         => $lastName,
-                'email'             => $email,
-                'phone'             => $phone,
-                'emergency_contact' => $applicant['emergency_contact_1_name'] ?: null,
-                'emergency_phone'   => $applicant['emergency_contact_1_phone'] ?: null,
-                'notes'             => 'Converted from Rental Application #' . $applicant['id'] . ' on ' . date('Y-m-d') . '.'
-            ];
+        // Link all selected prospective applicants to this draft lease and transition status to 'lease_created'
+        foreach ($applicantIds as $appId) {
+            Applicant::assignToDraftLease($appId, $leaseId, $unitId, (int)$unit['property_id']);
+        }
 
-            $tenantId = Tenant::create($tenantData);
-            if (!$firstTenantId) {
-                $firstTenantId = $tenantId;
+        $namesList = implode(' & ', array_map('htmlspecialchars', $prospectiveNames));
+        $this->setFlash('success', 'Lease Agreement #' . $leaseId . ' created with prospective applicant(s) ' . $namesList . ' for Unit #' . htmlspecialchars($unit['unit_number']) . '.');
+        $this->redirect('/leases/' . $leaseId . '?from=applicant&applicant_id=' . $id);
+    }
+
+    /**
+     * Remove the created draft lease agreement and return the application(s)
+     * back to the 'approved' status.
+     */
+    public function cancelLease(string $id): void {
+        $applicant = Applicant::findById((int)$id);
+        if (!$applicant) {
+            $this->setFlash('error', 'Applicant not found.');
+            $this->redirect('/applicants');
+        }
+
+        $leaseId = (int)($applicant['lease_id'] ?? 0);
+        if ($leaseId > 0) {
+            // Revert all prospective applicants associated with this draft lease back to 'approved'
+            Applicant::removeDraftLeaseByLeaseId($leaseId);
+
+            // Delete the draft lease
+            Lease::delete($leaseId);
+
+            $this->setFlash('success', 'Draft Lease #' . $leaseId . ' was removed and the application returned to Approved status.');
+        } else {
+            Applicant::updateStatus((int)$id, 'approved');
+            $this->setFlash('success', 'Application status returned to Approved.');
+        }
+
+        $this->redirect('/applicants/' . $id);
+    }
+
+    /**
+     * Step 3 of workflow (after Lease Created):
+     * Send the Lease Agreement to the prospective applicant(s) for signature,
+     * transitioning their application status to 'lease_sent'.
+     */
+    public function sendLease(string $id): void {
+        $applicant = Applicant::findById((int)$id);
+        if (!$applicant) {
+            $this->setFlash('error', 'Applicant not found.');
+            $this->redirect('/applicants');
+        }
+
+        $leaseId = (int)($applicant['lease_id'] ?? 0);
+        if ($leaseId > 0) {
+            Applicant::markLeaseSentByLeaseId($leaseId);
+            $leaseApplicants = Applicant::getByLeaseId($leaseId);
+            $names = array_map(function($a) { return htmlspecialchars($a['full_name']); }, $leaseApplicants);
+            $namesList = implode(' & ', $names);
+            $this->setFlash('success', 'Lease Agreement #' . $leaseId . ' has been sent to ' . $namesList . '. Awaiting applicant signature(s).');
+        } else {
+            Applicant::updateStatus((int)$id, 'lease_sent');
+            $this->setFlash('success', 'Lease Agreement has been sent to ' . htmlspecialchars($applicant['full_name']) . '. Awaiting signature.');
+        }
+
+        $this->redirect('/applicants/' . $id);
+    }
+
+    /**
+     * Step 4 of workflow (after Lease Sent):
+     * Record signature for one or all prospective applicants on the lease.
+     * Once ALL prospective applicants on the lease have signed, automatically convert
+     * them into Tenants and activate the Lease Agreement.
+     */
+    public function signLease(string $id): void {
+        $applicant = Applicant::findById((int)$id);
+        if (!$applicant) {
+            $this->setFlash('error', 'Applicant not found.');
+            $this->redirect('/applicants');
+        }
+
+        $leaseId = (int)($applicant['lease_id'] ?? 0);
+        $signAll = !empty($_POST['sign_all']);
+        $targetApplicantId = !empty($_POST['target_applicant_id']) ? (int)$_POST['target_applicant_id'] : (int)$id;
+
+        if ($leaseId > 0) {
+            if ($signAll) {
+                Applicant::markAllLeaseSignedByLeaseId($leaseId);
+            } else {
+                Applicant::markLeaseSigned($targetApplicantId);
             }
 
-            // Create lease assignment
-            $leaseTerms = count($applicantIds) > 1 
-                ? 'Joint household residential tenancy agreement with co-tenants.'
-                : 'Standard residential lease agreement created upon application approval.';
+            $leaseApplicants = Applicant::getByLeaseId($leaseId);
+            $totalCount = count($leaseApplicants);
+            $signedCount = 0;
+            $signedApplicantName = $applicant['full_name'];
 
-            Lease::create([
-                'unit_id'           => $unitId,
-                'tenant_id'         => $tenantId,
-                'start_date'        => $startDate,
-                'end_date'          => $endDate,
-                'rent_amount'       => $rentAmount,
-                'deposit_held'      => $securityDeposit,
-                'payment_frequency' => 'monthly',
-                'status'            => 'active',
-                'terms'             => $leaseTerms
-            ]);
+            foreach ($leaseApplicants as $la) {
+                if ((int)$la['id'] === $targetApplicantId) {
+                    $signedApplicantName = $la['full_name'];
+                }
+                if (!empty($la['lease_signed'])) {
+                    $signedCount++;
+                }
+            }
 
-            Applicant::markConverted($appId, $tenantId, $unitId);
-            $convertedTenantNames[] = htmlspecialchars($applicant['full_name']);
+            if ($signedCount < $totalCount) {
+                $this->setFlash('success', 'Recorded lease signature for ' . htmlspecialchars($signedApplicantName) . ' (' . $signedCount . ' of ' . $totalCount . ' signed). Once all prospective applicants sign, they will automatically become tenants.');
+                $this->redirect('/applicants/' . $id);
+            }
+
+            // All prospective applicants on the lease have signed -> convert to Tenants!
+            $this->finalizeLeaseAndConvertApplicants($leaseId, (int)$id);
+            return;
+        }
+
+        // Fallback if no lease_id was linked
+        Applicant::markLeaseSigned((int)$id);
+        $this->redirect('/applicants/' . $id);
+    }
+
+    /**
+     * Finalize a fully-signed draft lease: create Tenant records for all prospective applicants
+     * on the lease, activate the Lease Agreement, mark the Unit as occupied, and transition
+     * all applicants on the lease to 'converted'.
+     */
+    private function finalizeLeaseAndConvertApplicants(int $leaseId, int $redirectApplicantId): void {
+        $lease = Lease::findById($leaseId);
+        $leaseApplicants = Applicant::getByLeaseId($leaseId);
+
+        if (!$lease || empty($leaseApplicants)) {
+            $this->setFlash('error', 'Could not locate lease agreement or prospective applicants to finalize.');
+            $this->redirect('/applicants/' . $redirectApplicantId);
+        }
+
+        $unitId = (int)$lease['unit_id'];
+        $convertedTenantNames = [];
+        $primaryLeaseActivated = false;
+
+        foreach ($leaseApplicants as $app) {
+            $appId = (int)$app['id'];
+            $tenantId = !empty($app['tenant_id']) ? (int)$app['tenant_id'] : null;
+
+            if (!$tenantId) {
+                $nameParts = preg_split('/\s+/', trim($app['full_name']));
+                $firstName = array_shift($nameParts);
+                $lastName = !empty($nameParts) ? implode(' ', $nameParts) : '—';
+
+                $phone = !empty($app['cell_phone']) ? $app['cell_phone'] : (!empty($app['home_phone']) ? $app['home_phone'] : '—');
+                $email = !empty($app['email']) ? $app['email'] : strtolower($firstName . '.' . time() . rand(10, 99) . '@noemail.local');
+
+                $tenantId = Tenant::create([
+                    'first_name'        => $firstName,
+                    'last_name'         => $lastName,
+                    'email'             => $email,
+                    'phone'             => $phone,
+                    'emergency_contact' => $app['emergency_contact_1_name'] ?: null,
+                    'emergency_phone'   => $app['emergency_contact_1_phone'] ?: null,
+                    'notes'             => 'Converted from Rental Application #' . $appId . ' upon signing Lease #' . $leaseId . ' on ' . AppDate::todayString() . '.'
+                ]);
+            }
+
+            if (!$primaryLeaseActivated) {
+                Lease::activateWithTenant($leaseId, $tenantId);
+                $primaryLeaseActivated = true;
+            } else {
+                // Create active co-tenant lease record so all co-tenants appear in unit/tenant queries
+                Lease::create([
+                    'unit_id'           => $unitId,
+                    'tenant_id'         => $tenantId,
+                    'start_date'        => $lease['start_date'],
+                    'end_date'          => $lease['end_date'],
+                    'rent_amount'       => $lease['rent_amount'],
+                    'deposit_held'      => 0.00,
+                    'payment_frequency' => $lease['payment_frequency'] ?? 'monthly',
+                    'status'            => 'active',
+                    'terms'             => $lease['terms']
+                ]);
+            }
+
+            Applicant::markConverted($appId, $tenantId, $unitId, $leaseId);
+            $convertedTenantNames[] = htmlspecialchars($app['full_name']);
         }
 
         $namesList = implode(' & ', $convertedTenantNames);
-        $this->setFlash('success', 'Successfully approved and assigned ' . $namesList . ' to Unit #' . htmlspecialchars($unit['unit_number']) . '!');
-        $this->redirect('/tenants/' . $firstTenantId);
+        $this->setFlash('success', 'All prospective applicants (' . $namesList . ') have signed the lease! They are now official Tenants in Unit #' . htmlspecialchars($lease['unit_number'] ?? '') . '.');
+        $this->redirect('/applicants/' . $redirectApplicantId);
+    }
+
+    public function convert(string $id): void {
+        // Legacy / direct route delegates to createLease if not yet created
+        $this->createLease($id);
     }
 
     public function uploadDocument(string $id): void {

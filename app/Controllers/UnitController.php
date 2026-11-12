@@ -4,6 +4,8 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Property;
 use App\Models\Unit;
+use App\Models\Lease;
+use App\Core\AppDate;
 
 class UnitController extends Controller {
     public function create(string $propertyId): void {
@@ -33,6 +35,13 @@ class UnitController extends Controller {
             $data['appliances'] = null;
         }
 
+        // Process utilities array / breakdown
+        if (isset($_POST['utilities']) && is_array($_POST['utilities'])) {
+            $data['utilities'] = json_encode($_POST['utilities']);
+        } else {
+            $data['utilities'] = null;
+        }
+
         Unit::create($data);
         $this->setFlash('success', 'Unit ' . htmlspecialchars($data['unit_number']) . ' added successfully.');
         $this->redirect('/properties/' . $data['property_id']);
@@ -46,11 +55,46 @@ class UnitController extends Controller {
         }
 
         $property = Property::findById((int)$unit['property_id']);
+        $activeLease = Lease::findActiveByUnit((int)$id);
+
+        // Compute Available Date logic based on occupancy and lease terms
+        // 1. If not occupied (vacant or maintenance) -> Current Date
+        // 2. If occupied:
+        //    a. If periodic tenancy -> filled with dashes '-----'
+        //    b. If fixed term -> check lease end date
+        $computedAvailableDate = '';
+        $isPeriodicOccupied = false;
+        $today = AppDate::todayString();
+
+        if ($unit['status'] !== 'occupied') {
+            $computedAvailableDate = $today;
+        } else {
+            $isPeriodic = false;
+            if ($activeLease) {
+                if (!empty($activeLease['tenancy_type']) && $activeLease['tenancy_type'] === 'periodic') {
+                    $isPeriodic = true;
+                } elseif (!empty($activeLease['terms']) && preg_match('/periodic/i', $activeLease['terms'])) {
+                    $isPeriodic = true;
+                }
+            }
+
+            if ($isPeriodic) {
+                $isPeriodicOccupied = true;
+                $computedAvailableDate = '-----';
+            } elseif ($activeLease && !empty($activeLease['end_date'])) {
+                $computedAvailableDate = $activeLease['end_date'];
+            } else {
+                $computedAvailableDate = $unit['available_date'] ?? $today;
+            }
+        }
 
         $this->render('units.edit', [
-            'title'    => 'Edit Unit ' . $unit['unit_number'],
-            'unit'     => $unit,
-            'property' => $property
+            'title'                 => 'Edit Unit ' . $unit['unit_number'],
+            'unit'                  => $unit,
+            'property'              => $property,
+            'activeLease'           => $activeLease,
+            'computedAvailableDate' => $computedAvailableDate,
+            'isPeriodicOccupied'    => $isPeriodicOccupied
         ]);
     }
 
@@ -72,6 +116,13 @@ class UnitController extends Controller {
             $data['appliances'] = json_encode(array_values($_POST['appliances']));
         } else {
             $data['appliances'] = null;
+        }
+
+        // Process utilities array / breakdown
+        if (isset($_POST['utilities']) && is_array($_POST['utilities'])) {
+            $data['utilities'] = json_encode($_POST['utilities']);
+        } else {
+            $data['utilities'] = null;
         }
 
         // Existing photos array (respect new sorted order if provided via form)

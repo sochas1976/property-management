@@ -134,7 +134,7 @@ use App\Core\Router;
                 </div>
                 <div class="form-group col-6">
                     <label for="due_date">Due Date *</label>
-                    <input type="date" id="due_date" name="due_date" class="form-control" required value="<?= date('Y-m-01', strtotime('+1 month')) ?>">
+                    <input type="date" id="due_date" name="due_date" class="form-control" required value="<?= date('Y-m-01', strtotime(\App\Core\AppDate::todayString() . ' +1 month')) ?>">
                 </div>
             </div>
 

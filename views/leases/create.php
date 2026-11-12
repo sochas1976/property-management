@@ -41,11 +41,11 @@ use App\Core\Router;
             <div class="form-row">
                 <div class="form-group col-6">
                     <label for="start_date">Lease Start Date *</label>
-                    <input type="date" id="start_date" name="start_date" class="form-control" required value="<?= date('Y-m-d') ?>">
+                    <input type="date" id="start_date" name="start_date" class="form-control" required value="<?= \App\Core\AppDate::todayString() ?>">
                 </div>
                 <div class="form-group col-6">
                     <label for="end_date">Lease End Date *</label>
-                    <input type="date" id="end_date" name="end_date" class="form-control" required value="<?= date('Y-m-d', strtotime('+1 year')) ?>">
+                    <input type="date" id="end_date" name="end_date" class="form-control" required value="<?= date('Y-m-d', strtotime(\App\Core\AppDate::todayString() . ' +1 year')) ?>">
                 </div>
             </div>
 

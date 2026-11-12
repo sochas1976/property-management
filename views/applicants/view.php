@@ -1,5 +1,6 @@
 <?php
 use App\Core\Router;
+use App\Core\AppDate;
 
 $applicantDocs = [];
 if (!empty($applicant['documents'])) {
@@ -8,61 +9,325 @@ if (!empty($applicant['documents'])) {
         $applicantDocs = $decoded;
     }
 }
+
+$from = $_GET['from'] ?? '';
+if (empty($from) && !empty($_SERVER['HTTP_REFERER'])) {
+    if (strpos($_SERVER['HTTP_REFERER'], '/applicants/history') !== false) {
+        $from = 'history';
+    }
+}
+$fromHistory = ($from === 'history');
 ?>
 
 <div class="breadcrumb">
-    <a href="<?= Router::url('/applicants') ?>">&larr; Back to Applicant Directory</a>
+    <?php if ($fromHistory): ?>
+        <a href="<?= Router::url('/applicants/history') ?>">&larr; Back to Historical Applications</a>
+    <?php else: ?>
+        <a href="<?= Router::url('/applicants') ?>">&larr; Back to Active Applicants</a>
+    <?php endif; ?>
 </div>
 
 <div class="page-header">
     <div>
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <h1 class="page-title" style="margin: 0;"><?= htmlspecialchars($applicant['full_name']) ?></h1>
             <?php if ($applicant['status'] === 'approved'): ?>
                 <span class="badge badge-success">Approved</span>
+            <?php elseif ($applicant['status'] === 'lease_created'): ?>
+                <span class="badge badge-info">Lease Created</span>
+            <?php elseif ($applicant['status'] === 'lease_sent'): ?>
+                <span class="badge badge-info">Lease Sent</span>
+                <?php
+                $totalOnLease = (int)($applicant['lease_total_applicants'] ?? count($leaseApplicants ?? []));
+                $signedOnLease = (int)($applicant['lease_signed_applicants'] ?? 0);
+                ?>
+                <?php if (!empty($applicant['lease_signed'])): ?>
+                    <span class="badge badge-success">Signed by Applicant<?= $totalOnLease > 1 ? ' (' . $signedOnLease . ' of ' . $totalOnLease . ' Signed)' : '' ?></span>
+                <?php else: ?>
+                    <span class="badge badge-warning">Awaiting Signature<?= $totalOnLease > 1 ? ' (' . $signedOnLease . ' of ' . $totalOnLease . ' Signed)' : '' ?></span>
+                <?php endif; ?>
             <?php elseif ($applicant['status'] === 'converted'): ?>
-                <span class="badge badge-success" style="background: #2563eb; color: #fff;">Converted to Tenant</span>
+                <span class="badge badge-success">Converted to Tenant</span>
+                <?php 
+                $leaseStart = !empty($applicant['lease_start_date']) ? $applicant['lease_start_date'] : $applicant['term_start_date'];
+                $hasCommenced = (!empty($leaseStart) && $leaseStart <= AppDate::todayString());
+                ?>
+                <?php if ($hasCommenced): ?>
+                    <span class="badge badge-subtle" title="Lease period has commenced; application archived in History">Archived in History</span>
+                <?php endif; ?>
             <?php elseif ($applicant['status'] === 'rejected'): ?>
                 <span class="badge badge-danger">Rejected</span>
+                <?php 
+                $rejTimestamp = !empty($applicant['status_date']) ? strtotime($applicant['status_date']) : strtotime($applicant['updated_at'] ?? $applicant['created_at']);
+                $rejDays = (strtotime(AppDate::todayString()) - strtotime(date('Y-m-d', $rejTimestamp))) / 86400;
+                if ($rejDays >= 1 || $fromHistory): ?>
+                    <span class="badge badge-subtle" title="Application archived in History">Archived in History</span>
+                <?php endif; ?>
             <?php else: ?>
                 <span class="badge badge-warning">Pending Review</span>
             <?php endif; ?>
         </div>
-        <p class="page-subtitle" style="margin-top: 4px;">Rental Application Details & Decision Center</p>
+        <p class="page-subtitle" style="margin-top: 4px;">Rental Application Details &amp; Decision Center</p>
     </div>
     
-    <div style="display: flex; gap: 8px; align-items: center;">
-        <a href="<?= Router::url('/applicants/' . $applicant['id'] . '/edit') ?>" class="btn btn-outline">Edit Application</a>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <?php if (!$fromHistory): ?>
+            <a href="<?= Router::url('/applicants/' . $applicant['id'] . '/edit') ?>" class="btn btn-outline">Edit Application</a>
+        <?php endif; ?>
 
-        <!-- Status Change Actions -->
-        <?php if ($applicant['status'] !== 'converted'): ?>
-            <?php if ($applicant['status'] !== 'approved'): ?>
-                <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="display:inline; margin:0;">
-                    <input type="hidden" name="status" value="approved">
-                    <button type="submit" class="btn btn-outline" style="color: #16a34a; border-color: #16a34a;">Approve</button>
-                </form>
+        <?php if ($applicant['status'] === 'converted'): ?>
+            <?php if (!empty($applicant['lease_id'])): ?>
+                <a href="<?= Router::url('/leases/' . $applicant['lease_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-outline">
+                    View Lease Agreement
+                </a>
             <?php endif; ?>
-
-            <?php if ($applicant['status'] !== 'rejected'): ?>
-                <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="display:inline; margin:0;">
-                    <input type="hidden" name="status" value="rejected">
-                    <button type="submit" class="btn btn-outline btn-danger">Reject</button>
-                </form>
-            <?php endif; ?>
-
-            <!-- Modal Trigger: Convert to Tenant -->
-            <button type="button" class="btn btn-primary" onclick="openConvertModal()">
-                Convert to Tenant & Assign Apartment
-            </button>
-        <?php else: ?>
             <?php if (!empty($applicant['tenant_id'])): ?>
-                <a href="<?= Router::url('/tenants/' . $applicant['tenant_id']) ?>" class="btn btn-primary">
+                <a href="<?= Router::url('/tenants/' . $applicant['tenant_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-primary">
                     View Tenant Profile &rarr;
                 </a>
             <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
+
+<?php
+// Workflow stage setup
+$stageMap = [
+    'pending'       => 0,
+    'approved'      => 1,
+    'lease_created' => 2,
+    'lease_sent'    => 3,
+    'converted'     => 4,
+    'rejected'      => -1,
+];
+$currentStage = $stageMap[$applicant['status']] ?? 0;
+$workflowSteps = [
+    1 => '1. Approved',
+    2 => '2. Lease Created',
+    3 => '3. Lease Sent',
+    4 => '4. Signed & Tenant',
+];
+$prospectiveList = !empty($leaseApplicants) ? $leaseApplicants : (!empty($applicant['lease_id']) ? [$applicant] : []);
+$signedTotal = 0;
+foreach ($prospectiveList as $pa) {
+    if (!empty($pa['lease_signed']) || $pa['status'] === 'converted') {
+        $signedTotal++;
+    }
+}
+?>
+
+<!-- Full-Width Application & Lease Workflow Banner Card -->
+<?php if ($applicant['status'] !== 'rejected'): ?>
+<div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">📋</span>
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Application &amp; Lease Workflow</h2>
+        </div>
+        <div>
+            <?php if ($applicant['status'] === 'pending'): ?>
+                <span class="badge badge-warning">Awaiting Application Review</span>
+            <?php elseif ($applicant['status'] === 'approved'): ?>
+                <span class="badge badge-success">Approved — Ready for Lease</span>
+            <?php elseif ($applicant['status'] === 'lease_created'): ?>
+                <span class="badge badge-info">Draft Lease Created</span>
+            <?php elseif ($applicant['status'] === 'lease_sent'): ?>
+                <span class="badge badge-info">Lease Sent (<?= $signedTotal ?> of <?= count($prospectiveList) ?> Signed)</span>
+            <?php elseif ($applicant['status'] === 'converted'): ?>
+                <span class="badge badge-success">&#10003; Lease Active &amp; Tenancy Established</span>
+            <?php endif; ?>
+        </div>
+    </div>
+    <div class="card-body" style="padding: 20px 24px;">
+        <!-- Visual Progress Stepper -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;">
+            <?php foreach ($workflowSteps as $stepIdx => $stepLabel):
+                $isCompleted = ($currentStage >= $stepIdx);
+                $isCurrent = ($currentStage + 1 === $stepIdx || ($stepIdx === 4 && $currentStage === 4));
+                $bgStyle = $isCompleted ? 'rgba(22, 163, 74, 0.08)' : ($isCurrent ? 'var(--ws-surface-subtle)' : 'transparent');
+                $borderStyle = $isCompleted ? '#16a34a' : ($isCurrent ? 'var(--ws-accent)' : 'var(--ws-border-subtle)');
+                $textStyle = $isCompleted ? '#16a34a' : ($isCurrent ? 'var(--ws-text)' : 'var(--ws-text-muted)');
+            ?>
+                <div style="padding: 10px 14px; border-radius: 10px; border: 1.5px solid <?= $borderStyle ?>; background: <?= $bgStyle ?>; text-align: center; font-size: 13px; font-weight: <?= ($isCompleted || $isCurrent) ? '700' : '500' ?>; color: <?= $textStyle ?>; transition: all 0.2s ease;">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 2px;">
+                        <?= $isCompleted ? 'Completed' : ($isCurrent ? 'Current Stage' : 'Upcoming') ?>
+                    </div>
+                    <div><?= $isCompleted ? '&#10003; ' : '' ?><?= htmlspecialchars($stepLabel) ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Stage Actions & Details Panel -->
+        <div style="background: var(--ws-surface-subtle); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
+            <?php if ($applicant['status'] === 'pending'): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14.5px;">Step 1: Application Review</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                            Review the applicant's income, background check, and references below. Approve the application to proceed with drafting the lease agreement.
+                        </div>
+                    </div>
+                    <?php if (!$fromHistory): ?>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0;">
+                                <input type="hidden" name="status" value="approved">
+                                <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a;">Approve Application</button>
+                            </form>
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0;">
+                                <input type="hidden" name="status" value="rejected">
+                                <button type="submit" class="btn btn-outline btn-danger btn-sm">Reject Application</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+            <?php elseif ($applicant['status'] === 'approved'): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14.5px; color: #16a34a;">&#10003; Application Approved — Ready to Draft Lease</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                            Create a residential tenancy lease agreement with <?= htmlspecialchars($applicant['full_name']) ?> and any prospective co-applicants on it.
+                        </div>
+                    </div>
+                    <?php if (!$fromHistory): ?>
+                        <div style="display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap;">
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0; display: flex;">
+                                <input type="hidden" name="status" value="pending">
+                                <button type="submit" class="btn btn-outline" title="Revert to Pending Review">
+                                    &larr; Revert to Pending
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-primary" onclick="openConvertModal()">
+                                Create Lease Agreement &rarr;
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+            <?php elseif ($applicant['status'] === 'lease_created'): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14.5px;">Step 3: Send Lease to Prospective Applicant(s)</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                            Draft Lease #<?= (int)$applicant['lease_id'] ?> is prepared. Send the contract to the prospective applicant(s) for digital signing.
+                        </div>
+                    </div>
+                    <?php if (!$fromHistory): ?>
+                        <div style="display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap;">
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/cancel-lease') ?>" method="POST" style="margin: 0; display: flex;">
+                                <button type="submit" class="btn btn-outline" title="Cancel this draft lease and return to Approved stage">
+                                    &larr; Cancel Lease &amp; Go Back
+                                </button>
+                            </form>
+                            <?php if (!empty($applicant['lease_id'])): ?>
+                                <a href="<?= Router::url('/leases/' . $applicant['lease_id']) ?>" class="btn btn-outline" style="display: inline-flex; align-items: center;">View Draft Lease</a>
+                            <?php endif; ?>
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: flex;">
+                                <button type="submit" class="btn btn-primary">Send Lease to Applicant(s) &rarr;</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Prospective Applicants on this Draft Lease -->
+                <?php if (!empty($prospectiveList)): ?>
+                    <div style="border-top: 1px solid var(--ws-border-subtle); padding-top: 12px; margin-top: 12px;">
+                        <span class="text-muted text-xs" style="display: block; margin-bottom: 8px;">Prospective Applicants Included on Lease:</span>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;">
+                            <?php foreach ($prospectiveList as $pa): ?>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--ws-surface); border-radius: 8px; border: 1px solid var(--ws-border-subtle);">
+                                    <span style="font-weight: 600; font-size: 13.5px;"><?= htmlspecialchars($pa['full_name']) ?></span>
+                                    <span class="badge badge-info" style="font-size: 11.5px; padding: 3px 10px; font-weight: 600;">Ready to Send</span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+            <?php elseif ($applicant['status'] === 'lease_sent'): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14.5px;">Step 4: Lease Sent — Awaiting Signature(s)</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                            Once all prospective applicants sign the lease, they will automatically become official tenants and the lease will activate.
+                        </div>
+                    </div>
+                    <?php if (!$fromHistory): ?>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <?php if (!empty($applicant['lease_id'])): ?>
+                                <a href="<?= Router::url('/leases/' . $applicant['lease_id']) ?>" class="btn btn-outline btn-sm">View Lease Agreement</a>
+                            <?php endif; ?>
+                            <?php if (count($prospectiveList) > 1): ?>
+                                <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="sign_all" value="1">
+                                    <button type="submit" class="btn btn-outline btn-sm" style="color: #16a34a; border-color: #16a34a;">Mark All Signed</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Prospective Applicants Signing Tracker -->
+                <?php if (!empty($prospectiveList)): ?>
+                    <div style="border-top: 1px solid var(--ws-border-subtle); padding-top: 12px; margin-top: 12px;">
+                        <span class="text-muted text-xs" style="display: block; margin-bottom: 8px;">
+                            Signature Progress (<?= $signedTotal ?> of <?= count($prospectiveList) ?> Signed):
+                        </span>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px;">
+                            <?php foreach ($prospectiveList as $pa):
+                                $paSigned = !empty($pa['lease_signed']) || $pa['status'] === 'converted';
+                            ?>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--ws-surface); border-radius: 8px; border: 1px solid var(--ws-border-subtle);">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 13.5px;"><?= htmlspecialchars($pa['full_name']) ?></div>
+                                        <?php if ($paSigned && !empty($pa['lease_signed_at'])): ?>
+                                            <div class="text-muted text-xs">Signed <?= date('M j, Y g:i A', strtotime($pa['lease_signed_at'])) ?></div>
+                                        <?php else: ?>
+                                            <div class="text-muted text-xs">Awaiting Signature</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <?php if ($paSigned): ?>
+                                            <span class="badge badge-success">&#10003; Signed</span>
+                                        <?php elseif (!$fromHistory): ?>
+                                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="target_applicant_id" value="<?= (int)$pa['id'] ?>">
+                                                <button type="submit" class="btn btn-primary btn-xs">Record Signature</button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+            <?php elseif ($applicant['status'] === 'converted'): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14.5px; color: #16a34a;">&#10003; Workflow Complete — Official Tenant Profiles Created</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                            All prospective applicants signed the lease agreement. The lease is active and unit occupancy is confirmed.
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <?php if (!empty($applicant['lease_id'])): ?>
+                            <a href="<?= Router::url('/leases/' . $applicant['lease_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-outline btn-sm">
+                                View Lease #<?= (int)$applicant['lease_id'] ?>
+                            </a>
+                        <?php endif; ?>
+                        <?php if (!empty($applicant['tenant_id'])): ?>
+                            <a href="<?= Router::url('/tenants/' . $applicant['tenant_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-primary btn-sm">
+                                View Tenant Profile &rarr;
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="dashboard-columns">
     <!-- Left Column: Personal, Accommodation, Tenancy & Emergency -->
@@ -149,7 +414,7 @@ if (!empty($applicant['documents'])) {
                         </div>
                         <div style="grid-column: span 2;">
                             <span class="text-muted text-xs">Email Address</span>
-                            <div><strong><?= !empty($applicant['email']) ? '<a href="mailto:' . htmlspecialchars($applicant['email']) . '">' . htmlspecialchars($applicant['email']) . '</a>' : '—' ?></strong></div>
+                            <div><strong><?= htmlspecialchars($applicant['email'] ?: '—') ?></strong></div>
                         </div>
                     </div>
 
@@ -314,7 +579,7 @@ if (!empty($applicant['documents'])) {
     <div>
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border);">
-                <h2 class="card-title">Property & Unit Assignment</h2>
+                <h2 class="card-title">Property &amp; Unit Assignment</h2>
             </div>
             <div class="card-body">
                 <div style="background: var(--ws-surface-subtle); padding: 14px 16px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
@@ -329,8 +594,8 @@ if (!empty($applicant['documents'])) {
                         </div>
                     </div>
 
-                    <?php if ($applicant['status'] === 'converted'): ?>
-                        <div style="background: var(--ws-surface); padding: 12px; border-radius: 8px; border: 1px solid var(--ws-border-subtle); margin-top: 14px;">
+                    <?php if ($applicant['status'] === 'converted' && !empty($applicant['tenant_id'])): ?>
+                        <div style="padding-top: 12px; border-top: 1px solid var(--ws-border-subtle); margin-top: 14px;">
                             <span class="text-muted text-xs">Tenant Assignment</span>
                             <div style="font-weight: 600; margin-top: 2px;">
                                 Active Tenant Record #<?= (int)$applicant['tenant_id'] ?>: <?= htmlspecialchars($applicant['converted_tenant_first_name'] . ' ' . $applicant['converted_tenant_last_name']) ?>
@@ -478,7 +743,7 @@ if (!empty($applicant['documents'])) {
                         <div style="grid-column: span 2;">
                             <span class="text-muted text-xs">Applicant Signature</span>
                             <?php if (!empty($applicant['applicant_signature']) && str_starts_with($applicant['applicant_signature'], 'data:image/')): ?>
-                                <div style="margin-top: 6px; background: #ffffff; border: 1px solid var(--ws-border-subtle); border-radius: 8px; padding: 10px 14px; display: inline-flex; align-items: center; justify-content: center; min-width: 240px; max-width: 100%;">
+                                <div style="margin-top: 6px; background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); border-radius: 8px; padding: 10px 14px; display: inline-flex; align-items: center; justify-content: center; min-width: 240px; max-width: 100%;">
                                     <img src="<?= htmlspecialchars($applicant['applicant_signature']) ?>" alt="Applicant e-Signature" style="max-height: 75px; max-width: 100%; object-fit: contain; display: block;">
                                 </div>
                             <?php else: ?>
@@ -497,19 +762,19 @@ if (!empty($applicant['documents'])) {
     </div>
 </div>
 
-<!-- Convert Applicant to Tenant Modal -->
+<!-- Create Lease Agreement Modal -->
 <div id="convert-modal" class="modal-backdrop" onclick="if(event.target.id==='convert-modal') closeConvertModal();">
     <div class="modal-content" style="max-width: 620px; background: var(--ws-surface); border-radius: 14px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Approve & Convert to Tenant</h3>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Create Lease Agreement</h3>
             <button type="button" onclick="closeConvertModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
         </div>
 
         <p class="text-muted text-xs" style="margin-top: 0; margin-bottom: 16px;">
-            This will create official tenant profiles, assign the residents to the selected unit, and establish an active residential tenancy agreement.
+            Create a lease agreement with the prospective applicant(s) on it. Once created, the lease can be sent to the prospective applicant(s) for signature. When all applicants sign the lease, they automatically become tenants.
         </p>
 
-        <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/convert') ?>" method="POST">
+        <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/create-lease') ?>" method="POST">
             
             <!-- Step 1: Unit Selection -->
             <div class="form-group">
@@ -537,13 +802,13 @@ if (!empty($applicant['documents'])) {
                 </label>
             </div>
 
-            <!-- Step 2: Choose All Applicants for this Unit (Co-Applicants) -->
+            <!-- Step 2: Choose All Prospective Applicants for this Lease -->
             <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 14px 16px; border-radius: 10px; margin-bottom: 16px;">
                 <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--ws-text);">
-                    Select All Applicants to Add into this Unit
+                    Select Prospective Applicants on this Lease Agreement
                 </label>
                 <p class="text-muted text-xs" style="margin-top: 0; margin-bottom: 10px;">
-                    Select all applicants (couples, roommates, co-signers) moving into this unit together. They will each receive a tenant profile under a shared lease.
+                    Select all prospective applicants (couples, roommates, co-signers) to include on this lease agreement. Once all selected applicants sign the lease, they will become tenants.
                 </p>
 
                 <!-- Primary applicant (always included) -->
@@ -580,7 +845,7 @@ if (!empty($applicant['documents'])) {
                     <?php endforeach; ?>
 
                     <?php if (!$hasCo): ?>
-                        <div class="text-muted text-xs" style="padding: 6px 0;">No other pending applications found.</div>
+                        <div class="text-muted text-xs" style="padding: 6px 0;">No other pending/approved applications found.</div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -608,9 +873,14 @@ if (!empty($applicant['documents'])) {
                 </div>
             </div>
 
+            <div class="form-group">
+                <label for="lease_terms">Lease Terms / Special Provisions (Optional)</label>
+                <textarea id="lease_terms" name="terms" class="form-control" rows="2" placeholder="Optional lease terms, conditions, or notes for the prospective applicant(s)..."></textarea>
+            </div>
+
             <div class="form-actions" style="margin-top: 20px;">
                 <button type="button" class="btn btn-outline" onclick="closeConvertModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Confirm & Create Tenants</button>
+                <button type="submit" class="btn btn-primary">Create Lease Agreement</button>
             </div>
         </form>
     </div>

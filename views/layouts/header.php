@@ -72,10 +72,20 @@ $cssVersion = defined('ROOT_PATH') && file_exists(ROOT_PATH . '/public/css/app.c
 
                     <div class="user-menu">
                         <?php if (defined('TEST_MODE_AVAILABLE') && TEST_MODE_AVAILABLE): ?>
-                            <button type="button" class="pp-test-mode-nav-btn" id="navbar-test-mode-btn" title="Development Test Mode (Auto-Fill Forms)">
-                                <span class="pp-test-mode-dot"></span>
-                                <span>Test Mode: <strong class="pp-test-state-label">OFF</strong></span>
-                            </button>
+                            <div id="pp-test-mode-nav-wrap" style="display: inline-flex; align-items: center; gap: 8px;">
+                                <?php $isTestActive = (($_COOKIE['pp_test_mode_active'] ?? '') === 'true'); ?>
+                                <button type="button" class="pp-test-mode-nav-btn <?= $isTestActive ? 'active' : '' ?>" id="navbar-test-mode-btn" title="Development Test Mode">
+                                    <span class="pp-test-mode-dot"></span>
+                                    <span>Test Mode: <strong class="pp-test-state-label"><?= $isTestActive ? 'ON' : 'OFF' ?></strong></span>
+                                </button>
+                                <div id="pp-test-date-picker-wrap" style="display: <?= $isTestActive ? 'inline-flex' : 'none' ?>; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; padding: 3px 10px; border-radius: 999px; transition: all 0.2s ease;">
+                                    <label for="pp-test-simulated-date" style="font-size: 11.5px; font-weight: 700; color: #b45309; margin: 0; user-select: none; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                        <span>📅</span> Date:
+                                    </label>
+                                    <input type="date" id="pp-test-simulated-date" style="padding: 1px 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--ws-border); border-radius: 6px; background: var(--ws-card-bg); color: var(--ws-text); outline: none; cursor: pointer; height: 26px;" value="<?= htmlspecialchars(\App\Core\AppDate::todayString()) ?>">
+                                    <button type="button" id="pp-test-date-today-btn" style="border: none; background: #f59e0b; color: #ffffff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer; line-height: 1.3;" title="Reset simulated date to real today">Today</button>
+                                </div>
+                            </div>
                         <?php endif; ?>
                         <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleAppTheme(event)" title="Toggle Light / Dark mode" aria-label="Toggle Theme">
                             <span class="theme-icon-dark">🌙</span>

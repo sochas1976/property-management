@@ -68,13 +68,163 @@ use App\Core\Router;
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="status">Occupancy Status</label>
+                    <select id="status" name="status" class="form-control" onchange="onUnitStatusChange(this.value)">
+                        <option value="vacant" <?= $unit['status'] === 'vacant' ? 'selected' : '' ?>>Vacant (Available for Lease)</option>
+                        <option value="maintenance" <?= $unit['status'] === 'maintenance' ? 'selected' : '' ?>>Under Maintenance / Turnaround</option>
+                        <option value="occupied" <?= $unit['status'] === 'occupied' ? 'selected' : '' ?>>Occupied</option>
+                    </select>
+                </div>
+                <div class="form-group col-6">
+                    <label for="available_date">Available Date</label>
+                    <input type="<?= $isPeriodicOccupied ? 'text' : 'date' ?>" 
+                           id="available_date" 
+                           name="available_date" 
+                           class="form-control" 
+                           value="<?= htmlspecialchars($computedAvailableDate ?? '') ?>"
+                           data-today="<?= htmlspecialchars(\App\Core\AppDate::todayString()) ?>"
+                           data-lease-end="<?= htmlspecialchars(!empty($activeLease['end_date']) ? $activeLease['end_date'] : '') ?>"
+                           data-is-periodic="<?= $isPeriodicOccupied ? '1' : '0' ?>"
+                           placeholder="YYYY-MM-DD or -----">
+                    <small class="text-muted" id="available_date_hint" style="display: block; margin-top: 4px; font-size: 12px;">
+                        <?php if ($unit['status'] === 'occupied'): ?>
+                            <?php if ($isPeriodicOccupied): ?>
+                                Occupied (Periodic Tenancy &mdash; ongoing open term)
+                            <?php elseif (!empty($activeLease['end_date'])): ?>
+                                Occupied until lease expiry: <strong><?= date('M j, Y', strtotime($activeLease['end_date'])) ?></strong>
+                            <?php else: ?>
+                                Occupied
+                            <?php endif; ?>
+                        <?php else: ?>
+                            Available immediately (effective current date)
+                        <?php endif; ?>
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="adults_only">Adults Only</label>
+                    <select id="adults_only" name="adults_only" class="form-control">
+                        <option value="no" <?= ($unit['adults_only'] ?? 'no') === 'no' ? 'selected' : '' ?>>No</option>
+                        <option value="yes" <?= ($unit['adults_only'] ?? '') === 'yes' ? 'selected' : '' ?>>Yes</option>
+                    </select>
+                </div>
+                <div class="form-group col-6">
+                    <label for="furnished">Furnished</label>
+                    <select id="furnished" name="furnished" class="form-control">
+                        <option value="no" <?= ($unit['furnished'] ?? 'no') === 'no' ? 'selected' : '' ?>>No</option>
+                        <option value="yes" <?= ($unit['furnished'] ?? '') === 'yes' ? 'selected' : '' ?>>Yes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-4">
+                    <label for="pets">Pets</label>
+                    <select id="pets" name="pets" class="form-control">
+                        <option value="allowed" <?= ($unit['pets'] ?? '') === 'allowed' ? 'selected' : '' ?>>Allowed</option>
+                        <option value="not_allowed" <?= ($unit['pets'] ?? 'not_allowed') === 'not_allowed' ? 'selected' : '' ?>>Not Allowed</option>
+                    </select>
+                </div>
+                <div class="form-group col-4">
+                    <label for="smoking">Smoking</label>
+                    <select id="smoking" name="smoking" class="form-control">
+                        <option value="not_allowed" <?= ($unit['smoking'] ?? 'not_allowed') === 'not_allowed' ? 'selected' : '' ?>>Not Allowed</option>
+                        <option value="allowed" <?= ($unit['smoking'] ?? '') === 'allowed' ? 'selected' : '' ?>>Allowed</option>
+                    </select>
+                </div>
+                <div class="form-group col-4">
+                    <label for="parking">Parking</label>
+                    <select id="parking" name="parking" class="form-control">
+                        <option value="garage" <?= ($unit['parking'] ?? '') === 'garage' ? 'selected' : '' ?>>Garage</option>
+                        <option value="driveway" <?= ($unit['parking'] ?? '') === 'driveway' ? 'selected' : '' ?>>Driveway</option>
+                        <option value="street" <?= ($unit['parking'] ?? 'street') === 'street' ? 'selected' : '' ?>>Street</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group">
-                <label for="status">Occupancy Status</label>
-                <select id="status" name="status" class="form-control">
-                    <option value="vacant" <?= $unit['status'] === 'vacant' ? 'selected' : '' ?>>Vacant (Available for Lease)</option>
-                    <option value="maintenance" <?= $unit['status'] === 'maintenance' ? 'selected' : '' ?>>Under Maintenance / Turnaround</option>
-                    <option value="occupied" <?= $unit['status'] === 'occupied' ? 'selected' : '' ?>>Occupied</option>
+                <label for="tenant_insurance">Tenant Insurance</label>
+                <select id="tenant_insurance" name="tenant_insurance" class="form-control">
+                    <option value="not_required" <?= ($unit['tenant_insurance'] ?? 'not_required') === 'not_required' ? 'selected' : '' ?>>Not Required</option>
+                    <option value="required" <?= ($unit['tenant_insurance'] ?? '') === 'required' ? 'selected' : '' ?>>Required</option>
                 </select>
+            </div>
+
+            <?php
+            // Parse Utilities settings
+            $currentUtilities = [
+                'included'   => [], // list of keys completely included (100% covered)
+                'shared_pct' => []  // associative array: key => tenant percentage (e.g. 'electricity' => 60)
+            ];
+            if (!empty($unit['utilities'])) {
+                $decodedUtils = json_decode($unit['utilities'], true);
+                if (is_array($decodedUtils)) {
+                    $currentUtilities = array_merge($currentUtilities, $decodedUtils);
+                }
+            }
+            $utilityTypes = [
+                'electricity' => ['label' => 'Electricity'],
+                'heat'        => ['label' => 'Heat'],
+                'water'       => ['label' => 'Water'],
+                'internet'    => ['label' => 'Internet']
+            ];
+            ?>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Utilities Coverage & Responsibility</label>
+
+                <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 12px; border: 1px solid var(--ws-border-subtle);">
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <?php foreach ($utilityTypes as $uKey => $uInfo): 
+                            $isIncluded = in_array($uKey, $currentUtilities['included'] ?? [], true);
+                            $sharedPct = isset($currentUtilities['shared_pct'][$uKey]) && $currentUtilities['shared_pct'][$uKey] !== '' ? (int)$currentUtilities['shared_pct'][$uKey] : null;
+                            $hasSplit = ($sharedPct !== null && $sharedPct > 0 && $sharedPct < 100);
+
+                            $selectedMode = 'not_included';
+                            if ($isIncluded) {
+                                $selectedMode = 'included';
+                            } elseif ($hasSplit) {
+                                $selectedMode = 'shared';
+                            }
+                        ?>
+                            <div class="utility-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--ws-border-subtle);">
+                                <div style="display: flex; align-items: center; min-width: 140px;">
+                                    <strong style="font-size: 14.5px;"><?= $uInfo['label'] ?></strong>
+                                </div>
+
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <!-- Mode Selector -->
+                                    <select class="form-control" style="width: auto; min-width: 180px; padding: 6px 12px; font-size: 13.5px;" onchange="onUtilityModeChange('<?= $uKey ?>', this.value)">
+                                        <option value="included" <?= $selectedMode === 'included' ? 'selected' : '' ?>>Included (100% Covered)</option>
+                                        <option value="not_included" <?= $selectedMode === 'not_included' ? 'selected' : '' ?>>Not Included (Tenant 100%)</option>
+                                        <option value="shared" <?= $selectedMode === 'shared' ? 'selected' : '' ?>>Shared Percentage Split</option>
+                                    </select>
+
+                                    <!-- Hidden checkbox for included[] -->
+                                    <input type="checkbox" id="util_inc_<?= $uKey ?>" name="utilities[included][]" value="<?= $uKey ?>" <?= $selectedMode === 'included' ? 'checked' : '' ?> style="display: none;">
+
+                                    <!-- Shared Percentage Input Box -->
+                                    <div id="util_split_box_<?= $uKey ?>" style="<?= $selectedMode === 'shared' ? 'display: flex;' : 'display: none;' ?> align-items: center; gap: 6px;">
+                                        <span class="text-muted text-xs">Tenant pays:</span>
+                                        <input type="number" 
+                                               id="util_pct_<?= $uKey ?>" 
+                                               name="utilities[shared_pct][<?= $uKey ?>]" 
+                                               class="form-control" 
+                                               style="width: 75px; padding: 6px 8px; text-align: center; font-weight: 700;" 
+                                               min="1" max="99" step="1" 
+                                               value="<?= $sharedPct !== null ? $sharedPct : '60' ?>"
+                                               placeholder="60"
+                                               <?= $selectedMode !== 'shared' ? 'disabled' : '' ?>>
+                                        <span style="font-weight: 700; font-size: 13px;">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             </div>
 
             <?php
@@ -575,6 +725,68 @@ function checkFormChanges() {
         initTouchDragAndDrop();
     });
 })();
+
+function onUnitStatusChange(statusVal) {
+    const availInput = document.getElementById('available_date');
+    const hint = document.getElementById('available_date_hint');
+    if (!availInput) return;
+
+    const todayVal = availInput.dataset.today || '<?= \App\Core\AppDate::todayString() ?>';
+    const leaseEndVal = availInput.dataset.leaseEnd || '';
+    const isPeriodic = availInput.dataset.isPeriodic === '1';
+
+    if (statusVal === 'occupied') {
+        if (isPeriodic) {
+            availInput.type = 'text';
+            availInput.value = '-----';
+            if (hint) hint.innerHTML = 'Occupied (Periodic Tenancy &mdash; ongoing open term)';
+        } else if (leaseEndVal) {
+            availInput.type = 'date';
+            availInput.value = leaseEndVal;
+            if (hint) hint.innerHTML = 'Occupied until lease expiry: <strong>' + leaseEndVal + '</strong>';
+        } else {
+            availInput.type = 'date';
+            availInput.value = todayVal;
+            if (hint) hint.innerHTML = 'Occupied';
+        }
+    } else {
+        // Not occupied (vacant or maintenance) -> default to current date
+        availInput.type = 'date';
+        availInput.value = todayVal;
+        if (hint) hint.innerHTML = 'Available immediately (effective current date)';
+    }
+
+    if (typeof checkFormChanges === 'function') {
+        checkFormChanges();
+    }
+}
+
+function onUtilityModeChange(uKey, mode) {
+    const incCheckbox = document.getElementById('util_inc_' + uKey);
+    const splitBox = document.getElementById('util_split_box_' + uKey);
+    const pctInput = document.getElementById('util_pct_' + uKey);
+
+    if (mode === 'included') {
+        if (incCheckbox) incCheckbox.checked = true;
+        if (splitBox) splitBox.style.display = 'none';
+        if (pctInput) pctInput.disabled = true;
+    } else if (mode === 'shared') {
+        if (incCheckbox) incCheckbox.checked = false;
+        if (splitBox) splitBox.style.display = 'flex';
+        if (pctInput) {
+            pctInput.disabled = false;
+            if (!pctInput.value) pctInput.value = '60';
+        }
+    } else { // not_included
+        if (incCheckbox) incCheckbox.checked = false;
+        if (splitBox) splitBox.style.display = 'none';
+        if (pctInput) pctInput.disabled = true;
+    }
+
+    if (typeof checkFormChanges === 'function') {
+        checkFormChanges();
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('unit-edit-form');
