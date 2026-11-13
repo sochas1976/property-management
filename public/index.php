@@ -97,6 +97,7 @@ Router::post('/applicants/{id}/status', [ApplicantController::class, 'updateStat
 Router::post('/applicants/{id}/create-lease', [ApplicantController::class, 'createLease'], ['auth']);
 Router::post('/applicants/{id}/cancel-lease', [ApplicantController::class, 'cancelLease'], ['auth']);
 Router::post('/applicants/{id}/send-lease', [ApplicantController::class, 'sendLease'], ['auth']);
+Router::post('/applicants/{id}/recall-lease', [ApplicantController::class, 'recallLease'], ['auth']);
 Router::post('/applicants/{id}/sign-lease', [ApplicantController::class, 'signLease'], ['auth']);
 Router::post('/applicants/{id}/convert', [ApplicantController::class, 'convert'], ['auth']);
 Router::post('/applicants/{id}/delete', [ApplicantController::class, 'delete'], ['auth']);

@@ -34,7 +34,7 @@ $fromHistory = ($from === 'history');
             <?php if ($applicant['status'] === 'approved'): ?>
                 <span class="badge badge-success">Approved</span>
             <?php elseif ($applicant['status'] === 'lease_created'): ?>
-                <span class="badge badge-info">Lease Created</span>
+                <span class="badge badge-info">Review Lease</span>
             <?php elseif ($applicant['status'] === 'lease_sent'): ?>
                 <span class="badge badge-info">Lease Sent</span>
                 <?php
@@ -103,7 +103,7 @@ $stageMap = [
 $currentStage = $stageMap[$applicant['status']] ?? 0;
 $workflowSteps = [
     1 => '1. Approved',
-    2 => '2. Lease Created',
+    2 => '2. Review Lease',
     3 => '3. Lease Sent',
     4 => '4. Signed & Tenant',
 ];
@@ -130,7 +130,7 @@ foreach ($prospectiveList as $pa) {
             <?php elseif ($applicant['status'] === 'approved'): ?>
                 <span class="badge badge-success">Approved — Ready for Lease</span>
             <?php elseif ($applicant['status'] === 'lease_created'): ?>
-                <span class="badge badge-info">Draft Lease Created</span>
+                <span class="badge badge-info">Review Lease</span>
             <?php elseif ($applicant['status'] === 'lease_sent'): ?>
                 <span class="badge badge-info">Lease Sent (<?= $signedTotal ?> of <?= count($prospectiveList) ?> Signed)</span>
             <?php elseif ($applicant['status'] === 'converted'): ?>
@@ -142,15 +142,36 @@ foreach ($prospectiveList as $pa) {
         <!-- Visual Progress Stepper -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;">
             <?php foreach ($workflowSteps as $stepIdx => $stepLabel):
-                $isCompleted = ($currentStage >= $stepIdx);
-                $isCurrent = ($currentStage + 1 === $stepIdx || ($stepIdx === 4 && $currentStage === 4));
-                $bgStyle = $isCompleted ? 'rgba(22, 163, 74, 0.08)' : ($isCurrent ? 'var(--ws-surface-subtle)' : 'transparent');
-                $borderStyle = $isCompleted ? '#16a34a' : ($isCurrent ? 'var(--ws-accent)' : 'var(--ws-border-subtle)');
-                $textStyle = $isCompleted ? '#16a34a' : ($isCurrent ? 'var(--ws-text)' : 'var(--ws-text-muted)');
+                $isPending = ($applicant['status'] === 'pending');
+                $isPendingStep1 = ($isPending && $stepIdx === 1);
+                $isCompleted = (!$isPending && ($stepIdx < $currentStage || ($currentStage === 4 && $stepIdx === 4)));
+                $isCurrent = $isPendingStep1 || (!$isPending && $stepIdx === $currentStage && $currentStage !== 4);
+
+                if ($isPendingStep1) {
+                    $bgStyle = 'var(--ws-warning-bg, #fffdf0)';
+                    $borderStyle = '#eab308';
+                    $textStyle = 'var(--ws-warning, #b45309)';
+                    $stageText = 'Current Stage';
+                } elseif ($isCompleted) {
+                    $bgStyle = 'rgba(22, 163, 74, 0.08)';
+                    $borderStyle = '#16a34a';
+                    $textStyle = '#16a34a';
+                    $stageText = 'Completed';
+                } elseif ($isCurrent) {
+                    $bgStyle = 'var(--ws-surface-subtle)';
+                    $borderStyle = 'var(--ws-accent)';
+                    $textStyle = 'var(--ws-text)';
+                    $stageText = 'Current Stage';
+                } else {
+                    $bgStyle = 'transparent';
+                    $borderStyle = 'var(--ws-border-subtle)';
+                    $textStyle = 'var(--ws-text-muted)';
+                    $stageText = 'Upcoming';
+                }
             ?>
                 <div style="padding: 10px 14px; border-radius: 10px; border: 1.5px solid <?= $borderStyle ?>; background: <?= $bgStyle ?>; text-align: center; font-size: 13px; font-weight: <?= ($isCompleted || $isCurrent) ? '700' : '500' ?>; color: <?= $textStyle ?>; transition: all 0.2s ease;">
                     <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 2px;">
-                        <?= $isCompleted ? 'Completed' : ($isCurrent ? 'Current Stage' : 'Upcoming') ?>
+                        <?= $stageText ?>
                     </div>
                     <div><?= $isCompleted ? '&#10003; ' : '' ?><?= htmlspecialchars($stepLabel) ?></div>
                 </div>
@@ -169,10 +190,9 @@ foreach ($prospectiveList as $pa) {
                     </div>
                     <?php if (!$fromHistory): ?>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0;">
-                                <input type="hidden" name="status" value="approved">
-                                <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a;">Approve Application</button>
-                            </form>
+                            <button type="button" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a;" onclick="openConvertModal()">
+                                Approve Applicant &rarr;
+                            </button>
                             <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0;">
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit" class="btn btn-outline btn-danger btn-sm">Reject Application</button>
@@ -207,9 +227,9 @@ foreach ($prospectiveList as $pa) {
             <?php elseif ($applicant['status'] === 'lease_created'): ?>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
                     <div>
-                        <div style="font-weight: 700; font-size: 14.5px;">Step 3: Send Lease to Prospective Applicant(s)</div>
+                        <div style="font-weight: 700; font-size: 14.5px;">Step 2: Review Lease Agreement</div>
                         <div class="text-muted text-xs" style="margin-top: 3px;">
-                            Draft Lease #<?= (int)$applicant['lease_id'] ?> is prepared. Send the contract to the prospective applicant(s) for digital signing.
+                            Draft Lease #<?= (int)$applicant['lease_id'] ?> is prepared. Review terms below and click Finalize Lease to advance to Stage 3 (Lease Sent).
                         </div>
                     </div>
                     <?php if (!$fromHistory): ?>
@@ -223,7 +243,7 @@ foreach ($prospectiveList as $pa) {
                                 <a href="<?= Router::url('/leases/' . $applicant['lease_id']) ?>" class="btn btn-outline" style="display: inline-flex; align-items: center;">View Draft Lease</a>
                             <?php endif; ?>
                             <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: flex;">
-                                <button type="submit" class="btn btn-primary">Send Lease to Applicant(s) &rarr;</button>
+                                <button type="submit" class="btn btn-primary">Finalize Lease &rarr;</button>
                             </form>
                         </div>
                     <?php endif; ?>
@@ -234,10 +254,14 @@ foreach ($prospectiveList as $pa) {
                     <div style="border-top: 1px solid var(--ws-border-subtle); padding-top: 12px; margin-top: 12px;">
                         <span class="text-muted text-xs" style="display: block; margin-bottom: 8px;">Prospective Applicants Included on Lease:</span>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;">
-                            <?php foreach ($prospectiveList as $pa): ?>
-                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--ws-surface); border-radius: 8px; border: 1px solid var(--ws-border-subtle);">
-                                    <span style="font-weight: 600; font-size: 13.5px;"><?= htmlspecialchars($pa['full_name']) ?></span>
-                                    <span class="badge badge-info" style="font-size: 11.5px; padding: 3px 10px; font-weight: 600;">Ready to Send</span>
+                            <?php foreach ($prospectiveList as $idx => $pa): ?>
+                                <div>
+                                    <span class="text-muted text-xs" style="text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display: block; margin-bottom: 4px;">
+                                        Applicant <?= $idx + 1 ?>
+                                    </span>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--ws-surface); border-radius: 8px; border: 1px solid var(--ws-border-subtle);">
+                                        <span style="font-weight: 600; font-size: 13.5px;"><?= htmlspecialchars($pa['full_name']) ?></span>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -253,7 +277,12 @@ foreach ($prospectiveList as $pa) {
                         </div>
                     </div>
                     <?php if (!$fromHistory): ?>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Recall this sent lease and return to Step 3 (Draft Ready to Send)?');" style="display: inline-flex; align-items: center;">
+                                    &larr; Back to Step 3
+                                </button>
+                            </form>
                             <?php if (!empty($applicant['lease_id'])): ?>
                                 <a href="<?= Router::url('/leases/' . $applicant['lease_id']) ?>" class="btn btn-outline btn-sm">View Lease Agreement</a>
                             <?php endif; ?>

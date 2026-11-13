@@ -354,6 +354,36 @@ class Applicant {
         return $stmt->execute([$statusDate, $leaseId]);
     }
 
+    public static function recallLeaseToCreatedByLeaseId(int $leaseId): bool {
+        $db = Database::getConnection();
+        $statusDate = AppDate::todayString() . ' ' . date('H:i:s');
+        $stmt = $db->prepare("
+            UPDATE applicants
+            SET status = 'lease_created',
+                status_date = ?,
+                lease_signed = 0,
+                lease_signed_at = NULL
+            WHERE lease_id = ?
+              AND status = 'lease_sent'
+        ");
+        return $stmt->execute([$statusDate, $leaseId]);
+    }
+
+    public static function recallLeaseToCreated(int $id): bool {
+        $db = Database::getConnection();
+        $statusDate = AppDate::todayString() . ' ' . date('H:i:s');
+        $stmt = $db->prepare("
+            UPDATE applicants
+            SET status = 'lease_created',
+                status_date = ?,
+                lease_signed = 0,
+                lease_signed_at = NULL
+            WHERE id = ?
+              AND status = 'lease_sent'
+        ");
+        return $stmt->execute([$statusDate, $id]);
+    }
+
     public static function markLeaseSigned(int $id): bool {
         $db = Database::getConnection();
         $signedAt = AppDate::todayString() . ' ' . date('H:i:s');

@@ -67,7 +67,7 @@ use App\Core\Router;
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <span class="badge badge-subtle" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">
+                                <span class="badge badge-subtle" style="font-size: 13.5px; padding: 3px 12px; font-weight: 600; background: #e5e2da; border: 1px solid #c8c3b7; color: var(--ws-text);">
                                     <?= ucfirst(htmlspecialchars($app['tenancy_type'] ?: 'Fixed')) ?>
                                 </span>
                             </td>
@@ -89,7 +89,7 @@ use App\Core\Router;
                                 <?php if ($app['status'] === 'approved'): ?>
                                     <span class="badge badge-success" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Approved</span>
                                 <?php elseif ($app['status'] === 'lease_created'): ?>
-                                    <span class="badge badge-info" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Lease Created</span>
+                                    <span class="badge badge-info" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Review Lease</span>
                                 <?php elseif ($app['status'] === 'lease_sent'): ?>
                                     <span class="badge badge-info" style="font-size: 14px; padding: 3px 10px; font-weight: 500;">Lease Sent</span>
                                     <?php

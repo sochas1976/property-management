@@ -238,7 +238,7 @@ class ApplicantController extends Controller {
         $statusLabels = [
             'pending'       => 'Pending Review',
             'approved'      => 'Approved',
-            'lease_created' => 'Lease Created',
+            'lease_created' => 'Review Lease',
             'lease_sent'    => 'Lease Sent',
             'converted'     => 'Converted to Tenant',
             'rejected'      => 'Rejected'
@@ -388,6 +388,37 @@ class ApplicantController extends Controller {
             $this->setFlash('success', 'Lease Agreement has been sent to ' . htmlspecialchars($applicant['full_name']) . '. Awaiting signature.');
         }
 
+        if (!empty($_POST['from']) && $_POST['from'] === 'lease' && $leaseId > 0) {
+            $this->redirect('/leases/' . $leaseId);
+        }
+
+        $this->redirect('/applicants/' . $id);
+    }
+
+    /**
+     * Recall a sent lease agreement and return the application(s)
+     * from Step 4 (lease_sent) back to Step 3 (lease_created).
+     */
+    public function recallLease(string $id): void {
+        $applicant = Applicant::findById((int)$id);
+        if (!$applicant) {
+            $this->setFlash('error', 'Applicant not found.');
+            $this->redirect('/applicants');
+        }
+
+        $leaseId = (int)($applicant['lease_id'] ?? 0);
+        if ($leaseId > 0) {
+            Applicant::recallLeaseToCreatedByLeaseId($leaseId);
+            $this->setFlash('success', 'Lease agreement was recalled. Application workflow returned to Step 2 (Review Lease).');
+        } else {
+            Applicant::recallLeaseToCreated((int)$id);
+            $this->setFlash('success', 'Application workflow returned to Step 2 (Review Lease).');
+        }
+
+        if (!empty($_POST['from']) && $_POST['from'] === 'lease' && $leaseId > 0) {
+            $this->redirect('/leases/' . $leaseId);
+        }
+
         $this->redirect('/applicants/' . $id);
     }
 
@@ -431,6 +462,9 @@ class ApplicantController extends Controller {
 
             if ($signedCount < $totalCount) {
                 $this->setFlash('success', 'Recorded lease signature for ' . htmlspecialchars($signedApplicantName) . ' (' . $signedCount . ' of ' . $totalCount . ' signed). Once all prospective applicants sign, they will automatically become tenants.');
+                if (!empty($_POST['from']) && $_POST['from'] === 'lease' && $leaseId > 0) {
+                    $this->redirect('/leases/' . $leaseId);
+                }
                 $this->redirect('/applicants/' . $id);
             }
 
@@ -509,6 +543,9 @@ class ApplicantController extends Controller {
 
         $namesList = implode(' & ', $convertedTenantNames);
         $this->setFlash('success', 'All prospective applicants (' . $namesList . ') have signed the lease! They are now official Tenants in Unit #' . htmlspecialchars($lease['unit_number'] ?? '') . '.');
+        if (!empty($_POST['from']) && $_POST['from'] === 'lease' && $leaseId > 0) {
+            $this->redirect('/leases/' . $leaseId);
+        }
         $this->redirect('/applicants/' . $redirectApplicantId);
     }
 
