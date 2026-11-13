@@ -32,13 +32,16 @@ class Lease {
                    ) AS tenant_phone,
                    u.unit_number,
                    p.name AS property_name,
-                   d.id AS document_id,
-                   d.original_name AS document_name
+                   (SELECT d.id FROM documents d WHERE d.related_type = 'lease' AND d.related_id = l.id ORDER BY d.id DESC LIMIT 1) AS document_id,
+                   (SELECT d.original_name FROM documents d WHERE d.related_type = 'lease' AND d.related_id = l.id ORDER BY d.id DESC LIMIT 1) AS document_name,
+                   (SELECT COUNT(*) FROM documents doc WHERE doc.related_type = 'lease' AND doc.related_id = l.id) AS document_count,
+                   (SELECT a.status FROM applicants a WHERE a.lease_id = l.id ORDER BY a.id ASC LIMIT 1) AS applicant_status,
+                   (SELECT COUNT(*) FROM applicants a WHERE a.lease_id = l.id) AS applicant_count,
+                   (SELECT SUM(CASE WHEN a.lease_signed = 1 THEN 1 ELSE 0 END) FROM applicants a WHERE a.lease_id = l.id) AS signed_count
             FROM leases l
             LEFT JOIN tenants t ON l.tenant_id = t.id
             JOIN units u ON l.unit_id = u.id
             JOIN properties p ON u.property_id = p.id
-            LEFT JOIN documents d ON d.related_type = 'lease' AND d.related_id = l.id
             ORDER BY {$orderBy}
         ";
         return $db->query($sql)->fetchAll();

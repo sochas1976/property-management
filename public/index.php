@@ -113,6 +113,7 @@ Router::post('/leases', [LeaseController::class, 'store'], ['auth']);
 Router::get('/leases/{id}', [LeaseController::class, 'view'], ['auth']);
 Router::post('/leases/{id}/status', [LeaseController::class, 'updateStatus'], ['auth']);
 Router::post('/leases/{id}/upload-template', [LeaseController::class, 'uploadTemplate'], ['auth']);
+Router::post('/leases/{id}/upload-document', [LeaseController::class, 'uploadDocument'], ['auth']);
 Router::post('/leases/{id}/generate-document', [LeaseController::class, 'generateDocument'], ['auth']);
 Router::post('/leases/{id}/delete-template/{templateId}', [LeaseController::class, 'deleteTemplate'], ['auth']);
 

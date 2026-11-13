@@ -325,6 +325,22 @@ class Applicant {
         return $stmt->execute([$statusDate, $leaseId, $unitId, $propertyId, $id]);
     }
 
+    public static function revertDraftLeaseToPendingByLeaseId(int $leaseId): bool {
+        $db = Database::getConnection();
+        $statusDate = AppDate::todayString() . ' ' . date('H:i:s');
+        $stmt = $db->prepare("
+            UPDATE applicants
+            SET status = 'pending',
+                status_date = ?,
+                lease_id = NULL,
+                lease_signed = 0,
+                lease_signed_at = NULL
+            WHERE lease_id = ?
+              AND status IN ('approved', 'lease_created', 'lease_sent')
+        ");
+        return $stmt->execute([$statusDate, $leaseId]);
+    }
+
     public static function removeDraftLeaseByLeaseId(int $leaseId): bool {
         $db = Database::getConnection();
         $statusDate = AppDate::todayString() . ' ' . date('H:i:s');

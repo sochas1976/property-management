@@ -176,9 +176,9 @@ if (!empty($placeholders)) {
                     $isCurrent = $isPendingStep1 || (!$isPending && $stepIdx === $currentStage && $currentStage !== 4);
 
                     if ($isPendingStep1) {
-                        $bgStyle = 'var(--ws-warning-bg, #fffdf0)';
-                        $borderStyle = '#eab308';
-                        $textStyle = 'var(--ws-warning, #b45309)';
+                        $bgStyle = '#fffdf7';
+                        $borderStyle = 'var(--ws-accent, #f5a623)';
+                        $textStyle = 'var(--ws-text, #111)';
                         $stageText = 'Current Stage';
                     } elseif ($isCompleted) {
                         $bgStyle = 'rgba(22, 163, 74, 0.08)';
@@ -209,62 +209,66 @@ if (!empty($placeholders)) {
             <!-- Step Actions & Details -->
             <div style="border-top: 1px solid var(--ws-border-subtle); padding-top: 14px;">
                 <?php if ($applicantStatus === 'lease_created' || ($lease['status'] === 'draft' && $applicantStatus !== 'lease_sent' && $applicantStatus !== 'converted')): ?>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
                         <div>
                             <div style="font-weight: 700; font-size: 14.5px;">Step 2: Review Lease Agreement:</div>
                             <div class="text-muted text-xs" style="margin-top: 3px;">
                                 The draft lease agreement is prepared. Review terms below and finalize the agreement.
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                <?php if ($primaryApplicant): ?>
-                                    <a href="<?= Router::url('/applicants/' . $primaryApplicant['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;">
-                                        &larr; View Application
-                                    </a>
-                                    <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                        <input type="hidden" name="from" value="lease">
-                                        <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                                            Send Lease &rarr;
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <form action="<?= Router::url('/leases/' . $lease['id'] . '/status') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                        <input type="hidden" name="status" value="active">
-                                        <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                                            Activate Lease &rarr;
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                            </div>
+                        <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
+                            <?php if ($primaryApplicant): ?>
+                                <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/cancel-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);">
+                                        &larr; Revert Back
+                                    </button>
+                                </form>
+                                <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases table">
+                                    Pause &amp; Save
+                                </a>
+                                <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                    <input type="hidden" name="from" value="lease">
+                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                                        Send Lease &rarr;
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <form action="<?= Router::url('/leases/' . $lease['id'] . '/status') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                                        Activate Lease &rarr;
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
+                    </div>
 
                     <?php elseif ($applicantStatus === 'lease_sent'): ?>
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                        <div>
                             <div>
-                                <div class="text-muted text-xs" style="line-height: 1.5;">
+                                <div style="font-weight: 700; font-size: 14.5px;">Step 3: Lease Sent — Awaiting Signature(s):</div>
+                                <div class="text-muted text-xs" style="margin-top: 3px; line-height: 1.5;">
                                     Once all prospective applicants sign the lease, they will automatically become official tenants and the lease will activate.
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
                                 <?php if ($primaryApplicant): ?>
                                     <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                         <input type="hidden" name="from" value="lease">
-                                        <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;" onclick="return confirm('Recall this sent lease and return to Step 3 (Draft Ready to Send)?');">
-                                            &larr; Back to Step 3
+                                        <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;" onclick="return confirm('Recall this sent lease and return to Step 2 (Review Lease)?');">
+                                            &larr; Revert Back
                                         </button>
                                     </form>
-                                    <a href="<?= Router::url('/applicants/' . $primaryApplicant['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;">
-                                        &larr; View Application
+                                    <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases in-progress table">
+                                        Pause &amp; Save Workflow
                                     </a>
-                                    <?php if (count($leaseApplicants) > 1): ?>
-                                        <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                            <input type="hidden" name="from" value="lease">
-                                            <input type="hidden" name="sign_all" value="1">
-                                            <button type="submit" class="btn btn-outline" style="color: #16a34a; border: 1.5px solid #16a34a; font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;">
-                                                Mark All Signed
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                        <input type="hidden" name="from" value="lease">
+                                        <input type="hidden" name="sign_all" value="1">
+                                        <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                                            <?= count($leaseApplicants) > 1 ? 'Mark All Signed &rarr;' : 'Mark Signed &rarr;' ?>
+                                        </button>
+                                    </form>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -493,8 +497,18 @@ if (!empty($placeholders)) {
 
 <!-- Attached Lease Contracts Card -->
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px;">
-        <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Attached Lease Contracts</h2>
+    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Attached Lease Contracts</h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" onclick="document.getElementById('leaseUploadInput').click();" title="Attach signed contract or document" style="width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 1.5px solid var(--ws-accent, #f5a623); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ws-accent, #f5a623); font-size: 16px; font-weight: 700; line-height: 1; transition: all 0.15s ease;" onmouseover="this.style.background='rgba(245, 166, 35, 0.1)'; this.style.borderColor='var(--ws-accent-hover, #e69512)'; this.style.color='var(--ws-accent-hover, #e69512)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--ws-accent, #f5a623)'; this.style.color='var(--ws-accent, #f5a623)';">
+                +
+            </button>
+            <form id="formLeaseUpload" action="<?= Router::url('/leases/' . $lease['id'] . '/upload-document') ?>" method="POST" enctype="multipart/form-data" style="display: none;">
+                <input type="file" id="leaseUploadInput" name="document" onchange="document.getElementById('formLeaseUpload').submit();" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            </form>
+        </div>
     </div>
     <div class="card-body" style="padding: 20px 24px;">
         <?php if (empty($documents)): ?>
@@ -525,7 +539,8 @@ if (!empty($placeholders)) {
     </div>
 </div>
 
-<!-- Streamlined Lease Document Generation from Configured Template -->
+<!-- Streamlined Lease Document Generation from Configured Template (Only in Draft Review / Step 2) -->
+<?php if ($applicantStatus === 'lease_created' || ($lease['status'] === 'draft' && $applicantStatus !== 'lease_sent' && $applicantStatus !== 'converted')): ?>
 <div id="generateLeaseSection" class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
     <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
@@ -686,3 +701,4 @@ if (!empty($placeholders)) {
         <?php endif; ?>
     </div>
 </div>
+<?php endif; ?>

@@ -337,8 +337,8 @@ class ApplicantController extends Controller {
     }
 
     /**
-     * Remove the created draft lease agreement and return the application(s)
-     * back to the 'approved' status.
+     * Cancel the draft lease agreement, delete it, and revert all associated
+     * prospective applicants back to 'pending' status (Step 1).
      */
     public function cancelLease(string $id): void {
         $applicant = Applicant::findById((int)$id);
@@ -349,16 +349,16 @@ class ApplicantController extends Controller {
 
         $leaseId = (int)($applicant['lease_id'] ?? 0);
         if ($leaseId > 0) {
-            // Revert all prospective applicants associated with this draft lease back to 'approved'
-            Applicant::removeDraftLeaseByLeaseId($leaseId);
+            // Revert all prospective applicants associated with this draft lease back to 'pending'
+            Applicant::revertDraftLeaseToPendingByLeaseId($leaseId);
 
             // Delete the draft lease
             Lease::delete($leaseId);
 
-            $this->setFlash('success', 'Draft Lease #' . $leaseId . ' was removed and the application returned to Approved status.');
+            $this->setFlash('success', 'Draft Lease #' . $leaseId . ' was cancelled and the application reverted to Pending review (Step 1).');
         } else {
-            Applicant::updateStatus((int)$id, 'approved');
-            $this->setFlash('success', 'Application status returned to Approved.');
+            Applicant::updateStatus((int)$id, 'pending');
+            $this->setFlash('success', 'Application status reverted to Pending review (Step 1).');
         }
 
         $this->redirect('/applicants/' . $id);

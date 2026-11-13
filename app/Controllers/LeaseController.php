@@ -14,10 +14,33 @@ use Exception;
 
 class LeaseController extends Controller {
     public function index(): void {
-        $leases = Lease::all();
+        if (!empty($_GET['paused'])) {
+            $this->setFlash('info', 'Workflow progress for Lease #' . (int)$_GET['paused'] . ' has been safely paused and saved. You can resume at any time from the In-Progress table below.');
+        }
+
+        $allLeases = Lease::all();
+
+        // Categorize leases into In-Progress Workflows (Steps 1-3) and Executed/Active Leases
+        $inProgressLeases = [];
+        $activeLeases = [];
+
+        foreach ($allLeases as $l) {
+            $isWorkflow = ($l['status'] === 'draft' || in_array($l['applicant_status'] ?? '', ['lease_created', 'lease_sent'], true));
+            if ($isWorkflow) {
+                $inProgressLeases[] = $l;
+            } else {
+                $activeLeases[] = $l;
+            }
+        }
+
+        $activeTab = $_GET['tab'] ?? 'all';
+
         $this->render('leases.index', [
-            'title'  => 'Lease Agreements',
-            'leases' => $leases
+            'title'            => 'Lease Agreements',
+            'leases'           => $allLeases,
+            'inProgressLeases' => $inProgressLeases,
+            'activeLeases'     => $activeLeases,
+            'activeTab'        => $activeTab,
         ]);
     }
 
@@ -344,6 +367,44 @@ class LeaseController extends Controller {
             $this->setFlash('error', 'Failed to generate lease document: ' . $e->getMessage());
             $this->redirect('/leases/' . $id . '?template_id=' . $templateId);
         }
+    }
+
+    /**
+     * Upload an executed/signed contract or attachment directly to this lease.
+     */
+    public function uploadDocument(string $id): void {
+        Auth::requireRole(['admin', 'manager']);
+        $lease = Lease::findById((int)$id);
+        if (!$lease) {
+            $this->setFlash('error', 'Lease not found.');
+            $this->redirect('/leases');
+        }
+
+        if (empty($_FILES['document']['name']) || $_FILES['document']['error'] !== UPLOAD_ERR_OK) {
+            $this->setFlash('error', 'Please select a valid document file to attach.');
+            $this->redirect('/leases/' . $id);
+        }
+
+        try {
+            $storedFile = Storage::store($_FILES['document'], 'documents/leases');
+
+            Document::create([
+                'related_type'        => 'lease',
+                'related_id'          => (int)$id,
+                'original_name'       => $storedFile['original_name'],
+                'stored_filename'     => $storedFile['stored_filename'],
+                'file_path'           => $storedFile['file_path'],
+                'mime_type'           => $storedFile['mime_type'],
+                'file_size'           => $storedFile['file_size'],
+                'uploaded_by_user_id' => Auth::id()
+            ]);
+
+            $this->setFlash('success', 'Document attached to lease agreement successfully.');
+        } catch (Exception $e) {
+            $this->setFlash('error', 'Failed to upload document: ' . $e->getMessage());
+        }
+
+        $this->redirect('/leases/' . $id);
     }
 
     /**

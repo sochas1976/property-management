@@ -64,7 +64,7 @@ $fromHistory = ($from === 'history');
                     <span class="badge badge-subtle" title="Application archived in History">Archived in History</span>
                 <?php endif; ?>
             <?php else: ?>
-                <span class="badge badge-warning">Pending Review</span>
+                <!-- Pending review badge omitted in Step 1 -->
             <?php endif; ?>
         </div>
         <p class="page-subtitle" style="margin-top: 4px;">Rental Application Details &amp; Decision Center</p>
@@ -120,13 +120,12 @@ foreach ($prospectiveList as $pa) {
 <?php if ($applicant['status'] !== 'rejected'): ?>
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">📋</span>
+        <div>
             <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Application &amp; Lease Workflow</h2>
         </div>
         <div>
             <?php if ($applicant['status'] === 'pending'): ?>
-                <span class="badge badge-warning">Awaiting Application Review</span>
+                <!-- Awaiting Application Review badge omitted in Step 1 -->
             <?php elseif ($applicant['status'] === 'approved'): ?>
                 <span class="badge badge-success">Approved — Ready for Lease</span>
             <?php elseif ($applicant['status'] === 'lease_created'): ?>
@@ -148,9 +147,9 @@ foreach ($prospectiveList as $pa) {
                 $isCurrent = $isPendingStep1 || (!$isPending && $stepIdx === $currentStage && $currentStage !== 4);
 
                 if ($isPendingStep1) {
-                    $bgStyle = 'var(--ws-warning-bg, #fffdf0)';
-                    $borderStyle = '#eab308';
-                    $textStyle = 'var(--ws-warning, #b45309)';
+                    $bgStyle = '#fffdf7';
+                    $borderStyle = 'var(--ws-accent, #f5a623)';
+                    $textStyle = 'var(--ws-text, #111)';
                     $stageText = 'Current Stage';
                 } elseif ($isCompleted) {
                     $bgStyle = 'rgba(22, 163, 74, 0.08)';
@@ -181,7 +180,7 @@ foreach ($prospectiveList as $pa) {
         <!-- Stage Actions & Details Panel -->
         <div style="background: var(--ws-surface-subtle); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
             <?php if ($applicant['status'] === 'pending'): ?>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div>
                     <div>
                         <div style="font-weight: 700; font-size: 14.5px;">Step 1: Application Review</div>
                         <div class="text-muted text-xs" style="margin-top: 3px;">
@@ -189,14 +188,16 @@ foreach ($prospectiveList as $pa) {
                         </div>
                     </div>
                     <?php if (!$fromHistory): ?>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button type="button" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a;" onclick="openConvertModal()">
+                        <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px;">
+                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                <input type="hidden" name="status" value="rejected">
+                                <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 8px 16px; border-radius: 8px; background: #fff; color: var(--ws-text); cursor: pointer;" onclick="return confirm('Reject this application?');">
+                                    Reject Application
+                                </button>
+                            </form>
+                            <button type="button" class="btn" style="background: var(--ws-accent, #f5a623); border: 1.5px solid var(--ws-accent, #f5a623); color: #111; font-weight: 700; padding: 8px 18px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(245, 166, 35, 0.25);" onclick="openConvertModal()">
                                 Approve Applicant &rarr;
                             </button>
-                            <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/status') ?>" method="POST" style="margin: 0;">
-                                <input type="hidden" name="status" value="rejected">
-                                <button type="submit" class="btn btn-outline btn-danger btn-sm">Reject Application</button>
-                            </form>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -269,27 +270,30 @@ foreach ($prospectiveList as $pa) {
                 <?php endif; ?>
 
             <?php elseif ($applicant['status'] === 'lease_sent'): ?>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
+                <div>
                     <div>
-                        <div style="font-weight: 700; font-size: 14.5px;">Step 4: Lease Sent — Awaiting Signature(s)</div>
-                        <div class="text-muted text-xs" style="margin-top: 3px;">
+                        <div style="font-weight: 700; font-size: 14.5px;">Step 3: Lease Sent — Awaiting Signature(s):</div>
+                        <div class="text-muted text-xs" style="margin-top: 3px; line-height: 1.5;">
                             Once all prospective applicants sign the lease, they will automatically become official tenants and the lease will activate.
                         </div>
                     </div>
                     <?php if (!$fromHistory): ?>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
                             <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Recall this sent lease and return to Step 3 (Draft Ready to Send)?');" style="display: inline-flex; align-items: center;">
-                                    &larr; Back to Step 3
+                                <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Recall this sent lease and return to Step 2 (Review Lease)?');" style="display: inline-flex; align-items: center;">
+                                    &larr; Revert Back
                                 </button>
                             </form>
                             <?php if (!empty($applicant['lease_id'])): ?>
+                                <a href="<?= Router::url('/leases?paused=' . $applicant['lease_id']) ?>" class="btn btn-outline btn-sm" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 7px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; background: #fff;" title="Pause workflow and return to the Leases in-progress table">
+                                    Pause &amp; Save Workflow
+                                </a>
                                 <a href="<?= Router::url('/leases/' . $applicant['lease_id']) ?>" class="btn btn-outline btn-sm">View Lease Agreement</a>
-                            <?php endif; ?>
-                            <?php if (count($prospectiveList) > 1): ?>
                                 <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0;">
                                     <input type="hidden" name="sign_all" value="1">
-                                    <button type="submit" class="btn btn-outline btn-sm" style="color: #16a34a; border-color: #16a34a;">Mark All Signed</button>
+                                    <button type="submit" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <?= count($prospectiveList) > 1 ? 'Mark All Signed &rarr;' : 'Mark Signed &rarr;' ?>
+                                    </button>
                                 </form>
                             <?php endif; ?>
                         </div>
@@ -793,123 +797,145 @@ foreach ($prospectiveList as $pa) {
 
 <!-- Create Lease Agreement Modal -->
 <div id="convert-modal" class="modal-backdrop" onclick="if(event.target.id==='convert-modal') closeConvertModal();">
-    <div class="modal-content" style="max-width: 620px; background: var(--ws-surface); border-radius: 14px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Create Lease Agreement</h3>
-            <button type="button" onclick="closeConvertModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+    <div class="modal-content" style="max-width: 620px; background: var(--ws-surface); border-radius: 14px; padding: 18px 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 17px; font-weight: 700;">Create Lease Agreement</h3>
+            <button type="button" onclick="closeConvertModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; line-height: 1;">&times;</button>
         </div>
 
-        <p class="text-muted text-xs" style="margin-top: 0; margin-bottom: 16px;">
-            Create a lease agreement with the prospective applicant(s) on it. Once created, the lease can be sent to the prospective applicant(s) for signature. When all applicants sign the lease, they automatically become tenants.
-        </p>
-
         <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/create-lease') ?>" method="POST">
+            <?php
+            // Find target unit details
+            $targetUnit = null;
+            if (!empty($applicant['target_unit_id'])) {
+                foreach ($allUnits as $u) {
+                    if ((int)$u['id'] === (int)$applicant['target_unit_id']) {
+                        $targetUnit = $u;
+                        break;
+                    }
+                }
+            }
+            if (!$targetUnit && !empty($allUnits)) {
+                $targetUnit = $allUnits[0];
+            }
+            $targetUnitId = $targetUnit['id'] ?? 0;
+            $targetRent = $targetUnit['target_rent'] ?? '0.00';
+            $targetDeposit = $targetUnit['security_deposit'] ?? '0.00';
+            $targetStatus = $targetUnit['status'] ?? 'vacant';
+            ?>
+            <input type="hidden" id="modal_unit_id" name="unit_id" value="<?= $targetUnitId ?>" data-rent="<?= $targetRent ?>" data-deposit="<?= $targetDeposit ?>" data-status="<?= htmlspecialchars($targetStatus) ?>">
             
-            <!-- Step 1: Unit Selection -->
-            <div class="form-group">
-                <label for="modal_unit_id">Assigned Unit *</label>
-                <select id="modal_unit_id" name="unit_id" class="form-control" required onchange="onModalUnitChange(this)">
-                    <option value="">-- Choose Unit --</option>
-                    <?php foreach ($allUnits as $u): ?>
-                        <option value="<?= $u['id'] ?>" 
-                                data-rent="<?= $u['target_rent'] ?>" 
-                                data-deposit="<?= $u['security_deposit'] ?>"
-                                data-status="<?= htmlspecialchars($u['status']) ?>"
-                                <?= $applicant['target_unit_id'] == $u['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($u['property_name']) ?> — <?= htmlspecialchars($u['unit_number']) ?> (<?= ucfirst(htmlspecialchars($u['status'])) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <!-- Step 1: Assigned Unit (Enclosed in section card matching the others) -->
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 4px; color: var(--ws-text);">
+                    Assigned Unit
+                </label>
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 8px 12px; border-radius: 8px;">
+                    <input type="text" class="form-control" readonly value="Unit <?= htmlspecialchars($targetUnit['unit_number'] ?? 'N/A') ?> - <?= htmlspecialchars($targetUnit['property_name'] ?? 'Property') ?>" style="background: var(--ws-surface); font-weight: 600; cursor: default; color: var(--ws-text); padding: 6px 10px; font-size: 13.5px;">
+                </div>
             </div>
 
             <!-- Existing Lease Turnover Notice (Conditional) -->
-            <div id="existing-lease-warning" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; color: #92400e; font-size: 13px;">
-                <div style="font-weight: 700; margin-bottom: 4px;">⚠️ Unit has an active/existing lease:</div>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; margin: 4px 0 0 0;">
-                    <input type="checkbox" name="terminate_previous_lease" value="1" style="width: 16px; height: 16px; accent-color: var(--ws-accent);">
+            <div id="existing-lease-warning" style="display: <?= $targetStatus === 'occupied' ? 'block' : 'none' ?>; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; color: #92400e; font-size: 12.5px;">
+                <div style="font-weight: 700; margin-bottom: 2px;">⚠️ Unit has an active/existing lease:</div>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; margin: 2px 0 0 0;">
+                    <input type="checkbox" name="terminate_previous_lease" value="1" style="width: 15px; height: 15px; accent-color: var(--ws-accent);">
                     <span><strong>Turnover:</strong> Mark the previous expiring lease as Expired and replace with this new tenancy</span>
                 </label>
             </div>
 
             <!-- Step 2: Choose All Prospective Applicants for this Lease -->
-            <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 14px 16px; border-radius: 10px; margin-bottom: 16px;">
-                <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--ws-text);">
-                    Select Prospective Applicants on this Lease Agreement
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 4px; color: var(--ws-text);">
+                    Select Applicants for this Lease Agreement
                 </label>
-                <p class="text-muted text-xs" style="margin-top: 0; margin-bottom: 10px;">
-                    Select all prospective applicants (couples, roommates, co-signers) to include on this lease agreement. Once all selected applicants sign the lease, they will become tenants.
-                </p>
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 10px 12px; border-radius: 8px;">
+                    <!-- Primary applicant (always included) -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--ws-surface); border: 1.5px solid var(--ws-accent); border-radius: 6px; margin-bottom: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: default; font-weight: 600; font-size: 13px;">
+                            <input type="checkbox" checked disabled style="width: 15px; height: 15px; accent-color: var(--ws-accent);">
+                            <span><?= htmlspecialchars($applicant['full_name']) ?> <span class="badge badge-primary" style="margin-left: 4px; font-size: 10.5px; padding: 2px 6px;">Primary Applicant</span></span>
+                        </label>
+                        <span class="text-muted text-xs"><?= htmlspecialchars($applicant['cell_phone'] ?: ($applicant['email'] ?: '')) ?></span>
+                    </div>
 
-                <!-- Primary applicant (always included) -->
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--ws-surface); border: 1.5px solid var(--ws-accent); border-radius: 8px; margin-bottom: 8px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: default; font-weight: 600; font-size: 13.5px;">
-                        <input type="checkbox" checked disabled style="width: 16px; height: 16px; accent-color: var(--ws-accent);">
-                        <span><?= htmlspecialchars($applicant['full_name']) ?> <span class="badge badge-primary" style="margin-left: 6px;">Primary Applicant</span></span>
-                    </label>
-                    <span class="text-muted text-xs"><?= htmlspecialchars($applicant['cell_phone'] ?: ($applicant['email'] ?: '')) ?></span>
-                </div>
+                    <!-- Co-applicants list (filtered by unit or selectable) -->
+                    <div id="co-applicants-container">
+                        <?php 
+                        $hasCo = false;
+                        foreach ($otherApplicants as $oa): 
+                            if ((int)$oa['id'] === (int)$applicant['id']) continue;
+                            $hasCo = true;
+                            $isSameUnit = (!empty($targetUnitId) && (int)($oa['target_unit_id'] ?? 0) === (int)$targetUnitId);
+                        ?>
+                            <div class="co-applicant-row" 
+                                 data-unit-id="<?= htmlspecialchars($oa['target_unit_id'] ?? '') ?>"
+                                 style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: <?= $isSameUnit ? 'var(--ws-accent-subtle, rgba(245, 166, 35, 0.12))' : 'var(--ws-surface)' ?>; border: 1.5px solid <?= $isSameUnit ? 'var(--ws-accent, #f5a623)' : 'var(--ws-border-subtle, #ebe7df)' ?>; border-radius: 6px; margin-bottom: 4px; transition: all 0.2s ease;">
+                                <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-size: 13px;">
+                                    <input type="checkbox" name="co_applicant_ids[]" value="<?= (int)$oa['id'] ?>" <?= $isSameUnit ? 'checked' : '' ?> onchange="onCoApplicantToggle(this)" style="width: 15px; height: 15px; accent-color: var(--ws-accent);">
+                                    <span>
+                                        <strong><?= htmlspecialchars($oa['full_name']) ?></strong>
+                                        <?php if (!empty($oa['target_unit_number'])): ?>
+                                            <span class="badge badge-subtle" style="margin-left: 4px; font-size: 10px; padding: 2px 6px;">Applied: Unit <?= htmlspecialchars($oa['target_unit_number']) ?></span>
+                                        <?php endif; ?>
+                                    </span>
+                                </label>
+                                <span class="text-muted text-xs"><?= htmlspecialchars($oa['cell_phone'] ?: ($oa['email'] ?: '')) ?></span>
+                            </div>
+                        <?php endforeach; ?>
 
-                <!-- Co-applicants list (filtered by unit or selectable) -->
-                <div id="co-applicants-container">
-                    <?php 
-                    $hasCo = false;
-                    foreach ($otherApplicants as $oa): 
-                        if ((int)$oa['id'] === (int)$applicant['id']) continue;
-                        $hasCo = true;
-                    ?>
-                        <div class="co-applicant-row" 
-                             data-unit-id="<?= htmlspecialchars($oa['target_unit_id'] ?? '') ?>"
-                             style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); border-radius: 8px; margin-bottom: 6px;">
-                            <label style="display: flex; align-items: center; gap: 10px; margin: 0; cursor: pointer; font-size: 13.5px;">
-                                <input type="checkbox" name="co_applicant_ids[]" value="<?= (int)$oa['id'] ?>" style="width: 16px; height: 16px; accent-color: var(--ws-accent);">
-                                <span>
-                                    <strong><?= htmlspecialchars($oa['full_name']) ?></strong>
-                                    <?php if (!empty($oa['target_unit_number'])): ?>
-                                        <span class="badge badge-subtle" style="margin-left: 4px;">Applied: Unit <?= htmlspecialchars($oa['target_unit_number']) ?></span>
-                                    <?php endif; ?>
-                                </span>
-                            </label>
-                            <span class="text-muted text-xs"><?= htmlspecialchars($oa['cell_phone'] ?: ($oa['email'] ?: '')) ?></span>
-                        </div>
-                    <?php endforeach; ?>
-
-                    <?php if (!$hasCo): ?>
-                        <div class="text-muted text-xs" style="padding: 6px 0;">No other pending/approved applications found.</div>
-                    <?php endif; ?>
+                        <?php if (!$hasCo): ?>
+                            <div class="text-muted text-xs" style="padding: 4px 0;">No other pending/approved applications found.</div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
             <!-- Step 3: Lease Terms -->
-            <div class="form-row">
-                <div class="form-group col-6">
-                    <label for="lease_start_date">Lease Start Date *</label>
-                    <input type="date" id="lease_start_date" name="lease_start_date" class="form-control" value="<?= !empty($applicant['term_start_date']) ? $applicant['term_start_date'] : date('Y-m-d') ?>" required>
-                </div>
-                <div class="form-group col-6">
-                    <label for="lease_end_date">Lease End Date</label>
-                    <input type="date" id="lease_end_date" name="lease_end_date" class="form-control" value="<?= !empty($applicant['term_end_date']) ? $applicant['term_end_date'] : date('Y-m-d', strtotime('+1 year')) ?>">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group col-6">
-                    <label for="rent_amount">Monthly Rent ($) *</label>
-                    <input type="number" id="rent_amount" name="rent_amount" class="form-control" step="0.01" required value="0.00">
-                </div>
-                <div class="form-group col-6">
-                    <label for="security_deposit">Security Deposit ($)</label>
-                    <input type="number" id="security_deposit" name="security_deposit" class="form-control" step="0.01" value="0.00">
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 4px; color: var(--ws-text);">
+                    Lease Duration
+                </label>
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 10px 12px; border-radius: 8px;">
+                    <div class="form-row">
+                        <div class="form-group col-6" style="margin-bottom: 0;">
+                            <label for="lease_start_date" style="font-size: 11.5px; font-weight: 600; margin-bottom: 3px;">Start Date *</label>
+                            <input type="date" id="lease_start_date" name="lease_start_date" class="form-control" value="<?= !empty($applicant['term_start_date']) ? $applicant['term_start_date'] : date('Y-m-d') ?>" required style="padding: 6px 10px; font-size: 13px;">
+                        </div>
+                        <div class="form-group col-6" style="margin-bottom: 0;">
+                            <label for="lease_end_date" style="font-size: 11.5px; font-weight: 600; margin-bottom: 3px;">End Date</label>
+                            <input type="date" id="lease_end_date" name="lease_end_date" class="form-control" value="<?= !empty($applicant['term_end_date']) ? $applicant['term_end_date'] : date('Y-m-d', strtotime('+1 year')) ?>" style="padding: 6px 10px; font-size: 13px;">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="lease_terms">Lease Terms / Special Provisions (Optional)</label>
-                <textarea id="lease_terms" name="terms" class="form-control" rows="2" placeholder="Optional lease terms, conditions, or notes for the prospective applicant(s)..."></textarea>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 4px; color: var(--ws-text);">
+                    Monthly Rent &amp; Security Deposit
+                </label>
+                <div style="background: var(--ws-surface-subtle); border: 1px solid var(--ws-border-subtle); padding: 10px 12px; border-radius: 8px;">
+                    <div class="form-row">
+                        <div class="form-group col-6" style="margin-bottom: 0;">
+                            <label for="rent_amount" style="font-size: 11.5px; font-weight: 600; margin-bottom: 3px;">Monthly Rent ($) *</label>
+                            <input type="number" id="rent_amount" name="rent_amount" class="form-control" step="0.01" required value="0.00" style="padding: 6px 10px; font-size: 13px;">
+                        </div>
+                        <div class="form-group col-6" style="margin-bottom: 0;">
+                            <label for="security_deposit" style="font-size: 11.5px; font-weight: 600; margin-bottom: 3px;">Security Deposit ($)</label>
+                            <input type="number" id="security_deposit" name="security_deposit" class="form-control" step="0.01" value="0.00" style="padding: 6px 10px; font-size: 13px;">
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-actions" style="margin-top: 20px;">
-                <button type="button" class="btn btn-outline" onclick="closeConvertModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Lease Agreement</button>
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label for="lease_terms" style="font-size: 12px; font-weight: 600; margin-bottom: 3px;">Lease Terms / Special Provisions (Optional)</label>
+                <textarea id="lease_terms" name="terms" class="form-control" rows="2" placeholder="Optional lease terms, conditions, or notes..." style="padding: 6px 10px; font-size: 13px;"></textarea>
+            </div>
+
+            <div class="form-actions" style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn btn-outline" onclick="closeConvertModal()" style="padding: 8px 16px;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="padding: 8px 18px;">Create Lease Agreement</button>
             </div>
         </form>
     </div>
@@ -918,48 +944,30 @@ foreach ($prospectiveList as $pa) {
 <script>
 function openConvertModal() {
     document.getElementById('convert-modal').classList.add('active');
-    const unitSelect = document.getElementById('modal_unit_id');
-    if (unitSelect) onModalUnitChange(unitSelect);
+    const unitElem = document.getElementById('modal_unit_id');
+    if (unitElem) {
+        if (unitElem.dataset && unitElem.dataset.rent) {
+            document.getElementById('rent_amount').value = unitElem.dataset.rent;
+            document.getElementById('security_deposit').value = unitElem.dataset.deposit || '0.00';
+        }
+    }
 }
 
 function closeConvertModal() {
     document.getElementById('convert-modal').classList.remove('active');
 }
 
-function onModalUnitChange(selectElem) {
-    const selectedOption = selectElem.options[selectElem.selectedIndex];
-    if (selectedOption && selectedOption.dataset.rent) {
-        document.getElementById('rent_amount').value = selectedOption.dataset.rent;
-        document.getElementById('security_deposit').value = selectedOption.dataset.deposit || '0.00';
-    }
-
-    // Check if unit is currently occupied (expiring lease turnover option)
-    const warning = document.getElementById('existing-lease-warning');
-    if (selectedOption && selectedOption.dataset.status === 'occupied') {
-        warning.style.display = 'block';
-    } else {
-        warning.style.display = 'none';
-    }
-
-    // Filter co-applicant suggestions to highlight those matching this unit
-    const unitId = selectElem.value;
-    document.querySelectorAll('.co-applicant-row').forEach(row => {
-        const rowUnitId = row.getAttribute('data-unit-id');
-        const checkbox = row.querySelector('input[type="checkbox"]');
-        if (unitId && rowUnitId === unitId) {
-            row.style.background = 'var(--ws-accent-subtle)';
-            row.style.borderColor = 'var(--ws-accent)';
-            if (!checkbox.dataset.manuallyChanged) {
-                checkbox.checked = true;
-            }
+function onCoApplicantToggle(checkbox) {
+    const row = checkbox.closest('.co-applicant-row');
+    if (row) {
+        if (checkbox.checked) {
+            row.style.background = 'var(--ws-accent-subtle, rgba(245, 166, 35, 0.12))';
+            row.style.borderColor = 'var(--ws-accent, #f5a623)';
         } else {
             row.style.background = 'var(--ws-surface)';
-            row.style.borderColor = 'var(--ws-border-subtle)';
+            row.style.borderColor = 'var(--ws-border-subtle, #ebe7df)';
         }
-        checkbox.addEventListener('change', () => {
-            checkbox.dataset.manuallyChanged = 'true';
-        });
-    });
+    }
 }
 
 // Document Management & Lightbox
