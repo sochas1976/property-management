@@ -126,11 +126,11 @@ if (!empty($placeholders)) {
                 Early Termination
             </button>
             <?php if (empty($renewalDraft)): ?>
-                <button type="button" class="btn btn-primary" onclick="openRenewalModal();">
+                <button type="button" class="btn btn-outline" onclick="openRenewalModal();">
                     Renew Lease
                 </button>
             <?php else: ?>
-                <a href="<?= Router::url('/leases/' . $renewalDraft['id']) ?>" class="btn btn-primary" style="font-weight: 600; text-decoration: none;">
+                <a href="<?= Router::url('/leases/' . $renewalDraft['id']) ?>" class="btn btn-outline" style="font-weight: 600; text-decoration: none;">
                     Continue Renewal
                 </a>
             <?php endif; ?>
