@@ -99,9 +99,6 @@ $todayDay = AppDate::today()->format('j');
                     </span>
                     <?php if (!empty($selectedTemplate)): ?>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="badge badge-subtle">
-                                <?= round(($selectedTemplate['file_size'] ?? 0) / 1024, 1) ?> KB &bull; <?= htmlspecialchars($selectedTemplate['original_name']) ?>
-                            </span>
                             <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
                                 <span class="badge badge-success">Mappings Saved</span>
                             <?php endif; ?>
