@@ -90,42 +90,74 @@ $todayDay = AppDate::today()->format('j');
     </div>
 
     <div class="card-body">
-        <!-- Template Selection Bar -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ws-border-subtle);">
-            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
-                <label style="font-weight: 600; font-size: 13.5px; color: var(--ws-text); white-space: nowrap; margin: 0;">Select Template:</label>
-                <form method="GET" action="<?= Router::url('/leases/templates') ?>" id="formSelectTemplate" style="display: flex; gap: 8px; flex: 1; margin: 0;">
-                    <?php if ($returnLeaseId > 0): ?>
-                        <input type="hidden" name="lease_id" value="<?= $returnLeaseId ?>">
-                    <?php endif; ?>
-                    <select name="template_id" class="form-control" onchange="document.getElementById('formSelectTemplate').submit();" style="max-width: 460px;">
-                        <?php if (empty($templates)): ?>
-                            <option value="">No templates uploaded yet</option>
-                        <?php else: ?>
-                            <?php foreach ($templates as $tmpl): ?>
-                                <option value="<?= $tmpl['id'] ?>" <?= (!empty($selectedTemplate['id']) && $selectedTemplate['id'] == $tmpl['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($tmpl['name']) ?> (<?= htmlspecialchars($tmpl['original_name']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </select>
-                </form>
-            </div>
-
-            <?php if (!empty($selectedTemplate)): ?>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span class="badge badge-subtle">
-                        <?= round(($selectedTemplate['file_size'] ?? 0) / 1024, 1) ?> KB &bull; <?= htmlspecialchars($selectedTemplate['original_name']) ?>
+        <!-- Available Lease Templates Cards (Matching Workflow Style) -->
+        <?php if (!empty($templates)): ?>
+            <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ws-border-subtle);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Available Lease Templates:
                     </span>
-                    <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
-                        <span class="badge badge-success">Mappings Saved</span>
+                    <?php if (!empty($selectedTemplate)): ?>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge badge-subtle">
+                                <?= round(($selectedTemplate['file_size'] ?? 0) / 1024, 1) ?> KB &bull; <?= htmlspecialchars($selectedTemplate['original_name']) ?>
+                            </span>
+                            <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
+                                <span class="badge badge-success">Mappings Saved</span>
+                            <?php endif; ?>
+                            <form action="<?= Router::url('/leases/templates/' . $selectedTemplate['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;">
+                                <button type="submit" class="btn btn-outline btn-danger btn-xs" title="Delete Template">Delete Template</button>
+                            </form>
+                        </div>
                     <?php endif; ?>
-                    <form action="<?= Router::url('/leases/templates/' . $selectedTemplate['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;">
-                        <button type="submit" class="btn btn-outline btn-danger btn-xs" title="Delete Template">Delete Template</button>
-                    </form>
                 </div>
-            <?php endif; ?>
-        </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+                    <?php foreach ($templates as $tmpl): 
+                        $isSelected = (!empty($selectedTemplate['id']) && $selectedTemplate['id'] == $tmpl['id']);
+                        $tmplUrl = Router::url('/leases/templates?template_id=' . $tmpl['id'] . ($returnLeaseId > 0 ? '&lease_id=' . $returnLeaseId : ''));
+                    ?>
+                        <div onclick="window.location.href='<?= $tmplUrl ?>';" 
+                             style="cursor: pointer; padding: 14px 16px; border-radius: 10px; border: 2px solid <?= $isSelected ? 'var(--ws-accent, #f5a623)' : 'var(--ws-border, #ebe7df)' ?>; background: <?= $isSelected ? '#fffdf7' : 'var(--ws-surface-subtle, #faf9f6)' ?>; box-shadow: <?= $isSelected ? '0 3px 12px rgba(245, 166, 35, 0.16)' : 'none' ?>; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.15s ease;">
+                            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                                <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid <?= $isSelected ? 'var(--ws-accent, #f5a623)' : 'var(--ws-border-strong, #d8d3c7)' ?>; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff;">
+                                    <?php if ($isSelected): ?>
+                                        <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--ws-accent, #f5a623);"></div>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="width: 32px; height: 40px; background: #ffffff; border: 1.5px solid <?= $isSelected ? 'var(--ws-accent, #f5a623)' : 'var(--ws-border-strong, #d8d3c7)' ?>; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); padding: 4px 3px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0;">
+                                    <div style="display: flex; flex-direction: column; gap: 2.5px;">
+                                        <div style="height: 3px; width: 60%; background: var(--ws-text, #111); border-radius: 1px;"></div>
+                                        <div style="height: 2px; width: 100%; background: #e5e2da; border-radius: 1px;"></div>
+                                        <div style="height: 2px; width: 80%; background: #e5e2da; border-radius: 1px;"></div>
+                                        <div style="height: 2px; width: 90%; background: #e5e2da; border-radius: 1px;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                        <span style="font-size: 6.5px; font-weight: 800; color: var(--ws-accent, #f5a623); letter-spacing: 0.2px; line-height: 1;">DOCX</span>
+                                        <?php if ($isSelected): ?>
+                                            <div style="width: 8px; height: 8px; border-radius: 50%; background: rgba(245, 166, 35, 0.2); border: 1px solid rgba(245, 166, 35, 0.7); display: flex; align-items: center; justify-content: center; font-size: 5.5px; color: var(--ws-accent, #f5a623); font-weight: 900; line-height: 1;">&#10003;</div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div style="min-width: 0;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--ws-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        <?= htmlspecialchars($tmpl['name']) ?>
+                                    </div>
+                                    <div class="text-muted text-xs" style="margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        <?= htmlspecialchars($tmpl['original_name']) ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php if ($isSelected): ?>
+                                <span style="font-size: 11px; padding: 3px 10px; font-weight: 700; border-radius: 9999px; background: rgba(245, 166, 35, 0.15); color: #b45309; border: 1px solid rgba(245, 166, 35, 0.35); flex-shrink: 0;">
+                                    Active
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
         <?php if (!empty($templateError)): ?>
             <div class="alert alert-danger" style="margin-bottom: 20px;">
                 <?= htmlspecialchars($templateError) ?>
