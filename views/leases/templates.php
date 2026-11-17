@@ -15,8 +15,7 @@ $todayDay = AppDate::today()->format('j');
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Lease Templates</h1>
-        <p class="page-subtitle">Upload Word (.docx) templates and map <code>[ ]</code> bracket placeholders to Application, Unit, Property, and Calendar data</p>
+        <h1 class="page-title">Lease Agreements</h1>
     </div>
     <div>
         <button type="button" class="btn btn-primary" onclick="toggleUploadBox();" id="btnToggleUpload">
@@ -26,9 +25,18 @@ $todayDay = AppDate::today()->format('j');
 </div>
 
 <!-- View Segmented Tabs -->
-<div style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center;">
+<div style="display: flex; gap: 8px; margin-bottom: 22px; align-items: center; flex-wrap: wrap;">
     <a href="<?= Router::url('/leases') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
-        Lease Agreements
+        All Leases
+    </a>
+    <a href="<?= Router::url('/leases?tab=in_progress') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Workflows in Progress (<?= (int)($inProgressCount ?? 0) ?>)
+    </a>
+    <a href="<?= Router::url('/leases?tab=active') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Active Leases
+    </a>
+    <a href="<?= Router::url('/leases?tab=expired') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+        Expired Leases
     </a>
     <a href="<?= Router::url('/leases/templates') ?>" class="btn btn-primary btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
         Lease Templates

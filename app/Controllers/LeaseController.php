@@ -53,6 +53,11 @@ class LeaseController extends Controller {
 
         $activeTab = $_GET['tab'] ?? 'all';
 
+        if ($activeTab === 'templates') {
+            $this->redirect('/leases/templates');
+            return;
+        }
+
         $this->render('leases.index', [
             'title'            => 'Lease Agreements',
             'leases'           => $allLeases,
@@ -105,13 +110,22 @@ class LeaseController extends Controller {
             }
         }
 
+        $allLeases = Lease::all();
+        $inProgressCount = 0;
+        foreach ($allLeases as $l) {
+            if ($l['status'] === 'draft' || in_array($l['applicant_status'] ?? '', ['lease_created', 'lease_sent'], true)) {
+                $inProgressCount++;
+            }
+        }
+
         $this->render('leases.templates', [
-            'title'            => 'Lease Templates',
+            'title'            => 'Lease Agreements',
             'templates'        => $templates,
             'selectedTemplate' => $selectedTemplate,
             'placeholders'     => $placeholders,
             'fieldCatalog'     => DocxTemplateProcessor::getAvailableFieldCatalog(),
-            'templateError'    => $templateError
+            'templateError'    => $templateError,
+            'inProgressCount'  => $inProgressCount
         ]);
     }
 

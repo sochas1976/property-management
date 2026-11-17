@@ -31,7 +31,7 @@ $activeTab = $activeTab ?? 'all';
     <a href="<?= Router::url('/leases?tab=expired') ?>" class="btn <?= $activeTab === 'expired' ? 'btn-primary' : 'btn-outline' ?> btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
         Expired Leases
     </a>
-    <a href="<?= Router::url('/leases/templates') ?>" class="btn btn-outline btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
+    <a href="<?= Router::url('/leases/templates') ?>" class="btn <?= $activeTab === 'templates' ? 'btn-primary' : 'btn-outline' ?> btn-sm" style="border-radius: 9999px; padding: 6px 16px;">
         Lease Templates
     </a>
 </div>
