@@ -182,20 +182,18 @@ $todayDay = AppDate::today()->format('j');
                     <input type="hidden" name="lease_id" value="<?= $returnLeaseId ?>">
                 <?php endif; ?>
 
-                <div style="margin-bottom: 16px;">
-                    <span class="badge badge-info" style="font-size: 12px;">
-                        <?= count($placeholders) ?> Bracket Placeholder<?= count($placeholders) > 1 ? 's' : '' ?> Found
-                    </span>
-                    <span style="font-size: 13px; color: var(--text-muted); margin-left: 8px;">
-                        Map each <code>[ ]</code> placeholder on the left to a data field on the right. Any value entered in <strong>Manual / Override Value</strong> will take precedence and override the source field. Calendar Day currently resolves to <strong><?= htmlspecialchars($todayDay) ?></strong> (<?= htmlspecialchars($todayFormatted) ?>).
-                    </span>
-                </div>
-
                 <div class="table-responsive" style="margin-bottom: 20px;">
                     <table class="table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border, #e5e7eb); text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">
-                                <th style="padding: 10px 12px; width: 38%;">Placeholder In Document</th>
+                                <th style="padding: 10px 12px; width: 38%;">
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <span>Placeholder In Document</span>
+                                        <span class="badge badge-info" style="font-size: 11px; font-weight: 700; text-transform: none; letter-spacing: normal;">
+                                            <?= count($placeholders) ?> Bracket Placeholder<?= count($placeholders) > 1 ? 's' : '' ?> Found
+                                        </span>
+                                    </div>
+                                </th>
                                 <th style="padding: 10px 12px; width: 36%;">Data Source Field</th>
                                 <th style="padding: 10px 12px; width: 26%;">Manual / Override Value</th>
                             </tr>
