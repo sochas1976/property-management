@@ -247,19 +247,6 @@ $todayDay = AppDate::today()->format('j');
                         </tbody>
                     </table>
                 </div>
-
-                <div style="background: var(--bg-subtle, #f9fafb); border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 16px; margin-top: 10px;">
-                    <div style="margin-bottom: 12px;">
-                        <span style="font-size: 13px; color: var(--text-muted);">
-                            Once saved, selecting this template in any Lease Agreement view will automatically extract the mapped fields from the applicant's application, unit, and property.
-                        </span>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" class="btn btn-primary">
-                            Save Placeholder Mapping
-                        </button>
-                    </div>
-                </div>
             </form>
         <?php endif; ?>
     </div>
