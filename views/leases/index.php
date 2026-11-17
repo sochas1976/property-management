@@ -12,9 +12,6 @@ $activeTab = $activeTab ?? 'all';
     <div>
         <h1 class="page-title">Lease Agreements</h1>
     </div>
-    <div>
-        <a href="<?= Router::url('/leases/create') ?>" class="btn btn-primary">+ Create New Lease</a>
-    </div>
 </div>
 
 <!-- View Segmented Tabs -->
@@ -40,9 +37,9 @@ $activeTab = $activeTab ?? 'all';
 <?php if ($activeTab === 'all' || $activeTab === 'in_progress'): ?>
     <?php if (!empty($inProgressLeases)): ?>
         <div class="card" style="margin-bottom: 28px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-            <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">
+                    <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">
                         Lease Workflows in Progress
                     </h2>
                 </div>
