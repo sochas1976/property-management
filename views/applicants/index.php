@@ -8,7 +8,7 @@ use App\Core\Router;
         <p class="page-subtitle">Prospective tenants, rental application forms, review pipeline, and approval workflow</p>
     </div>
     <div>
-        <a href="<?= Router::url('/applicants/create') ?>" class="btn btn-primary">+ Add Application</a>
+        <a href="<?= Router::url('/applicants/create') ?>" class="btn btn-outline">Add Application</a>
     </div>
 </div>
 
