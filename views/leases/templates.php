@@ -83,8 +83,8 @@ $todayDay = AppDate::today()->format('j');
             Lease Templates
         </h2>
         <button type="button" onclick="toggleUploadBox();" id="btnToggleUpload" title="Upload New Template (.docx)" aria-label="Upload New Template (.docx)"
-                style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px solid var(--table-th-dark-text, var(--ws-text)); color: var(--table-th-dark-text, var(--ws-text)); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; padding: 0;"
-                onmouseover="this.style.transform='scale(1.12)'; this.style.background='rgba(0,0,0,0.06)';"
+                style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px solid var(--ws-accent, #f5a623); color: var(--ws-accent, #f5a623); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; padding: 0;"
+                onmouseover="this.style.transform='scale(1.12)'; this.style.background='var(--ws-accent-subtle, rgba(245, 166, 35, 0.15))';"
                 onmouseout="this.style.transform='scale(1)'; this.style.background='transparent';">
             <svg id="iconToggleUpload" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; transition: transform 0.2s ease;">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
