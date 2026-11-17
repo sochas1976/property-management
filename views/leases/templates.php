@@ -182,19 +182,13 @@ $todayDay = AppDate::today()->format('j');
                     <input type="hidden" name="lease_id" value="<?= $returnLeaseId ?>">
                 <?php endif; ?>
 
-                <div style="margin-bottom: 14px;">
+                <div style="margin-bottom: 16px;">
                     <span class="badge badge-info" style="font-size: 12px;">
                         <?= count($placeholders) ?> Bracket Placeholder<?= count($placeholders) > 1 ? 's' : '' ?> Found
                     </span>
                     <span style="font-size: 13px; color: var(--text-muted); margin-left: 8px;">
                         Map each <code>[ ]</code> placeholder on the left to a data field on the right. Any value entered in <strong>Manual / Override Value</strong> will take precedence and override the source field. Calendar Day currently resolves to <strong><?= htmlspecialchars($todayDay) ?></strong> (<?= htmlspecialchars($todayFormatted) ?>).
                     </span>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        Save Placeholder Mapping
-                    </button>
                 </div>
 
                 <div class="table-responsive" style="margin-bottom: 20px;">
