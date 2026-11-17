@@ -194,7 +194,7 @@ $todayDay = AppDate::today()->format('j');
                                 <tr style="border-bottom: 1px solid var(--border, #f3f4f6);">
                                     <td style="padding: 12px; vertical-align: middle;">
                                         <input type="hidden" name="placeholder_keys[<?= $phIdx ?>]" value="<?= htmlspecialchars($ph['original_text']) ?>">
-                                        <div style="font-family: monospace; font-weight: 700; color: var(--ws-orange, #c2410c); font-size: 13px; margin-bottom: 4px;">
+                                        <div style="font-family: monospace; font-weight: 700; color: var(--ws-accent, #f5a623); font-size: 13px; margin-bottom: 4px;">
                                             <?= htmlspecialchars($ph['original_text']) ?>
                                             <?php if ($ph['count'] > 1): ?>
                                                 <span class="badge badge-subtle" style="font-size: 10px; margin-left: 4px;">&times;<?= $ph['count'] ?> occurrences</span>
