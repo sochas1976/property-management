@@ -93,15 +93,10 @@ $todayDay = AppDate::today()->format('j');
         <!-- Available Lease Templates Cards (Matching Workflow Style) -->
         <?php if (!empty($templates)): ?>
             <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ws-border-subtle);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <div style="margin-bottom: 12px;">
                     <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                         Available Lease Templates:
                     </span>
-                    <?php if (!empty($selectedTemplate) && !empty($selectedTemplate['placeholder_mappings'])): ?>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="badge badge-success">Mappings Saved</span>
-                        </div>
-                    <?php endif; ?>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
