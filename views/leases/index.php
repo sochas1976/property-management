@@ -126,8 +126,8 @@ $activeTab = $activeTab ?? 'all';
 <!-- TABLE 2: Active Lease Agreements -->
 <?php if ($activeTab === 'all' || $activeTab === 'active'): ?>
     <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-        <div class="card-header" style="background-color: var(--ws-raised); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px;">
-            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--ws-text);">
+        <div class="card-header" style="background-color: var(--table-th-dark, #423e37); border-bottom: 1.5px solid var(--table-th-dark-border, #35322c); padding: 16px 20px;">
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, #ffffff);">
                 Active Lease Agreements
             </h2>
         </div>
