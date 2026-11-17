@@ -247,6 +247,12 @@ $todayDay = AppDate::today()->format('j');
                         </tbody>
                     </table>
                 </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button type="submit" class="btn btn-primary">
+                        Save Placeholder Mapping
+                    </button>
+                </div>
             </form>
         <?php endif; ?>
     </div>
