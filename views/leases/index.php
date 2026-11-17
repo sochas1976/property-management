@@ -71,7 +71,14 @@ $activeTab = $activeTab ?? 'all';
                                     $applicantNames = array_filter(array_map('trim', explode(' & ', $wLease['tenant_name'] ?: 'Prospective Applicant')));
                                     foreach ($applicantNames as $aName):
                                     ?>
-                                        <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000;"><?= htmlspecialchars($aName) ?></a></strong></div>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($aName) ?></a></strong>
+                                            <?php if ($isRenewal): ?>
+                                                <span class="badge badge-warning" style="font-size: 10.5px; padding: 2px 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                    Renewal
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                     <?php endforeach; ?>
                                 </td>
                                 <td>
