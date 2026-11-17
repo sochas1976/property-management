@@ -48,6 +48,11 @@ if (empty($from) && !empty($_SERVER['HTTP_REFERER'])) {
 $fromHistory = ($from === 'history');
 $fromApplicant = ($from === 'applicant') || ($applicantId > 0 && !empty($leaseApplicants));
 
+// Check if this draft lease is a renewal workflow
+$isRenewal = (!empty($lease['terms']) && stripos($lease['terms'], 'renew') !== false)
+    || (!empty($primaryApplicant['notes']) && stripos($primaryApplicant['notes'], 'renew') !== false)
+    || (!empty($lease['tenant_id']) && $lease['status'] === 'draft');
+
 // Workflow stage setup (matching Application & Lease Workflow)
 $applicantStatus = $primaryApplicant['status'] ?? ($lease['status'] === 'draft' ? 'lease_created' : ($lease['status'] === 'active' ? 'converted' : ''));
 $stageMap = [
@@ -60,10 +65,10 @@ $stageMap = [
 ];
 $currentStage = $stageMap[$applicantStatus] ?? ($lease['status'] === 'draft' ? 2 : ($lease['status'] === 'active' ? 4 : 0));
 $workflowSteps = [
-    1 => '1. Approved',
-    2 => '2. Review Lease',
+    1 => $isRenewal ? '1. Renewal Initiated' : '1. Approved',
+    2 => $isRenewal ? '2. Review Renewal' : '2. Review Lease',
     3 => '3. Lease Sent',
-    4 => '4. Signed & Tenant',
+    4 => $isRenewal ? '4. Signed & Renewed' : '4. Signed & Tenant',
 ];
 
 $signedTotal = 0;
@@ -85,15 +90,17 @@ if (!empty($placeholders)) {
 ?>
 
 <div class="breadcrumb" style="margin-bottom: 16px; font-size: 13px; font-weight: 500;">
-    <?php if ($applicantId > 0): ?>
-        <?php if (!($lease['status'] === 'draft' || !empty($leaseApplicants))): ?>
-            <a href="<?= Router::url('/applicants/' . $applicantId . ($fromHistory ? '?from=history' : '')) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
-                &larr; Back to Application &amp; Lease Workflow
-            </a>
-        <?php endif; ?>
-    <?php elseif ($fromHistory): ?>
+    <?php if ($from === 'history'): ?>
         <a href="<?= Router::url('/applicants/history') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
             &larr; Back to Historical Applications
+        </a>
+    <?php elseif ($from === 'applicant' && $applicantId > 0): ?>
+        <a href="<?= Router::url('/applicants/' . $applicantId) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Application &amp; Lease Workflow
+        </a>
+    <?php elseif ($lease['status'] === 'terminated' || $lease['status'] === 'expired'): ?>
+        <a href="<?= Router::url('/leases?tab=expired') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Expired Leases
         </a>
     <?php else: ?>
         <a href="<?= Router::url('/leases') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
@@ -102,65 +109,50 @@ if (!empty($placeholders)) {
     <?php endif; ?>
 </div>
 
-<div class="page-header" style="margin-bottom: 24px;">
+<div class="page-header" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
     <div>
-        <?php if ($lease['status'] !== 'draft'): ?>
-            <div class="badge <?= $badge['class'] ?>" style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">
-                <?= $badge['label'] ?>
-            </div>
-        <?php endif; ?>
         <h1 class="page-title" style="margin-top: 6px; font-size: 24px; font-weight: 700;">
-            Residential Lease Agreement<?= $lease['status'] === 'draft' ? '' : ' #' . $lease['id'] ?>
+            Residential Lease Agreement
         </h1>
         <p class="page-subtitle" style="margin-top: 4px; color: var(--text-muted); font-size: 14px;">
             <?= $lease['status'] === 'draft' 
-                ? 'Generate and review agreement terms.'
+                ? ($isRenewal ? 'Review and execute residential lease renewal agreement terms.' : 'Generate and review agreement terms.')
                 : 'Residential tenancy agreement terms, attached contracts, and execution records.' ?>
         </p>
     </div>
-
-    <?php if ($lease['status'] !== 'draft'): ?>
-    <div class="action-buttons">
-        <form action="<?= Router::url('/leases/' . $lease['id'] . '/status') ?>" method="POST" style="display: flex; gap: 8px; align-items: center;">
-            <?php if ($fromHistory): ?>
-                <input type="hidden" name="from" value="history">
-            <?php elseif ($applicantId > 0): ?>
-                <input type="hidden" name="from" value="applicant">
-                <input type="hidden" name="applicant_id" value="<?= $applicantId ?>">
-            <?php endif; ?>
-            <select name="status" class="form-control" style="width: auto; border-radius: 8px; border: 1.5px solid var(--ws-border-strong, #d8d3c7); padding: 8px 12px; font-size: 13.5px;">
-                <option value="active" <?= $lease['status'] === 'active' ? 'selected' : '' ?>>Active</option>
-                <option value="draft" <?= $lease['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
-                <?php if ($isExpiringSoon || $lease['status'] === 'expiring_soon'): ?>
-                    <option value="expiring_soon" <?= ($lease['status'] === 'expiring_soon' || ($lease['status'] === 'active' && $isExpiringSoon)) ? 'selected' : '' ?>>Expiring Soon</option>
-                <?php endif; ?>
-                <option value="terminated" <?= $lease['status'] === 'terminated' ? 'selected' : '' ?>>Terminated</option>
-                <option value="expired" <?= $lease['status'] === 'expired' ? 'selected' : '' ?>>Expired</option>
-            </select>
-            <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 8px 16px; border-radius: 8px; background: #fff; cursor: pointer;">
-                Update Status
+    <?php if ($lease['status'] === 'active' || $lease['status'] === 'expiring_soon'): ?>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" onclick="openEarlyTerminationModal();">
+                Early Termination
             </button>
-        </form>
-    </div>
+            <?php if (empty($renewalDraft)): ?>
+                <button type="button" class="btn btn-primary" onclick="openRenewalModal();">
+                    Renew Lease
+                </button>
+            <?php else: ?>
+                <a href="<?= Router::url('/leases/' . $renewalDraft['id']) ?>" class="btn btn-primary" style="font-weight: 600; text-decoration: none;">
+                    Continue Renewal
+                </a>
+            <?php endif; ?>
+        </div>
     <?php endif; ?>
 </div>
 
-<!-- Full-Width Application & Lease Workflow Banner Card (Includes Workflow Stepper, Stage Actions, and Property, Unit & Prospective Tenants) -->
-<?php if ($lease['status'] === 'draft' || !empty($leaseApplicants)): ?>
+<!-- Full-Width Application & Lease Workflow Banner Card (Only for In-Progress Draft Workflows) -->
+<?php if ($lease['status'] === 'draft'): ?>
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
     <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div>
             <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Steps for Completion</h2>
         </div>
-        <div>
-            <?php if ($applicantStatus === 'lease_created' || $lease['status'] === 'draft'): ?>
-                <!-- Hidden during review as step buttons drive the workflow -->
-            <?php elseif ($applicantStatus === 'lease_sent'): ?>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <?php if ($isRenewal): ?>
+                <span class="badge" style="background: var(--ws-accent-subtle); color: var(--ws-accent-dark, #b26a00); border: 1.5px solid var(--ws-accent); font-weight: 700; font-size: 11.5px; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Lease Renewal
+                </span>
+            <?php endif; ?>
+            <?php if ($applicantStatus === 'lease_sent'): ?>
                 <span class="badge badge-info" style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Lease Sent (<?= $signedTotal ?> of <?= count($leaseApplicants) ?> Signed)</span>
-            <?php elseif ($applicantStatus === 'converted' || $lease['status'] === 'active'): ?>
-                <span class="badge badge-success" style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Lease Active &amp; Tenancy Established</span>
-            <?php else: ?>
-                <span class="badge badge-subtle" style="font-weight: 600; padding: 4px 10px; border-radius: 6px;"><?= strtoupper(htmlspecialchars($applicantStatus ?: 'In Progress')) ?></span>
             <?php endif; ?>
         </div>
     </div>
@@ -211,31 +203,51 @@ if (!empty($placeholders)) {
                 <?php if ($applicantStatus === 'lease_created' || ($lease['status'] === 'draft' && $applicantStatus !== 'lease_sent' && $applicantStatus !== 'converted')): ?>
                     <div>
                         <div>
-                            <div style="font-weight: 700; font-size: 14.5px;">Step 2: Review Lease Agreement:</div>
+                            <div style="font-weight: 700; font-size: 14.5px;">
+                                <?= $isRenewal ? 'Step 2: Review Renewal Lease Agreement:' : 'Step 2: Review Lease Agreement:' ?>
+                            </div>
                             <div class="text-muted text-xs" style="margin-top: 3px;">
-                                The draft lease agreement is prepared. Review terms below and finalize the agreement.
+                                <?= $isRenewal 
+                                    ? 'The renewal lease agreement terms have been prepared. Review terms below and send for tenant signature.' 
+                                    : 'The draft lease agreement is prepared. Review terms below and finalize the agreement.' ?>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
-                            <?php if ($primaryApplicant): ?>
+                            <?php if ($isRenewal): ?>
+                                <form action="<?= Router::url('/leases/' . $lease['id'] . '/cancel') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);">
+                                        Cancel
+                                    </button>
+                                </form>
+                            <?php elseif ($primaryApplicant): ?>
                                 <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/cancel-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);">
+                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);">
                                         &larr; Revert Back
                                     </button>
                                 </form>
-                                <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases table">
-                                    Pause &amp; Save
-                                </a>
+                            <?php else: ?>
+                                <form action="<?= Router::url('/leases/' . $lease['id'] . '/cancel') ?>" method="POST" style="margin: 0; display: inline-flex;">
+                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);">
+                                        Cancel
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+
+                            <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases table">
+                                Pause &amp; Save
+                            </a>
+
+                            <?php if ($primaryApplicant): ?>
                                 <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                     <input type="hidden" name="from" value="lease">
-                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center;">
                                         Send Lease &rarr;
                                     </button>
                                 </form>
                             <?php else: ?>
                                 <form action="<?= Router::url('/leases/' . $lease['id'] . '/status') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                     <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center;">
                                         Activate Lease &rarr;
                                     </button>
                                 </form>
@@ -246,16 +258,20 @@ if (!empty($placeholders)) {
                     <?php elseif ($applicantStatus === 'lease_sent'): ?>
                         <div>
                             <div>
-                                <div style="font-weight: 700; font-size: 14.5px;">Step 3: Lease Sent — Awaiting Signature(s):</div>
+                                <div style="font-weight: 700; font-size: 14.5px;">
+                                    <?= $isRenewal ? 'Step 3: Renewal Sent — Awaiting Signature(s):' : 'Step 3: Lease Sent — Awaiting Signature(s):' ?>
+                                </div>
                                 <div class="text-muted text-xs" style="margin-top: 3px; line-height: 1.5;">
-                                    Once all prospective applicants sign the lease, they will automatically become official tenants and the lease will activate.
+                                    <?= $isRenewal 
+                                        ? 'The renewal lease agreement was sent to the resident. Once signed, the renewal lease will activate.' 
+                                        : 'Once all prospective applicants sign the lease, they will automatically become official tenants and the lease will activate.' ?>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
                                 <?php if ($primaryApplicant): ?>
                                     <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                         <input type="hidden" name="from" value="lease">
-                                        <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;" onclick="return confirm('Recall this sent lease and return to Step 2 (Review Lease)?');">
+                                        <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;">
                                             &larr; Revert Back
                                         </button>
                                     </form>
@@ -281,11 +297,9 @@ if (!empty($placeholders)) {
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <?php if (!empty($lease['tenant_id'])): ?>
-                                    <a href="<?= Router::url('/tenants/' . $lease['tenant_id']) ?>" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                                        View Tenant Profile &rarr;
-                                    </a>
-                                <?php endif; ?>
+                                <a href="<?= Router::url('/leases') ?>" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center;">
+                                    View Lease Agreements
+                                </a>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -297,8 +311,13 @@ if (!empty($placeholders)) {
 
 <!-- Card 2: Comprehensive Lease Agreement Details -->
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px;">
+    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
         <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Lease Agreement Details</h2>
+        <?php if (!empty($renewalDraft)): ?>
+            <span class="badge" style="background: var(--ws-accent-subtle); color: var(--ws-accent-dark, #b26a00); border: 1.5px solid var(--ws-accent); font-weight: 700; font-size: 11.5px; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Renewal in Progress
+            </span>
+        <?php endif; ?>
     </div>
     <div class="card-body" style="padding: 20px 24px;">
         <!-- Prospective Tenants / Resident Information (First) -->
@@ -421,8 +440,8 @@ if (!empty($placeholders)) {
             </div>
         </div>
 
-        <!-- Agreement Terms Section (Third / Last) -->
-        <div>
+        <!-- Agreement Terms Section (Third) -->
+        <div style="<?= (!empty($lease['termination_reason']) || $lease['status'] === 'terminated') ? 'margin-bottom: 20px;' : '' ?>">
             <div style="margin-bottom: 10px;">
                 <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                     Agreement Terms:
@@ -492,6 +511,22 @@ if (!empty($placeholders)) {
                 </div>
             </div>
         </div>
+
+        <!-- Termination Reason Section (Displayed when lease is terminated or has a reason) -->
+        <?php if ($lease['status'] === 'terminated' || !empty($lease['termination_reason'])): ?>
+            <div>
+                <div style="margin-bottom: 10px;">
+                    <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Termination Reason:
+                    </span>
+                </div>
+                <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
+                    <div style="font-size: 14px; color: var(--ws-text); line-height: 1.6;">
+                        <?= !empty($lease['termination_reason']) ? nl2br(htmlspecialchars($lease['termination_reason'])) : '<span class="text-muted" style="font-style: italic;">No specific termination reason provided.</span>' ?>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -701,4 +736,197 @@ if (!empty($placeholders)) {
         <?php endif; ?>
     </div>
 </div>
+<?php endif; ?>
+
+<?php if ($lease['status'] === 'active' || $lease['status'] === 'expiring_soon'): ?>
+<!-- Modal 1: Early Lease Termination -->
+<div id="modalEarlyTermination" class="modal-backdrop" onclick="if(event.target===this)closeEarlyTerminationModal();">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Early Lease Termination</h3>
+            <button type="button" class="modal-close" onclick="closeEarlyTerminationModal();">&times;</button>
+        </div>
+        <form action="<?= Router::url('/leases/' . $lease['id'] . '/terminate') ?>" method="POST" id="formEarlyTermination">
+            <div class="form-group" style="margin-bottom: 18px;">
+                <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 8px; display: block; color: var(--ws-text);">
+                    Termination Effective Option:
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <label id="labelTimingImmediate" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--ws-accent); background: var(--ws-accent-subtle); cursor: pointer; transition: all 0.2s ease;">
+                        <input type="radio" name="timing_choice" value="immediate" id="radioImmediate" onchange="toggleTerminationDateInput();" checked style="accent-color: var(--ws-accent); width: 16px; height: 16px;">
+                        <span style="font-size: 13.5px; font-weight: 600; color: var(--ws-text);">Effective Immediately</span>
+                    </label>
+                    <label id="labelTimingSpecify" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--ws-border); background: var(--ws-surface); cursor: pointer; transition: all 0.2s ease;">
+                        <input type="radio" name="timing_choice" value="specify" id="radioSpecify" onchange="toggleTerminationDateInput();" style="accent-color: var(--ws-accent); width: 16px; height: 16px;">
+                        <span style="font-size: 13.5px; font-weight: 600; color: var(--ws-text);">Specify End Date</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="groupTerminationDate" class="form-group" style="margin-bottom: 18px;">
+                <label for="inputTerminationDate" class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                    Early Termination Date <span style="color: var(--ws-accent); font-weight: 700;">*</span>
+                </label>
+                <input type="date" name="termination_date" id="inputTerminationDate" 
+                       class="form-control" 
+                       value="<?= AppDate::todayString() ?>" 
+                       min="<?= AppDate::todayString() ?>" 
+                       max="<?= !empty($lease['end_date']) ? date('Y-m-d', strtotime($lease['end_date'] . ' -1 day')) : '' ?>" 
+                       required>
+                <div class="text-muted text-xs" style="margin-top: 6px; color: var(--ws-text-muted);">
+                    Date must be on or before <?= !empty($lease['end_date']) ? date('M j, Y', strtotime($lease['end_date'] . ' -1 day')) : 'the scheduled end date' ?> (prior to scheduled lease expiration).
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 6px;">
+                <label for="inputTerminationReason" class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                    Termination Reason
+                </label>
+                <textarea name="reason" id="inputTerminationReason" rows="2" class="form-control" placeholder="e.g. Mutual consent, tenant requested early move-out..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeEarlyTerminationModal();">Cancel</button>
+                <button type="submit" class="btn btn-primary">Terminate Lease</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 2: Lease Renewal -->
+<div id="modalRenewal" class="modal-backdrop" onclick="if(event.target===this)closeRenewalModal();">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Renew Lease Agreement</h3>
+            <button type="button" class="modal-close" onclick="closeRenewalModal();">&times;</button>
+        </div>
+        <form action="<?= Router::url('/leases/' . $lease['id'] . '/renew') ?>" method="POST" id="formRenewal">
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                        New Start Date <span style="color: var(--ws-accent); font-weight: 700;">*</span>
+                    </label>
+                    <?php
+                    $suggestedStart = !empty($lease['end_date']) ? date('Y-m-d', strtotime($lease['end_date'] . ' +1 day')) : AppDate::todayString();
+                    $suggestedEnd = date('Y-m-d', strtotime($suggestedStart . ' +1 year -1 day'));
+                    ?>
+                    <input type="date" name="start_date" id="renewStartDate" class="form-control" value="<?= $suggestedStart ?>" required onchange="autoCalculateEndDate();">
+                </div>
+                <div class="form-group col-6">
+                    <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                        New End Date <span style="color: var(--ws-accent); font-weight: 700;">*</span>
+                    </label>
+                    <input type="date" name="end_date" id="renewEndDate" class="form-control" value="<?= $suggestedEnd ?>" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                        Monthly Rent ($) <span style="color: var(--ws-accent); font-weight: 700;">*</span>
+                    </label>
+                    <input type="number" step="0.01" name="rent_amount" class="form-control" value="<?= htmlspecialchars($lease['rent_amount']) ?>" required>
+                </div>
+                <div class="form-group col-6">
+                    <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                        Security Deposit ($)
+                    </label>
+                    <input type="number" step="0.01" name="deposit_held" class="form-control" value="<?= htmlspecialchars($lease['deposit_held'] ?? 0) ?>">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 6px;">
+                <label class="form-label" style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px; display: block; color: var(--ws-text);">
+                    Payment Frequency
+                </label>
+                <select name="payment_frequency" class="form-control">
+                    <option value="monthly" <?= ($lease['payment_frequency'] ?? 'monthly') === 'monthly' ? 'selected' : '' ?>>Monthly</option>
+                    <option value="quarterly" <?= ($lease['payment_frequency'] ?? '') === 'quarterly' ? 'selected' : '' ?>>Quarterly</option>
+                    <option value="yearly" <?= ($lease['payment_frequency'] ?? '') === 'yearly' ? 'selected' : '' ?>>Yearly</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeRenewalModal();">Cancel</button>
+                <button type="submit" class="btn btn-primary">Start Renewal Workflow</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEarlyTerminationModal() {
+    var modal = document.getElementById('modalEarlyTermination');
+    if (modal) modal.classList.add('active');
+}
+function closeEarlyTerminationModal() {
+    var modal = document.getElementById('modalEarlyTermination');
+    if (modal) modal.classList.remove('active');
+}
+function toggleTerminationDateInput() {
+    var radioImm = document.getElementById('radioImmediate');
+    var dateInput = document.getElementById('inputTerminationDate');
+    var labelImm = document.getElementById('labelTimingImmediate');
+    var labelSpec = document.getElementById('labelTimingSpecify');
+    var todayStr = '<?= AppDate::todayString() ?>';
+    if (radioImm && radioImm.checked) {
+        if (dateInput) {
+            dateInput.value = todayStr;
+            dateInput.readOnly = true;
+            dateInput.style.backgroundColor = 'var(--ws-surface-subtle)';
+            dateInput.style.cursor = 'not-allowed';
+        }
+        if (labelImm) {
+            labelImm.style.borderColor = 'var(--ws-accent)';
+            labelImm.style.backgroundColor = 'var(--ws-accent-subtle)';
+        }
+        if (labelSpec) {
+            labelSpec.style.borderColor = 'var(--ws-border)';
+            labelSpec.style.backgroundColor = 'var(--ws-surface)';
+        }
+    } else {
+        if (dateInput) {
+            dateInput.readOnly = false;
+            dateInput.style.backgroundColor = 'var(--input-bg, #fff)';
+            dateInput.style.cursor = 'text';
+            dateInput.focus();
+        }
+        if (labelImm) {
+            labelImm.style.borderColor = 'var(--ws-border)';
+            labelImm.style.backgroundColor = 'var(--ws-surface)';
+        }
+        if (labelSpec) {
+            labelSpec.style.borderColor = 'var(--ws-accent)';
+            labelSpec.style.backgroundColor = 'var(--ws-accent-subtle)';
+        }
+    }
+}
+
+function openRenewalModal() {
+    var modal = document.getElementById('modalRenewal');
+    if (modal) modal.classList.add('active');
+}
+function closeRenewalModal() {
+    var modal = document.getElementById('modalRenewal');
+    if (modal) modal.classList.remove('active');
+}
+function autoCalculateEndDate() {
+    var startInput = document.getElementById('renewStartDate');
+    var endInput = document.getElementById('renewEndDate');
+    if (startInput && endInput && startInput.value) {
+        var parts = startInput.value.split('-');
+        if (parts.length === 3) {
+            var y = parseInt(parts[0], 10) + 1;
+            var d = new Date(y, parseInt(parts[1], 10) - 1, parseInt(parts[2], 10) - 1);
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var day = ('0' + d.getDate()).slice(-2);
+            endInput.value = d.getFullYear() + '-' + month + '-' + day;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTerminationDateInput();
+});
+</script>
 <?php endif; ?>

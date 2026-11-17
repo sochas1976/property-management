@@ -280,7 +280,7 @@ foreach ($prospectiveList as $pa) {
                     <?php if (!$fromHistory): ?>
                         <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap;">
                             <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                <button type="submit" class="btn btn-outline btn-sm" onclick="return confirm('Recall this sent lease and return to Step 2 (Review Lease)?');" style="display: inline-flex; align-items: center;">
+                                <button type="submit" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center;">
                                     &larr; Revert Back
                                 </button>
                             </form>

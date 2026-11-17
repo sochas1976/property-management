@@ -746,6 +746,7 @@ html[data-theme="light"] .theme-icon-light,
 
 .table-responsive {
     overflow-x: auto;
+    background-color: var(--ws-bg);
 }
 
 .table {

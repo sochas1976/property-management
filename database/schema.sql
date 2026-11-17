@@ -98,6 +98,7 @@ CREATE TABLE `leases` (
     `payment_frequency` ENUM('monthly', 'quarterly', 'yearly') NOT NULL DEFAULT 'monthly',
     `status` ENUM('draft', 'active', 'expiring_soon', 'terminated', 'expired') NOT NULL DEFAULT 'active',
     `terms` TEXT DEFAULT NULL,
+    `termination_reason` TEXT DEFAULT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_leases_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE RESTRICT,

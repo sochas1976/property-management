@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\AppDate;
 use PDO;
 
 class Lease {
@@ -19,8 +20,8 @@ class Lease {
         $sql = "
             SELECT l.*, 
                    COALESCE(
-                       CONCAT(t.first_name, ' ', t.last_name),
-                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id)
+                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id),
+                       CONCAT(t.first_name, ' ', t.last_name)
                    ) AS tenant_name,
                    COALESCE(
                        t.email,
@@ -52,8 +53,8 @@ class Lease {
         $sql = "
             SELECT l.*, 
                    COALESCE(
-                       CONCAT(t.first_name, ' ', t.last_name),
-                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id)
+                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id),
+                       CONCAT(t.first_name, ' ', t.last_name)
                    ) AS tenant_name,
                    COALESCE(
                        t.email,
@@ -84,8 +85,8 @@ class Lease {
         $stmt = $db->prepare("
             SELECT l.*, 
                    COALESCE(
-                       CONCAT(t.first_name, ' ', t.last_name),
-                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id)
+                       (SELECT GROUP_CONCAT(a.full_name SEPARATOR ' & ') FROM applicants a WHERE a.lease_id = l.id),
+                       CONCAT(t.first_name, ' ', t.last_name)
                    ) AS tenant_name,
                    COALESCE(
                        t.email,
@@ -226,6 +227,50 @@ class Lease {
         }
 
         return $success;
+    }
+
+    public static function terminateEarly(int $id, string $terminationDate, ?string $reason = null): bool {
+        $db = Database::getConnection();
+        $lease = self::findById($id);
+        if (!$lease) {
+            return false;
+        }
+
+        $terms = $lease['terms'] ?? '';
+        if (!empty($reason)) {
+            $terms = trim($terms . "\n\n[Early Termination on " . AppDate::todayString() . "]: " . $reason);
+        }
+
+        $stmt = $db->prepare("UPDATE leases SET status = 'terminated', end_date = ?, terms = ?, termination_reason = ? WHERE id = ?");
+        $success = $stmt->execute([$terminationDate, $terms, $reason ?: null, $id]);
+
+        if ($success) {
+            if ($terminationDate <= AppDate::todayString()) {
+                Unit::updateStatus((int)$lease['unit_id'], 'vacant');
+            }
+        }
+
+        return $success;
+    }
+
+    public static function findRenewalDraft(int $leaseId): ?array {
+        $db = Database::getConnection();
+        $stmt = $db->prepare("
+            SELECT l.* 
+            FROM leases l
+            WHERE l.status = 'draft'
+              AND (
+                  l.terms LIKE ?
+                  OR l.id IN (SELECT a.lease_id FROM applicants a WHERE a.notes LIKE ?)
+              )
+            ORDER BY l.id DESC LIMIT 1
+        ");
+        $stmt->execute([
+            "%Renewing Lease #{$leaseId}%",
+            "%Renewal application for Lease #{$leaseId}%"
+        ]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     public static function delete(int $id): bool {
