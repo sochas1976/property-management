@@ -274,7 +274,7 @@ $activeTab = $activeTab ?? 'all';
                                     $<?= number_format((float)$lease['rent_amount'], 2) ?>
                                 </td>
                                 <td>
-                                    <a href="<?= $leaseUrl ?>" class="btn btn-outline btn-xs" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 6px 14px; border-radius: 8px; background: #ffffff; color: var(--ws-text); box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">View Terms</a>
+                                    <a href="<?= $leaseUrl ?>" class="btn btn-primary btn-xs" style="font-weight: 600; padding: 6px 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(245, 166, 35, 0.25); display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">View Terms</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
