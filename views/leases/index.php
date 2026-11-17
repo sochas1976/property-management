@@ -79,12 +79,12 @@ $activeTab = $activeTab ?? 'all';
                                     <?php endforeach; ?>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($wLease['property_name']) ?></strong>
-                                    <div class="text-muted text-xs">Unit <?= htmlspecialchars($wLease['unit_number']) ?></div>
+                                    <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($wLease['property_name']) ?></a></strong></div>
+                                    <div style="color: #000000; font-size: 13px; margin-top: 2px;">Unit <?= htmlspecialchars($wLease['unit_number']) ?></div>
                                 </td>
                                 <td style="white-space: nowrap;">
-                                    <div><?= htmlspecialchars($wLease['start_date']) ?> &rarr; <?= htmlspecialchars($wLease['end_date']) ?></div>
-                                    <div class="text-muted text-xs"><?= ucfirst($wLease['payment_frequency']) ?></div>
+                                    <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($wLease['start_date']) ?> &rarr; <?= htmlspecialchars($wLease['end_date']) ?></a></strong></div>
+                                    <div style="color: #000000; font-size: 13px; margin-top: 2px;"><?= ucfirst($wLease['payment_frequency']) ?></div>
                                 </td>
                                 <td style="white-space: nowrap;">
                                     <div class="font-bold text-success">
@@ -181,19 +181,19 @@ $activeTab = $activeTab ?? 'all';
                                     <span class="badge <?= $statusClass ?>" <?= $isExpiringSoon ? 'title="' . ($daysLeft === 0 ? 'Expires today' : ($daysLeft === 1 ? '1 day left' : $daysLeft . ' days left')) . '"' : '' ?>><?= $statusLabel ?></span>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($lease['property_name']) ?></strong>
-                                    <div class="text-muted text-xs">Unit <?= htmlspecialchars($lease['unit_number']) ?></div>
+                                    <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($lease['property_name']) ?></a></strong></div>
+                                    <div style="color: #000000; font-size: 13px; margin-top: 2px;">Unit <?= htmlspecialchars($lease['unit_number']) ?></div>
                                 </td>
                                 <td>
                                     <?php
                                     $tenantNames = array_filter(array_map('trim', preg_split('/\s*(&|,)\s*/', $lease['tenant_name'] ?: 'Resident')));
                                     foreach ($tenantNames as $tName):
                                     ?>
-                                        <div><strong><?= htmlspecialchars($tName) ?></strong></div>
+                                        <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($tName) ?></a></strong></div>
                                     <?php endforeach; ?>
                                 </td>
-                                <td>
-                                    <?= htmlspecialchars($lease['start_date']) ?> &rarr; <?= htmlspecialchars($lease['end_date']) ?>
+                                <td style="white-space: nowrap;">
+                                    <strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($lease['start_date']) ?> &rarr; <?= htmlspecialchars($lease['end_date']) ?></a></strong>
                                 </td>
                                 <td class="font-bold text-success">
                                     $<?= number_format((float)$lease['rent_amount'], 2) ?>
@@ -256,19 +256,19 @@ $activeTab = $activeTab ?? 'all';
                                     <span class="badge <?= $statusClass ?>"><?= $statusLabel ?></span>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($lease['property_name']) ?></strong>
-                                    <div class="text-muted text-xs">Unit <?= htmlspecialchars($lease['unit_number']) ?></div>
+                                    <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($lease['property_name']) ?></a></strong></div>
+                                    <div style="color: #000000; font-size: 13px; margin-top: 2px;">Unit <?= htmlspecialchars($lease['unit_number']) ?></div>
                                 </td>
                                 <td>
                                     <?php
                                     $tenantNames = array_filter(array_map('trim', preg_split('/\s*(&|,)\s*/', $lease['tenant_name'] ?: 'Resident')));
                                     foreach ($tenantNames as $tName):
                                     ?>
-                                        <div><strong><?= htmlspecialchars($tName) ?></strong></div>
+                                        <div><strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($tName) ?></a></strong></div>
                                     <?php endforeach; ?>
                                 </td>
-                                <td>
-                                    <?= htmlspecialchars($lease['start_date']) ?> &rarr; <?= htmlspecialchars($lease['end_date']) ?>
+                                <td style="white-space: nowrap;">
+                                    <strong><a href="<?= $leaseUrl ?>" style="color: #000000; text-decoration: none;"><?= htmlspecialchars($lease['start_date']) ?> &rarr; <?= htmlspecialchars($lease['end_date']) ?></a></strong>
                                 </td>
                                 <td class="font-bold text-success">
                                     $<?= number_format((float)$lease['rent_amount'], 2) ?>
