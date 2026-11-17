@@ -195,8 +195,8 @@ $todayDay = AppDate::today()->format('j');
                     <table class="table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 2px solid var(--border, #e5e7eb); text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">
-                                <th style="padding: 10px 12px; width: 38%;">Placeholder in DOCX Template (Left)</th>
-                                <th style="padding: 10px 12px; width: 36%;">Data Source Field (Application / Unit / Property / Calendar)</th>
+                                <th style="padding: 10px 12px; width: 38%;">Placeholder In Document</th>
+                                <th style="padding: 10px 12px; width: 36%;">Data Source Field</th>
                                 <th style="padding: 10px 12px; width: 26%;">Manual / Override Value</th>
                             </tr>
                         </thead>
