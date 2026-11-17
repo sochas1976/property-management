@@ -182,8 +182,8 @@ $todayDay = AppDate::today()->format('j');
                     <input type="hidden" name="lease_id" value="<?= $returnLeaseId ?>">
                 <?php endif; ?>
 
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div style="flex: 1; min-width: 280px;">
                         <span class="badge badge-info" style="font-size: 12px;">
                             <?= count($placeholders) ?> Bracket Placeholder<?= count($placeholders) > 1 ? 's' : '' ?> Found
                         </span>
@@ -191,9 +191,11 @@ $todayDay = AppDate::today()->format('j');
                             Map each <code>[ ]</code> placeholder on the left to a data field on the right. Any value entered in <strong>Manual / Override Value</strong> will take precedence and override the source field. Calendar Day currently resolves to <strong><?= htmlspecialchars($todayDay) ?></strong> (<?= htmlspecialchars($todayFormatted) ?>).
                         </span>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        Save Placeholder Mapping
-                    </button>
+                    <div style="margin-left: auto;">
+                        <button type="submit" class="btn btn-primary btn-sm" style="white-space: nowrap;">
+                            Save Placeholder Mapping
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-responsive" style="margin-bottom: 20px;">
@@ -247,13 +249,15 @@ $todayDay = AppDate::today()->format('j');
                     </table>
                 </div>
 
-                <div style="background: var(--bg-subtle, #f9fafb); border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <span style="font-size: 13px; color: var(--text-muted);">
+                <div style="background: var(--bg-subtle, #f9fafb); border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <span style="font-size: 13px; color: var(--text-muted); flex: 1; min-width: 260px;">
                         Once saved, selecting this template in any Lease Agreement view will automatically extract the mapped fields from the applicant's application, unit, and property.
                     </span>
-                    <button type="submit" class="btn btn-primary">
-                        💾 Save Placeholder Mapping
-                    </button>
+                    <div style="margin-left: auto;">
+                        <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+                            Save Placeholder Mapping
+                        </button>
+                    </div>
                 </div>
             </form>
         <?php endif; ?>
@@ -269,7 +273,7 @@ function toggleUploadBox() {
         btn.textContent = 'Hide Upload Box';
     } else {
         box.style.display = 'none';
-        btn.textContent = '+ Upload New Template (.docx)';
+        btn.textContent = 'Upload New Template (.docx)';
     }
 }
 </script>
