@@ -54,7 +54,7 @@ use App\Core\Router;
                     <?php foreach ($historicalApplicants as $app): ?>
                         <tr>
                             <td>
-                                <strong><a href="<?= Router::url('/applicants/' . $app['id'] . '?from=history') ?>"><?= htmlspecialchars($app['full_name']) ?></a></strong>
+                                <div><a href="<?= Router::url('/applicants/' . $app['id'] . '?from=history') ?>" style="color: var(--ws-text); text-decoration: none;"><?= htmlspecialchars($app['full_name']) ?></a></div>
                             </td>
                             <td>
                                 <?php if (!empty($app['target_property_name'])): ?>
@@ -73,7 +73,7 @@ use App\Core\Router;
                                     $end = !empty($app['lease_end_date']) ? $app['lease_end_date'] : $app['term_end_date'];
                                     ?>
                                     <?php if (!empty($start)): ?>
-                                        <strong><?= date('M j, Y', strtotime($start)) ?></strong>
+                                        <div><?= date('M j, Y', strtotime($start)) ?></div>
                                         <?php if (!empty($end)): ?>
                                             <div class="text-muted text-xs">thru <?= date('M j, Y', strtotime($end)) ?></div>
                                         <?php endif; ?>

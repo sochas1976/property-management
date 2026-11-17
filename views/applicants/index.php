@@ -59,7 +59,7 @@ use App\Core\Router;
                     <?php foreach ($applicants as $app): ?>
                         <tr>
                             <td>
-                                <strong><a href="<?= Router::url('/applicants/' . $app['id']) ?>"><?= htmlspecialchars($app['full_name']) ?></a></strong>
+                                <div><a href="<?= Router::url('/applicants/' . $app['id']) ?>" style="color: var(--ws-text); text-decoration: none;"><?= htmlspecialchars($app['full_name']) ?></a></div>
                             </td>
                             <td>
                                 <?php if (!empty($app['target_property_name'])): ?>
