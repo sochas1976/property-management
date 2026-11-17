@@ -197,7 +197,7 @@ $todayDay = AppDate::today()->format('j');
                             <tr style="border-bottom: 2px solid var(--border, #e5e7eb); text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">
                                 <th style="padding: 10px 12px; width: 38%;">Placeholder in DOCX Template (Left)</th>
                                 <th style="padding: 10px 12px; width: 36%;">Data Source Field (Application / Unit / Property / Calendar)</th>
-                                <th style="padding: 10px 12px; width: 26%;">Manual / Override Value (Overrides Source)</th>
+                                <th style="padding: 10px 12px; width: 26%;">Manual / Override Value</th>
                             </tr>
                         </thead>
                         <tbody>
