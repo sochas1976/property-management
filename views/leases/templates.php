@@ -83,18 +83,22 @@ $todayDay = AppDate::today()->format('j');
 
 <!-- Main Template Mapping Engine Card -->
 <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; flex: 1; min-width: 280px;">
-            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text)); white-space: nowrap;">
-                Lease Templates
-            </h2>
-            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 240px;">
-                <label style="font-weight: 600; font-size: 13px; color: var(--table-th-dark-text, var(--ws-text)); white-space: nowrap;">Select Template:</label>
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px;">
+        <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">
+            Lease Templates
+        </h2>
+    </div>
+
+    <div class="card-body">
+        <!-- Template Selection Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ws-border-subtle);">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 280px;">
+                <label style="font-weight: 600; font-size: 13.5px; color: var(--ws-text); white-space: nowrap; margin: 0;">Select Template:</label>
                 <form method="GET" action="<?= Router::url('/leases/templates') ?>" id="formSelectTemplate" style="display: flex; gap: 8px; flex: 1; margin: 0;">
                     <?php if ($returnLeaseId > 0): ?>
                         <input type="hidden" name="lease_id" value="<?= $returnLeaseId ?>">
                     <?php endif; ?>
-                    <select name="template_id" class="form-control" onchange="document.getElementById('formSelectTemplate').submit();" style="max-width: 440px;">
+                    <select name="template_id" class="form-control" onchange="document.getElementById('formSelectTemplate').submit();" style="max-width: 460px;">
                         <?php if (empty($templates)): ?>
                             <option value="">No templates uploaded yet</option>
                         <?php else: ?>
@@ -107,24 +111,21 @@ $todayDay = AppDate::today()->format('j');
                     </select>
                 </form>
             </div>
+
+            <?php if (!empty($selectedTemplate)): ?>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="badge badge-subtle">
+                        <?= round(($selectedTemplate['file_size'] ?? 0) / 1024, 1) ?> KB &bull; <?= htmlspecialchars($selectedTemplate['original_name']) ?>
+                    </span>
+                    <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
+                        <span class="badge badge-success">Mappings Saved</span>
+                    <?php endif; ?>
+                    <form action="<?= Router::url('/leases/templates/' . $selectedTemplate['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;">
+                        <button type="submit" class="btn btn-outline btn-danger btn-xs" title="Delete Template">Delete Template</button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </div>
-
-        <?php if (!empty($selectedTemplate)): ?>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span class="badge badge-subtle">
-                    <?= round(($selectedTemplate['file_size'] ?? 0) / 1024, 1) ?> KB &bull; <?= htmlspecialchars($selectedTemplate['original_name']) ?>
-                </span>
-                <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
-                    <span class="badge badge-success">Mappings Saved</span>
-                <?php endif; ?>
-                <form action="<?= Router::url('/leases/templates/' . $selectedTemplate['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;">
-                    <button type="submit" class="btn btn-outline btn-danger btn-xs" title="Delete Template">Delete Template</button>
-                </form>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <div class="card-body">
         <?php if (!empty($templateError)): ?>
             <div class="alert alert-danger" style="margin-bottom: 20px;">
                 <?= htmlspecialchars($templateError) ?>
