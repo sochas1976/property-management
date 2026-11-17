@@ -78,29 +78,29 @@ $todayDay = AppDate::today()->format('j');
 
 <!-- Main Template Mapping Engine Card -->
 <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px;">
         <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">
             Lease Templates
         </h2>
-        <button type="button" onclick="toggleUploadBox();" id="btnToggleUpload" title="Upload New Template (.docx)" aria-label="Upload New Template (.docx)"
-                style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px solid var(--ws-accent, #f5a623); color: var(--ws-accent, #f5a623); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; padding: 0;"
-                onmouseover="this.style.transform='scale(1.12)'; this.style.background='var(--ws-accent-subtle, rgba(245, 166, 35, 0.15))';"
-                onmouseout="this.style.transform='scale(1)'; this.style.background='transparent';">
-            <svg id="iconToggleUpload" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; transition: transform 0.2s ease;">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-        </button>
     </div>
 
     <div class="card-body">
         <!-- Available Lease Templates Cards (Matching Workflow Style) -->
         <?php if (!empty($templates)): ?>
             <div style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ws-border-subtle);">
-                <div style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                         Available Lease Templates:
                     </span>
+                    <button type="button" onclick="toggleUploadBox();" id="btnToggleUpload" title="Upload New Template (.docx)" aria-label="Upload New Template (.docx)"
+                            style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 2px solid var(--ws-accent, #f5a623); color: var(--ws-accent, #f5a623); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; padding: 0;"
+                            onmouseover="this.style.transform='scale(1.12)'; this.style.background='var(--ws-accent-subtle, rgba(245, 166, 35, 0.15))';"
+                            onmouseout="this.style.transform='scale(1)'; this.style.background='transparent';">
+                        <svg id="iconToggleUpload" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: block; transition: transform 0.2s ease;">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
