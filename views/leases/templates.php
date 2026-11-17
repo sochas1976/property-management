@@ -142,8 +142,13 @@ $todayDay = AppDate::today()->format('j');
                             </div>
                             <?php if ($isSelected): ?>
                                 <form action="<?= Router::url('/leases/templates/' . $tmpl['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;" onclick="event.stopPropagation();">
-                                    <button type="submit" class="btn btn-outline btn-danger btn-xs" style="padding: 3px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; flex-shrink: 0;" title="Delete Template">
-                                        Delete
+                                    <button type="submit" class="btn btn-outline btn-danger btn-xs" style="padding: 5px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; flex-shrink: 0;" title="Delete Template" aria-label="Delete Template">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
                                     </button>
                                 </form>
                             <?php endif; ?>
