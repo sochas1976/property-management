@@ -97,14 +97,9 @@ $todayDay = AppDate::today()->format('j');
                     <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                         Available Lease Templates:
                     </span>
-                    <?php if (!empty($selectedTemplate)): ?>
+                    <?php if (!empty($selectedTemplate) && !empty($selectedTemplate['placeholder_mappings'])): ?>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <?php if (!empty($selectedTemplate['placeholder_mappings'])): ?>
-                                <span class="badge badge-success">Mappings Saved</span>
-                            <?php endif; ?>
-                            <form action="<?= Router::url('/leases/templates/' . $selectedTemplate['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;">
-                                <button type="submit" class="btn btn-outline btn-danger btn-xs" title="Delete Template">Delete Template</button>
-                            </form>
+                            <span class="badge badge-success">Mappings Saved</span>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -146,9 +141,11 @@ $todayDay = AppDate::today()->format('j');
                                 </div>
                             </div>
                             <?php if ($isSelected): ?>
-                                <span style="font-size: 11px; padding: 3px 10px; font-weight: 700; border-radius: 9999px; background: rgba(245, 166, 35, 0.15); color: #b45309; border: 1px solid rgba(245, 166, 35, 0.35); flex-shrink: 0;">
-                                    Active
-                                </span>
+                                <form action="<?= Router::url('/leases/templates/' . $tmpl['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this template from the library?');" style="display:inline; margin:0;" onclick="event.stopPropagation();">
+                                    <button type="submit" class="btn btn-outline btn-danger btn-xs" style="padding: 3px 10px; font-size: 11px; font-weight: 700; border-radius: 6px; flex-shrink: 0;" title="Delete Template">
+                                        Delete
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
