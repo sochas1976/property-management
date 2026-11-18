@@ -181,6 +181,8 @@ html[data-theme="dark"],
 
 html {
     font-size: 100%;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
 }
 
 body {
