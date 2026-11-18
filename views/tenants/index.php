@@ -54,24 +54,17 @@ use App\Core\Router;
                         <tr>
                             <td>
                                 <div>
-                                    <a href="<?= Router::url('/tenants/' . $tenant['id']) ?>" style="font-weight: 600; color: var(--ws-text); text-decoration: none;">
+                                    <a href="<?= Router::url('/tenants/' . $tenant['id']) ?>" style="font-weight: 500; color: var(--ws-text); text-decoration: none;">
                                         <?= htmlspecialchars($tenant['first_name'] . ' ' . $tenant['last_name']) ?>
                                     </a>
                                 </div>
-                                <?php if (!empty($tenant['active_lease_id'])): ?>
-                                    <div class="text-muted text-xs">
-                                        <a href="<?= Router::url('/leases/' . $tenant['active_lease_id']) ?>" class="text-muted" style="text-decoration: none;">
-                                            Lease #<?= htmlspecialchars($tenant['active_lease_id']) ?>
-                                        </a>
-                                    </div>
-                                <?php endif; ?>
                             </td>
                             <td>
                                 <span class="badge badge-success">Active Tenant</span>
                             </td>
                             <td>
                                 <div>
-                                    <a href="mailto:<?= htmlspecialchars($tenant['email']) ?>" style="color: var(--ws-text); text-decoration: none;">
+                                    <a href="mailto:<?= htmlspecialchars($tenant['email']) ?>" style="color: var(--ws-text); text-decoration: none; font-weight: 500;">
                                         <?= htmlspecialchars($tenant['email']) ?>
                                     </a>
                                 </div>
@@ -99,17 +92,38 @@ use App\Core\Router;
                             </td>
                             <td>
                                 <?php if (!empty($tenant['emergency_contact'])): ?>
-                                    <div style="color: var(--ws-text);"><?= htmlspecialchars($tenant['emergency_contact']) ?></div>
+                                    <div style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($tenant['emergency_contact']) ?></div>
                                     <div class="text-muted text-xs"><?= htmlspecialchars($tenant['emergency_phone'] ?? '—') ?></div>
                                 <?php else: ?>
-                                    <span class="text-muted">—</span>
+                                    <div class="text-muted">—</div>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <a href="<?= Router::url('/tenants/' . $tenant['id']) ?>" class="btn btn-outline btn-xs">View</a>
+                                    <a href="<?= Router::url('/tenants/' . $tenant['id']) ?>" 
+                                       class="btn btn-outline btn-xs" 
+                                       title="View Tenant Profile"
+                                       aria-label="View Tenant Profile"
+                                       style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </a>
                                     <?php if (!empty($tenant['active_lease_id'])): ?>
-                                        <a href="<?= Router::url('/leases/' . $tenant['active_lease_id']) ?>" class="btn btn-outline btn-xs">Lease</a>
+                                        <a href="<?= Router::url('/leases/' . $tenant['active_lease_id']) ?>" 
+                                           class="btn btn-outline btn-xs" 
+                                           title="View Lease Agreement"
+                                           aria-label="View Lease Agreement"
+                                           style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                <polyline points="10 9 9 9 8 9"></polyline>
+                                            </svg>
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </td>
