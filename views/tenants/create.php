@@ -6,9 +6,9 @@ use App\Core\Router;
     <a href="<?= Router::url('/tenants') ?>">&larr; Back to Tenant Directory</a>
 </div>
 
-<div class="card" style="max-width: 750px; margin: 0 auto;">
-    <div class="card-header">
-        <h2 class="card-title">Register New Tenant</h2>
+<div class="card" style="max-width: 750px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px;">
+        <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Register New Tenant</h2>
     </div>
     <div class="card-body">
         <form action="<?= Router::url('/tenants') ?>" method="POST">

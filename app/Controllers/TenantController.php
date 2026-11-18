@@ -6,9 +6,17 @@ use App\Models\Tenant;
 
 class TenantController extends Controller {
     public function index(): void {
-        $tenants = Tenant::all();
+        $tenants = Tenant::allActive();
         $this->render('tenants.index', [
-            'title'   => 'Tenants Directory',
+            'title'   => 'Active Tenants',
+            'tenants' => $tenants
+        ]);
+    }
+
+    public function history(): void {
+        $tenants = Tenant::allHistorical();
+        $this->render('tenants.history', [
+            'title'   => 'Historical Tenants',
             'tenants' => $tenants
         ]);
     }
@@ -39,9 +47,12 @@ class TenantController extends Controller {
             $this->redirect('/tenants');
         }
 
+        $leases = Tenant::getLeases((int)$id);
+
         $this->render('tenants.view', [
             'title'  => $tenant['first_name'] . ' ' . $tenant['last_name'],
-            'tenant' => $tenant
+            'tenant' => $tenant,
+            'leases' => $leases
         ]);
     }
 

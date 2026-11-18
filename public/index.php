@@ -75,6 +75,7 @@ Router::post('/units/{id}/delete', [UnitController::class, 'delete'], ['auth']);
 
 // Tenants
 Router::get('/tenants', [TenantController::class, 'index'], ['auth']);
+Router::get('/tenants/history', [TenantController::class, 'history'], ['auth']);
 Router::get('/tenants/create', [TenantController::class, 'create'], ['auth']);
 Router::post('/tenants', [TenantController::class, 'store'], ['auth']);
 Router::get('/tenants/{id}', [TenantController::class, 'view'], ['auth']);
