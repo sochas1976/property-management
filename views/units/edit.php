@@ -11,6 +11,24 @@ use App\Core\Router;
         <h2 class="card-title">Edit Unit <?= htmlspecialchars($unit['unit_number']) ?></h2>
     </div>
     <div class="card-body">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 20px; margin-bottom: 22px; border-bottom: 1px solid var(--ws-border-subtle);">
+            <div style="min-width: 0; flex: 1;">
+                <div class="property-type-tag" style="margin-bottom: 4px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
+                <div style="font-size: 16px; font-weight: 700; color: var(--ws-text);"><?= htmlspecialchars($property['name']) ?></div>
+                <div style="font-size: 13.5px; color: var(--ws-text-muted); margin-top: 3px; line-height: 1.45;">
+                    <?= htmlspecialchars($property['address_line1']) ?><?= !empty($property['address_line2']) ? ', ' . htmlspecialchars($property['address_line2']) : '' ?><br>
+                    <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
+                </div>
+            </div>
+            <div class="property-card-photo" style="flex-shrink: 0;">
+                <?php if (!empty($property['photo_path'])): ?>
+                    <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-thumbnail">
+                <?php else: ?>
+                    <div class="property-thumbnail-placeholder">📷</div>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <form id="unit-edit-form" action="<?= Router::url('/units/' . $unit['id'] . '/update') ?>" method="POST" enctype="multipart/form-data">
             <?php if ($property['property_type'] === 'single_family'): ?>
             <div class="form-row">
