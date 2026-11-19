@@ -296,10 +296,10 @@ $applianceLabels = [
                 </div>
             </div>
 
-            <!-- Unified Split Container: Utilities Coverage (Col 1) | Included Appliances (Col 2) -->
-            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); display: grid; grid-template-columns: 1fr 1px 1fr; gap: 20px; align-items: start;">
-                <!-- Column 1: Utilities Coverage -->
-                <div>
+            <!-- 2-Column Side-by-Side Cards: Utilities Coverage (Col 1) & Included Appliances (Col 2) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; align-items: stretch;">
+                <!-- Column 1 Card: Utilities Coverage -->
+                <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
                     <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
                         Utilities Coverage
                     </div>
@@ -326,11 +326,8 @@ $applianceLabels = [
                     </div>
                 </div>
 
-                <!-- Center Vertical Divider -->
-                <div style="background: var(--ws-border-strong); width: 1px; align-self: stretch;"></div>
-
-                <!-- Column 2: Included Appliances -->
-                <div>
+                <!-- Column 2 Card: Included Appliances -->
+                <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
                     <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
                         Included Appliances
                     </div>
@@ -341,8 +338,7 @@ $applianceLabels = [
                             <?php foreach ($currentAppliances as $appKey): 
                                 $appName = $applianceLabels[$appKey] ?? ucfirst($appKey);
                             ?>
-                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); font-size: 13.5px; font-weight: 600; color: var(--ws-text);">
-                                    <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ws-success); flex-shrink: 0;"></span>
+                                <div style="display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); font-size: 13.5px; font-weight: 600; color: var(--ws-text);">
                                     <span><?= htmlspecialchars($appName) ?></span>
                                 </div>
                             <?php endforeach; ?>
