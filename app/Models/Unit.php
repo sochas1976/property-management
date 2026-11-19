@@ -6,6 +6,7 @@ use PDO;
 
 class Unit {
     public static function allByProperty(int $propertyId): array {
+        self::syncOccupancyStatus();
         $db = Database::getConnection();
         $stmt = $db->prepare("
             SELECT u.*, 
@@ -24,6 +25,7 @@ class Unit {
     }
 
     public static function all(): array {
+        self::syncOccupancyStatus();
         $db = Database::getConnection();
         $sql = "
             SELECT u.*, p.name AS property_name,
@@ -135,6 +137,52 @@ class Unit {
         $db = Database::getConnection();
         $stmt = $db->prepare("UPDATE units SET status = ? WHERE id = ?");
         return $stmt->execute([$status, $id]);
+    }
+
+    public static function syncOccupancyStatus(?int $unitId = null): void {
+        $db = Database::getConnection();
+        if ($unitId !== null) {
+            $stmt = $db->prepare("
+                SELECT COUNT(*) FROM leases
+                WHERE unit_id = ? AND status IN ('active', 'expiring_soon')
+            ");
+            $stmt->execute([$unitId]);
+            $hasActiveLease = ((int)$stmt->fetchColumn()) > 0;
+
+            if ($hasActiveLease) {
+                self::updateStatus($unitId, 'occupied');
+            } else {
+                $uStmt = $db->prepare("SELECT status FROM units WHERE id = ?");
+                $uStmt->execute([$unitId]);
+                $currentStatus = $uStmt->fetchColumn();
+                if ($currentStatus === 'occupied') {
+                    self::updateStatus($unitId, 'vacant');
+                }
+            }
+            return;
+        }
+
+        // Mark any unit with an active or expiring_soon lease as 'occupied'
+        $db->exec("
+            UPDATE units
+            SET status = 'occupied'
+            WHERE id IN (
+                SELECT DISTINCT unit_id FROM leases
+                WHERE unit_id IS NOT NULL AND status IN ('active', 'expiring_soon')
+            )
+            AND status != 'occupied'
+        ");
+
+        // Mark any unit currently 'occupied' without an active/expiring_soon lease as 'vacant'
+        $db->exec("
+            UPDATE units
+            SET status = 'vacant'
+            WHERE status = 'occupied'
+            AND id NOT IN (
+                SELECT DISTINCT unit_id FROM leases
+                WHERE unit_id IS NOT NULL AND status IN ('active', 'expiring_soon')
+            )
+        ");
     }
 
     public static function delete(int $id): bool {

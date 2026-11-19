@@ -6,6 +6,7 @@ use PDO;
 
 class Property {
     public static function all(): array {
+        Unit::syncOccupancyStatus();
         $db = Database::getConnection();
         $sql = "
             SELECT p.*, u.full_name AS manager_name,

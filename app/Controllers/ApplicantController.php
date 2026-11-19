@@ -541,6 +541,10 @@ class ApplicantController extends Controller {
             $convertedTenantNames[] = htmlspecialchars($app['full_name']);
         }
 
+        if ($unitId > 0) {
+            Unit::updateStatus($unitId, 'occupied');
+        }
+
         $namesList = implode(' & ', $convertedTenantNames);
         $this->setFlash('success', 'All prospective applicants (' . $namesList . ') have signed the lease! They are now official Tenants in Unit #' . htmlspecialchars($lease['unit_number'] ?? '') . '.');
         if (!empty($_POST['from']) && $_POST['from'] === 'lease' && $leaseId > 0) {

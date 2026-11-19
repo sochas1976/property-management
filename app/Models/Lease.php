@@ -214,15 +214,10 @@ class Lease {
         $stmt = $db->prepare("UPDATE leases SET status = ? WHERE id = ?");
         $success = $stmt->execute([$status, $id]);
 
-        if ($success && in_array($status, ['terminated', 'expired'])) {
+        if ($success) {
             $lease = self::findById($id);
-            if ($lease) {
-                Unit::updateStatus((int)$lease['unit_id'], 'vacant');
-            }
-        } elseif ($success && in_array($status, ['active', 'expiring_soon'])) {
-            $lease = self::findById($id);
-            if ($lease) {
-                Unit::updateStatus((int)$lease['unit_id'], 'occupied');
+            if ($lease && !empty($lease['unit_id'])) {
+                Unit::syncOccupancyStatus((int)$lease['unit_id']);
             }
         }
 
@@ -244,10 +239,8 @@ class Lease {
         $stmt = $db->prepare("UPDATE leases SET status = 'terminated', end_date = ?, terms = ?, termination_reason = ? WHERE id = ?");
         $success = $stmt->execute([$terminationDate, $terms, $reason ?: null, $id]);
 
-        if ($success) {
-            if ($terminationDate <= AppDate::todayString()) {
-                Unit::updateStatus((int)$lease['unit_id'], 'vacant');
-            }
+        if ($success && !empty($lease['unit_id'])) {
+            Unit::syncOccupancyStatus((int)$lease['unit_id']);
         }
 
         return $success;
@@ -276,10 +269,11 @@ class Lease {
     public static function delete(int $id): bool {
         $db = Database::getConnection();
         $lease = self::findById($id);
-        if ($lease) {
-            Unit::updateStatus((int)$lease['unit_id'], 'vacant');
-        }
         $stmt = $db->prepare("DELETE FROM leases WHERE id = ?");
-        return $stmt->execute([$id]);
+        $deleted = $stmt->execute([$id]);
+        if ($deleted && $lease && !empty($lease['unit_id'])) {
+            Unit::syncOccupancyStatus((int)$lease['unit_id']);
+        }
+        return $deleted;
     }
 }
