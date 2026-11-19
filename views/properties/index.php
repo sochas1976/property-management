@@ -53,9 +53,13 @@ use App\Core\Router;
                                 <span class="text-muted text-xs">No units registered yet</span>
                                 <a href="<?= Router::url('/properties/' . $prop['id'] . '/units/create') ?>" class="btn btn-outline btn-xs">Add Unit</a>
                             </div>
-                        <?php else: ?>
+                        <?php else: 
+                            $allPropUnits = $prop['units'];
+                            $previewUnits = array_slice($allPropUnits, 0, 2);
+                            $remainingUnitsCount = count($allPropUnits) - count($previewUnits);
+                        ?>
                             <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <?php foreach ($prop['units'] as $u): 
+                                <?php foreach ($previewUnits as $u): 
                                     $uStatus = $u['status'] ?? 'vacant';
                                     $uBadgeClass = ($uStatus === 'occupied') ? 'badge-success' : (($uStatus === 'maintenance') ? 'badge-danger' : 'badge-warning');
                                     $uBadgeLabel = ucfirst($uStatus);
@@ -82,6 +86,15 @@ use App\Core\Router;
                                         </span>
                                     </a>
                                 <?php endforeach; ?>
+
+                                <?php if ($remainingUnitsCount > 0): ?>
+                                    <a href="<?= Router::url('/properties/' . $prop['id']) ?>"
+                                       style="display: flex; align-items: center; justify-content: center; padding: 7px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px dashed var(--ws-border-strong, #d8d3c7); text-decoration: none; font-size: 12px; font-weight: 600; color: var(--ws-text-secondary, #4a4a4a); transition: background-color 0.15s ease, color 0.15s ease;"
+                                       onmouseover="this.style.backgroundColor='var(--ws-raised, #f1efe9)'; this.style.color='var(--ws-text, #111111)'"
+                                       onmouseout="this.style.backgroundColor='var(--ws-surface-subtle, #faf9f6)'; this.style.color='var(--ws-text-secondary, #4a4a4a)'">
+                                        ... +<?= $remainingUnitsCount ?> more <?= $remainingUnitsCount === 1 ? 'unit' : 'units' ?>
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>
