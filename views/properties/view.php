@@ -12,8 +12,8 @@ use App\Core\Router;
             <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-detail-photo">
         <?php endif; ?>
         <div>
-            <div class="badge badge-subtle"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
-            <h1 class="page-title" style="margin-top: 5px;"><?= htmlspecialchars($property['name']) ?></h1>
+            <div class="property-type-tag" style="margin-bottom: 4px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
+            <h1 class="page-title" style="margin-top: 0;"><?= htmlspecialchars($property['name']) ?></h1>
             <p class="page-subtitle">
                 <?= htmlspecialchars($property['address_line1']) ?><?= $property['address_line2'] ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
                 <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
@@ -22,29 +22,17 @@ use App\Core\Router;
     </div>
     <div class="action-buttons">
         <a href="<?= Router::url('/properties/' . $property['id'] . '/edit') ?>" class="btn btn-outline">Edit Property</a>
-        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-primary">Add Unit</a>
+        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-outline">Add Unit</a>
         <form action="<?= Router::url('/properties/' . $property['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this property and all its units?');" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-outline">Delete Property</button>
+            <button type="submit" class="btn btn-outline">Delete Property</button>
         </form>
     </div>
 </div>
-
-<?php if (!empty($property['description'])): ?>
-    <div class="card" style="margin-bottom: 25px;">
-        <div class="card-header">
-            <h2 class="card-title">Overview &amp; Notes</h2>
-        </div>
-        <div class="card-body">
-            <p style="margin: 0;"><?= nl2br(htmlspecialchars($property['description'])) ?></p>
-        </div>
-    </div>
-<?php endif; ?>
 
 <!-- Units Section -->
 <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
         <h2 class="card-title">Units &amp; Floorplans (<?= count($units) ?>)</h2>
-        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-outline btn-xs">New Unit</a>
     </div>
 
     <div class="table-responsive">
