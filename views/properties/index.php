@@ -44,19 +44,48 @@ use App\Core\Router;
                         </div>
                     </div>
 
-                    <div class="property-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-top: 16px; border-top: 1px solid var(--ws-border-subtle);">
-                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df);">
-                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-text, #111111);"><?= (int)$prop['total_units'] ?></div>
-                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-text-muted, #737373); margin-top: 2px;">Units</div>
+                    <div style="padding-top: 14px; border-top: 1px solid var(--ws-border-subtle);">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-text-muted, #737373); margin-bottom: 8px;">
+                            Available Unit Types
                         </div>
-                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-success-bg, #eaf7ee); border: 1px solid var(--ws-success-border, #c6edd1);">
-                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-success, #15803d);"><?= (int)$prop['occupied_units'] ?></div>
-                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-success, #15803d); margin-top: 2px;">Occupied</div>
-                        </div>
-                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-warning-bg, #fff6e5); border: 1px solid var(--ws-warning-border, #fed7aa);">
-                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-warning, #b45309);"><?= (int)$prop['vacant_units'] ?></div>
-                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-warning, #b45309); margin-top: 2px;">Vacant</div>
-                        </div>
+                        <?php if (empty($prop['units'])): ?>
+                            <div style="padding: 10px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df); display: flex; align-items: center; justify-content: space-between;">
+                                <span class="text-muted text-xs">No units registered yet</span>
+                                <a href="<?= Router::url('/properties/' . $prop['id'] . '/units/create') ?>" class="btn btn-outline btn-xs">Add Unit</a>
+                            </div>
+                        <?php else: ?>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <?php foreach ($prop['units'] as $u): 
+                                    $uStatus = $u['status'] ?? 'vacant';
+                                    $uBadgeClass = ($uStatus === 'occupied') ? 'badge-success' : (($uStatus === 'maintenance') ? 'badge-danger' : 'badge-warning');
+                                    $uBadgeLabel = ucfirst($uStatus);
+                                    $uDisplayName = is_numeric($u['unit_number']) ? 'Unit ' . $u['unit_number'] : $u['unit_number'];
+                                    $uBaths = rtrim(rtrim(number_format((float)$u['bathrooms'], 1), '0'), '.');
+                                ?>
+                                    <a href="<?= Router::url('/units/' . $u['id'] . '/edit') ?>" 
+                                       style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df); text-decoration: none; transition: background-color 0.15s ease;"
+                                       onmouseover="this.style.backgroundColor='var(--ws-raised, #f1efe9)'"
+                                       onmouseout="this.style.backgroundColor='var(--ws-surface-subtle, #faf9f6)'">
+                                        <div style="min-width: 0;">
+                                            <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111);">
+                                                <?= htmlspecialchars($uDisplayName) ?>
+                                            </span>
+                                            <span class="text-muted text-xs" style="margin-left: 6px;">
+                                                <?= (int)$u['bedrooms'] ?> bd &bull; <?= htmlspecialchars($uBaths) ?> ba
+                                            </span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                            <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111);">
+                                                $<?= number_format((float)$u['target_rent'], 0) ?>/mo
+                                            </span>
+                                            <span class="badge <?= $uBadgeClass ?>" style="font-size: 10.5px; padding: 2px 9px;">
+                                                <?= htmlspecialchars($uBadgeLabel) ?>
+                                            </span>
+                                        </div>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="card-footer">

@@ -18,7 +18,21 @@ class Property {
             GROUP BY p.id
             ORDER BY p.name ASC
         ";
-        return $db->query($sql)->fetchAll();
+        $properties = $db->query($sql)->fetchAll();
+
+        if (!empty($properties)) {
+            $unitsRows = $db->query("SELECT * FROM units ORDER BY unit_number ASC")->fetchAll();
+            $unitsByProp = [];
+            foreach ($unitsRows as $ur) {
+                $unitsByProp[(int)$ur['property_id']][] = $ur;
+            }
+            foreach ($properties as &$prop) {
+                $prop['units'] = $unitsByProp[(int)$prop['id']] ?? [];
+            }
+            unset($prop);
+        }
+
+        return $properties;
     }
 
     public static function findById(int $id): ?array {
