@@ -296,52 +296,59 @@ $applianceLabels = [
                 </div>
             </div>
 
-            <!-- Utilities Coverage -->
-            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
-                <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
-                    Utilities Coverage
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <?php foreach ($utilityTypes as $uKey => $uLabel): 
-                        $isInc = in_array($uKey, $currentUtilities['included'] ?? [], true);
-                        $sharedPct = isset($currentUtilities['shared_pct'][$uKey]) && $currentUtilities['shared_pct'][$uKey] !== '' ? (int)$currentUtilities['shared_pct'][$uKey] : null;
-                        if ($isInc) {
-                            $uStatusText = 'Included (100%)';
-                            $uClass = 'badge-success';
-                        } elseif ($sharedPct !== null && $sharedPct > 0 && $sharedPct < 100) {
-                            $uStatusText = 'Shared (' . $sharedPct . '% Tenant)';
-                            $uClass = 'badge-warning';
-                        } else {
-                            $uStatusText = 'Tenant (100%)';
-                            $uClass = 'badge-subtle';
-                        }
-                    ?>
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle);">
-                            <span style="font-size: 13.5px; font-weight: 600; color: var(--ws-text);"><?= htmlspecialchars($uLabel) ?></span>
-                            <span class="badge <?= $uClass ?>" style="font-size: 10.5px; padding: 2px 8px;"><?= htmlspecialchars($uStatusText) ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Included Appliances -->
-            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
-                <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
-                    Included Appliances
-                </div>
-                <?php if (empty($currentAppliances)): ?>
-                    <span class="text-muted text-xs">No appliances specified.</span>
-                <?php else: ?>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <?php foreach ($currentAppliances as $appKey): 
-                            $appName = $applianceLabels[$appKey] ?? ucfirst($appKey);
+            <!-- Unified Split Container: Utilities Coverage (Col 1) | Included Appliances (Col 2) -->
+            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); display: grid; grid-template-columns: 1fr 1px 1fr; gap: 20px; align-items: start;">
+                <!-- Column 1: Utilities Coverage -->
+                <div>
+                    <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                        Utilities Coverage
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <?php foreach ($utilityTypes as $uKey => $uLabel): 
+                            $isInc = in_array($uKey, $currentUtilities['included'] ?? [], true);
+                            $sharedPct = isset($currentUtilities['shared_pct'][$uKey]) && $currentUtilities['shared_pct'][$uKey] !== '' ? (int)$currentUtilities['shared_pct'][$uKey] : null;
+                            if ($isInc) {
+                                $uStatusText = 'Included (100%)';
+                                $uClass = 'badge-success';
+                            } elseif ($sharedPct !== null && $sharedPct > 0 && $sharedPct < 100) {
+                                $uStatusText = 'Shared (' . $sharedPct . '% Tenant)';
+                                $uClass = 'badge-warning';
+                            } else {
+                                $uStatusText = 'Tenant (100%)';
+                                $uClass = 'badge-subtle';
+                            }
                         ?>
-                            <span class="badge badge-subtle" style="background: var(--ws-surface); color: var(--ws-text); border: 1px solid var(--ws-border-strong); font-size: 12px; padding: 4px 12px;">
-                                <?= htmlspecialchars($appName) ?>
-                            </span>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle);">
+                                <span style="font-size: 13.5px; font-weight: 600; color: var(--ws-text);"><?= htmlspecialchars($uLabel) ?></span>
+                                <span class="badge <?= $uClass ?>" style="font-size: 10.5px; padding: 2px 8px;"><?= htmlspecialchars($uStatusText) ?></span>
+                            </div>
                         <?php endforeach; ?>
                     </div>
-                <?php endif; ?>
+                </div>
+
+                <!-- Center Vertical Divider -->
+                <div style="background: var(--ws-border-strong); width: 1px; align-self: stretch;"></div>
+
+                <!-- Column 2: Included Appliances -->
+                <div>
+                    <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                        Included Appliances
+                    </div>
+                    <?php if (empty($currentAppliances)): ?>
+                        <span class="text-muted text-xs">No appliances specified.</span>
+                    <?php else: ?>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <?php foreach ($currentAppliances as $appKey): 
+                                $appName = $applianceLabels[$appKey] ?? ucfirst($appKey);
+                            ?>
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); font-size: 13.5px; font-weight: 600; color: var(--ws-text);">
+                                    <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ws-success); flex-shrink: 0;"></span>
+                                    <span><?= htmlspecialchars($appName) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
