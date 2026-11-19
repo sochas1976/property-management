@@ -444,8 +444,29 @@ document.addEventListener('keydown', (e) => {
         navigatePhotoModal(1);
     } else if (e.key === 'ArrowLeft') {
         navigatePhotoModal(-1);
+    } else if (e.key === 'Escape') {
+        modal.classList.remove('active');
     }
 });
+
+// Mouse wheel scrolling inside the photo modal
+(function() {
+    const modal = document.getElementById('unit-photo-modal');
+    if (!modal) return;
+    let wheelLock = false;
+    modal.addEventListener('wheel', (e) => {
+        if (!modal.classList.contains('active')) return;
+        e.preventDefault();
+        if (wheelLock) return;
+        wheelLock = true;
+        setTimeout(() => { wheelLock = false; }, 160);
+        if (e.deltaY > 0 || e.deltaX > 0) {
+            navigatePhotoModal(1);
+        } else if (e.deltaY < 0 || e.deltaX < 0) {
+            navigatePhotoModal(-1);
+        }
+    }, { passive: false });
+})();
 
 function deleteUnitPhotoDynamically(unitId, photoPath, buttonElem) {
     const card = buttonElem.closest('.unit-photo-card');

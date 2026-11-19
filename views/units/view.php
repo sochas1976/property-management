@@ -354,18 +354,98 @@ $applianceLabels = [
     <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center;">
         <button type="button" onclick="document.getElementById('unit-view-photo-modal').classList.remove('active')" 
                 style="position: absolute; top: -45px; right: 0; background: none; border: none; color: #fff; font-size: 34px; cursor: pointer; line-height: 1;">&times;</button>
-        <img id="unit-view-modal-img" src="" alt="Unit Photo Preview" style="max-width: 82vw; max-height: 82vh; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); object-fit: contain;">
+
+        <!-- Previous Arrow -->
+        <button type="button" onclick="navigateUnitViewPhoto(-1, event)" 
+                title="Previous photo"
+                style="position: absolute; left: -50px; background: rgba(0,0,0,0.6); border: 1.5px solid rgba(255,255,255,0.3); color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease, transform 0.15s ease; z-index: 10;"
+                onmouseover="this.style.background='var(--ws-accent)'; this.style.transform='scale(1.08)';"
+                onmouseout="this.style.background='rgba(0,0,0,0.6)'; this.style.transform='scale(1)';">
+            &#10094;
+        </button>
+
+        <img id="unit-view-modal-img" src="" alt="Unit Photo Preview" style="max-width: 82vw; max-height: 82vh; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); object-fit: contain; transition: opacity 0.15s ease;">
+
+        <!-- Next Arrow -->
+        <button type="button" onclick="navigateUnitViewPhoto(1, event)" 
+                title="Next photo"
+                style="position: absolute; right: -50px; background: rgba(0,0,0,0.6); border: 1.5px solid rgba(255,255,255,0.3); color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease, transform 0.15s ease; z-index: 10;"
+                onmouseover="this.style.background='var(--ws-accent)'; this.style.transform='scale(1.08)';"
+                onmouseout="this.style.background='rgba(0,0,0,0.6)'; this.style.transform='scale(1)';">
+            &#10095;
+        </button>
+
+        <!-- Photo Counter Badge -->
+        <div id="unit-view-photo-counter" style="position: absolute; bottom: -36px; color: #fff; font-size: 13px; font-weight: 500; background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 20px;"></div>
     </div>
 </div>
 <script>
 var unitViewPhotosList = <?= json_encode(array_map(function($p) { return Router::url($p); }, $unitPhotos)) ?>;
+var currentUnitViewPhotoIdx = 0;
+
 function openUnitViewPhotoModal(idx) {
+    currentUnitViewPhotoIdx = typeof idx === 'number' ? idx : 0;
+    updateUnitViewPhotoModal();
     var modal = document.getElementById('unit-view-photo-modal');
-    var img = document.getElementById('unit-view-modal-img');
-    if (modal && img && unitViewPhotosList[idx]) {
-        img.src = unitViewPhotosList[idx];
+    if (modal) {
         modal.classList.add('active');
     }
 }
+
+function updateUnitViewPhotoModal() {
+    if (!unitViewPhotosList || unitViewPhotosList.length === 0) return;
+
+    // Circular wrap-around
+    if (currentUnitViewPhotoIdx >= unitViewPhotosList.length) currentUnitViewPhotoIdx = 0;
+    if (currentUnitViewPhotoIdx < 0) currentUnitViewPhotoIdx = unitViewPhotosList.length - 1;
+
+    var img = document.getElementById('unit-view-modal-img');
+    if (img) {
+        img.src = unitViewPhotosList[currentUnitViewPhotoIdx];
+    }
+
+    var counter = document.getElementById('unit-view-photo-counter');
+    if (counter) {
+        counter.textContent = (currentUnitViewPhotoIdx + 1) + ' / ' + unitViewPhotosList.length;
+    }
+}
+
+function navigateUnitViewPhoto(direction, e) {
+    if (e) e.stopPropagation();
+    currentUnitViewPhotoIdx += direction;
+    updateUnitViewPhotoModal();
+}
+
+// Keyboard arrow navigation & Escape
+document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('unit-view-photo-modal');
+    if (!modal || !modal.classList.contains('active')) return;
+    if (e.key === 'ArrowRight') {
+        navigateUnitViewPhoto(1);
+    } else if (e.key === 'ArrowLeft') {
+        navigateUnitViewPhoto(-1);
+    } else if (e.key === 'Escape') {
+        modal.classList.remove('active');
+    }
+});
+
+// Mouse wheel scrolling inside the photo modal
+(function() {
+    var modal = document.getElementById('unit-view-photo-modal');
+    if (!modal) return;
+    var wheelLock = false;
+    modal.addEventListener('wheel', function(e) {
+        if (!modal.classList.contains('active')) return;
+        e.preventDefault();
+        if (wheelLock) return;
+        wheelLock = true;
+        setTimeout(function() { wheelLock = false; }, 160);
+        if (e.deltaY > 0 || e.deltaX > 0) {
+            navigateUnitViewPhoto(1);
+        } else if (e.deltaY < 0 || e.deltaX < 0) {
+            navigateUnitViewPhoto(-1);
+        }
+    }, { passive: false });
+})();
 </script>
 <?php endif; ?>
