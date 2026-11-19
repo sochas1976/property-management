@@ -211,7 +211,7 @@ $applianceLabels = [
                             <span class="text-muted text-xs">Lease Status</span>
                             <div style="margin-top: 4px;">
                                 <a href="<?= Router::url('/leases/' . $activeLease['id']) ?>" style="text-decoration: none;">
-                                    <span class="badge badge-success">Active Lease #<?= (int)$activeLease['id'] ?></span>
+                                    <span class="badge badge-success">Active Lease</span>
                                 </a>
                             </div>
                         </div>
