@@ -15,27 +15,29 @@ use App\Core\Router;
         $bannerStatus = $unit['status'] ?? 'vacant';
         $bannerBadgeClass = ($bannerStatus === 'occupied') ? 'badge-success' : (($bannerStatus === 'maintenance') ? 'badge-danger' : 'badge-warning');
         ?>
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; margin-bottom: 22px; border-radius: 12px; background: var(--ws-surface-subtle, #faf9f6); border: 1.5px solid var(--ws-border, #ebe7df);">
-            <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
-                <div class="property-card-photo" style="flex-shrink: 0;">
-                    <?php if (!empty($property['photo_path'])): ?>
-                        <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-thumbnail" style="width: 68px; height: 68px; border-radius: 10px; border: 1.5px solid var(--ws-border-strong, #d8d3c7); object-fit: cover; display: block;">
-                    <?php else: ?>
-                        <div class="property-thumbnail-placeholder" style="width: 68px; height: 68px; border-radius: 10px;">📷</div>
-                    <?php endif; ?>
-                </div>
-                <div style="min-width: 0;">
-                    <div class="property-type-tag" style="margin-bottom: 2px; font-size: 10.5px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
-                    <div style="font-size: 15.5px; font-weight: 700; color: var(--ws-text); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?= htmlspecialchars($property['name']) ?></div>
-                    <div style="font-size: 13px; color: var(--ws-text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <?= htmlspecialchars($property['address_line1']) ?><?= !empty($property['address_line2']) ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
-                        <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
+        <div style="padding-bottom: 20px; margin-bottom: 22px; border-bottom: 1.5px solid var(--ws-border, #ebe7df);">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-radius: 12px; background: var(--ws-surface-subtle, #faf9f6); border: 1.5px solid var(--ws-border, #ebe7df);">
+                <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+                    <div class="property-card-photo" style="flex-shrink: 0;">
+                        <?php if (!empty($property['photo_path'])): ?>
+                            <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-thumbnail" style="width: 68px; height: 68px; border-radius: 10px; border: 1.5px solid var(--ws-border-strong, #d8d3c7); object-fit: cover; display: block;">
+                        <?php else: ?>
+                            <div class="property-thumbnail-placeholder" style="width: 68px; height: 68px; border-radius: 10px;">📷</div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div class="property-type-tag" style="margin-bottom: 2px; font-size: 10.5px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
+                        <div style="font-size: 15.5px; font-weight: 700; color: var(--ws-text); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?= htmlspecialchars($property['name']) ?></div>
+                        <div style="font-size: 13px; color: var(--ws-text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <?= htmlspecialchars($property['address_line1']) ?><?= !empty($property['address_line2']) ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
+                            <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
+                        </div>
                     </div>
                 </div>
+                <span class="badge <?= $bannerBadgeClass ?>" style="flex-shrink: 0;">
+                    <?= ucfirst(htmlspecialchars($bannerStatus)) ?>
+                </span>
             </div>
-            <span class="badge <?= $bannerBadgeClass ?>" style="flex-shrink: 0;">
-                <?= ucfirst(htmlspecialchars($bannerStatus)) ?>
-            </span>
         </div>
 
         <form id="unit-edit-form" action="<?= Router::url('/units/' . $unit['id'] . '/update') ?>" method="POST" enctype="multipart/form-data">
