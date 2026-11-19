@@ -20,8 +20,9 @@ Always follow these precise color tokens for card headers and data table headers
 
 ---
 
-## 2. Button Standards
-* Buttons must be text-only: **NEVER** place icons, glyphs, arrows, or emojis inside buttons, submit controls, action links, or toolbars (per `website-button-standards`).
+## 2. Button & Design System Palette Standards
+* Always consult and follow the `proppulse-design-palette` skill (`.agents/skills/proppulse-design-palette/SKILL.md`) for all colors, typography, cards, tables, badges, inputs, segmented tabs, and table action icon controls.
+* Text Buttons must be text-only: **NEVER** place icons, glyphs, arrows, or emojis inside standard buttons, submit controls, action links, or toolbars (per `website-button-standards`).
 
 ---
 
