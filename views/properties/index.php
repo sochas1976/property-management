@@ -63,25 +63,23 @@ use App\Core\Router;
                                     $uBaths = rtrim(rtrim(number_format((float)$u['bathrooms'], 1), '0'), '.');
                                 ?>
                                     <a href="<?= Router::url('/units/' . $u['id'] . '/edit') ?>" 
-                                       style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df); text-decoration: none; transition: background-color 0.15s ease;"
+                                       style="display: grid; grid-template-columns: minmax(76px, 1fr) 74px 80px 72px; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df); text-decoration: none; transition: background-color 0.15s ease;"
                                        onmouseover="this.style.backgroundColor='var(--ws-raised, #f1efe9)'"
                                        onmouseout="this.style.backgroundColor='var(--ws-surface-subtle, #faf9f6)'">
-                                        <div style="min-width: 0;">
-                                            <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111);">
-                                                <?= htmlspecialchars($uDisplayName) ?>
-                                            </span>
-                                            <span class="text-muted text-xs" style="margin-left: 6px;">
-                                                <?= (int)$u['bedrooms'] ?> bd &bull; <?= htmlspecialchars($uBaths) ?> ba
-                                            </span>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                            <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111);">
-                                                $<?= number_format((float)$u['target_rent'], 0) ?>/mo
-                                            </span>
+                                        <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;">
+                                            <?= htmlspecialchars($uDisplayName) ?>
+                                        </span>
+                                        <span class="text-muted text-xs" style="white-space: nowrap; text-align: left;">
+                                            <?= (int)$u['bedrooms'] ?> bd &bull; <?= htmlspecialchars($uBaths) ?> ba
+                                        </span>
+                                        <span style="font-size: 13px; font-weight: 700; color: var(--ws-text, #111111); white-space: nowrap; text-align: left; font-variant-numeric: tabular-nums;">
+                                            $<?= number_format((float)$u['target_rent'], 0) ?>/mo
+                                        </span>
+                                        <span style="display: flex; justify-content: flex-start;">
                                             <span class="badge <?= $uBadgeClass ?>" style="font-size: 10.5px; padding: 2px 9px;">
                                                 <?= htmlspecialchars($uBadgeLabel) ?>
                                             </span>
-                                        </div>
+                                        </span>
                                     </a>
                                 <?php endforeach; ?>
                             </div>
