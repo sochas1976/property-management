@@ -91,7 +91,7 @@ $fromHistory = ($from === 'history');
         <?php endif; ?>
 
         <?php if (!empty($applicant['lease_id'])): ?>
-            <a href="<?= Router::url('/leases/' . $applicant['lease_id'] . ($fromHistory ? '?from=history' : '')) ?>" class="btn btn-outline">
+            <a href="<?= Router::url('/leases/' . $applicant['lease_id'] . '?from=applicant&applicant_id=' . (int)$applicant['id']) ?>" class="btn btn-outline">
                 View Lease Agreement
             </a>
         <?php endif; ?>

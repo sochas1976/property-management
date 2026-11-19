@@ -111,7 +111,7 @@ use App\Core\Router;
                                         </svg>
                                     </a>
                                     <?php if (!empty($tenant['active_lease_id'])): ?>
-                                        <a href="<?= Router::url('/leases/' . $tenant['active_lease_id']) ?>" 
+                                        <a href="<?= Router::url('/leases/' . $tenant['active_lease_id'] . '?from=tenants') ?>" 
                                            class="btn btn-outline btn-xs" 
                                            title="View Lease Agreement"
                                            aria-label="View Lease Agreement"

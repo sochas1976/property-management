@@ -104,7 +104,7 @@ use App\Core\AppDate;
                             $isExpiringSoon = ($daysLeft !== null && $daysLeft >= 0 && $daysLeft <= 45);
                             $isExpired = ($daysLeft !== null && $daysLeft < 0);
                         ?>
-                            <tr onclick="window.location.href='<?= Router::url('/leases/' . $l['id']) ?>'" style="cursor: pointer;" title="Click to view lease agreement">
+                            <tr onclick="window.location.href='<?= Router::url('/leases/' . $l['id'] . '?from=dashboard') ?>'" style="cursor: pointer;" title="Click to view lease agreement">
                                 <td style="padding: 12px 10px 12px 18px; white-space: nowrap;">
                                     <?php if ($isExpired): ?>
                                         <span class="badge badge-warning">Expired</span>

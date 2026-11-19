@@ -35,18 +35,63 @@ $primaryApplicant = !empty($leaseApplicants) ? $leaseApplicants[0] : null;
 
 $from = $_GET['from'] ?? '';
 $applicantId = !empty($_GET['applicant_id']) ? (int)$_GET['applicant_id'] : ($primaryApplicant ? (int)$primaryApplicant['id'] : 0);
+$returnUnitId = !empty($_GET['unit_id']) ? (int)$_GET['unit_id'] : (!empty($lease['unit_id']) ? (int)$lease['unit_id'] : 0);
+$returnTenantId = !empty($_GET['tenant_id']) ? (int)$_GET['tenant_id'] : (!empty($lease['tenant_id']) ? (int)$lease['tenant_id'] : 0);
+$returnPropertyId = !empty($_GET['property_id']) ? (int)$_GET['property_id'] : (!empty($lease['property_id']) ? (int)$lease['property_id'] : 0);
+
 if (empty($from) && !empty($_SERVER['HTTP_REFERER'])) {
-    if (strpos($_SERVER['HTTP_REFERER'], '/applicants/history') !== false) {
+    $ref = $_SERVER['HTTP_REFERER'];
+    if (strpos($ref, '/units/') !== false) {
+        $from = 'unit';
+        if (preg_match('/\/units\/(\d+)/', $ref, $m)) {
+            $returnUnitId = (int)$m[1];
+        }
+    } elseif (strpos($ref, '/tenants/history') !== false) {
+        $from = 'tenants_history';
+    } elseif (preg_match('/\/tenants\/(\d+)/', $ref, $m)) {
+        $from = 'tenant';
+        $returnTenantId = (int)$m[1];
+    } elseif (preg_match('/\/tenants(\?|$)/', $ref)) {
+        $from = 'tenants';
+    } elseif (strpos($ref, '/applicants/history') !== false) {
         $from = 'history';
-    } elseif (strpos($_SERVER['HTTP_REFERER'], '/applicants/') !== false) {
+    } elseif (strpos($ref, '/applicants/') !== false) {
         $from = 'applicant';
-        if (preg_match('/\/applicants\/(\d+)/', $_SERVER['HTTP_REFERER'], $m)) {
+        if (preg_match('/\/applicants\/(\d+)/', $ref, $m)) {
             $applicantId = (int)$m[1];
         }
+    } elseif (preg_match('/\/properties\/(\d+)/', $ref, $m)) {
+        $from = 'property';
+        $returnPropertyId = (int)$m[1];
+    } elseif (strpos($ref, '/dashboard') !== false) {
+        $from = 'dashboard';
+    } elseif (strpos($ref, 'tab=expired') !== false) {
+        $from = 'leases_expired';
     }
 }
-$fromHistory = ($from === 'history');
+$fromHistory = ($from === 'history' || $from === 'applicants_history');
 $fromApplicant = ($from === 'applicant') || ($applicantId > 0 && !empty($leaseApplicants));
+
+// Build unit display label for Back to Unit button
+$uRawNum = trim((string)($lease['unit_number'] ?? ''));
+if ($uRawNum === '') {
+    $unitReturnLabel = 'Unit Details';
+} elseif (preg_match('/^(unit|suite|apt|apartment|basement|bsmt|main|upper|lower|fl|floor|penthouse|ph|loft|studio|garage|coach)\b/i', $uRawNum)) {
+    $unitReturnLabel = $uRawNum;
+} else {
+    $unitReturnLabel = 'Unit ' . $uRawNum;
+}
+
+// Build query string helper to preserve caller context across internal template selection links
+$callerQueryParts = [];
+if (!empty($from)) {
+    $callerQueryParts[] = 'from=' . urlencode($from);
+    if ($from === 'unit' && $returnUnitId > 0) $callerQueryParts[] = 'unit_id=' . $returnUnitId;
+    if ($from === 'tenant' && $returnTenantId > 0) $callerQueryParts[] = 'tenant_id=' . $returnTenantId;
+    if ($from === 'applicant' && $applicantId > 0) $callerQueryParts[] = 'applicant_id=' . $applicantId;
+    if ($from === 'property' && $returnPropertyId > 0) $callerQueryParts[] = 'property_id=' . $returnPropertyId;
+}
+$callerQuerySuffix = !empty($callerQueryParts) ? '&' . implode('&', $callerQueryParts) : '';
 
 // Check if this draft lease is a renewal workflow
 $isRenewal = (!empty($lease['terms']) && stripos($lease['terms'], 'renew') !== false)
@@ -90,7 +135,23 @@ if (!empty($placeholders)) {
 ?>
 
 <div class="breadcrumb" style="margin-bottom: 16px; font-size: 13px; font-weight: 500;">
-    <?php if ($from === 'history'): ?>
+    <?php if ($from === 'unit' && $returnUnitId > 0): ?>
+        <a href="<?= Router::url('/units/' . $returnUnitId) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to <?= htmlspecialchars($unitReturnLabel) ?>
+        </a>
+    <?php elseif ($from === 'tenant' && $returnTenantId > 0): ?>
+        <a href="<?= Router::url('/tenants/' . $returnTenantId) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to <?= htmlspecialchars(!empty($lease['tenant_name']) ? $lease['tenant_name'] : 'Tenant Profile') ?>
+        </a>
+    <?php elseif ($from === 'tenants'): ?>
+        <a href="<?= Router::url('/tenants') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Active Tenants
+        </a>
+    <?php elseif ($from === 'tenants_history'): ?>
+        <a href="<?= Router::url('/tenants/history') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Historical Tenants
+        </a>
+    <?php elseif ($from === 'history' || $from === 'applicants_history'): ?>
         <a href="<?= Router::url('/applicants/history') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
             &larr; Back to Historical Applications
         </a>
@@ -98,7 +159,15 @@ if (!empty($placeholders)) {
         <a href="<?= Router::url('/applicants/' . $applicantId) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
             &larr; Back to Application &amp; Lease Workflow
         </a>
-    <?php elseif ($lease['status'] === 'terminated' || $lease['status'] === 'expired'): ?>
+    <?php elseif ($from === 'property' && $returnPropertyId > 0): ?>
+        <a href="<?= Router::url('/properties/' . $returnPropertyId) ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to <?= htmlspecialchars(!empty($lease['property_name']) ? $lease['property_name'] : 'Property') ?>
+        </a>
+    <?php elseif ($from === 'dashboard'): ?>
+        <a href="<?= Router::url('/dashboard') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Dashboard
+        </a>
+    <?php elseif ($from === 'leases_expired' || $lease['status'] === 'terminated' || $lease['status'] === 'expired'): ?>
         <a href="<?= Router::url('/leases?tab=expired') ?>" style="display: inline-flex; align-items: center; gap: 6px;">
             &larr; Back to Expired Leases
         </a>
@@ -624,7 +693,7 @@ if (!empty($placeholders)) {
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
                         <?php foreach ($templates as $tmpl): 
                             $isSelected = (!empty($selectedTemplate['id']) && $selectedTemplate['id'] == $tmpl['id']);
-                            $tmplUrl = Router::url('/leases/' . $lease['id'] . '?template_id=' . $tmpl['id'] . ($applicantId > 0 ? '&from=applicant&applicant_id=' . $applicantId : ($fromHistory ? '&from=history' : '')) . '#generateLeaseSection');
+                            $tmplUrl = Router::url('/leases/' . $lease['id'] . '?template_id=' . $tmpl['id'] . $callerQuerySuffix . '#generateLeaseSection');
                         ?>
                             <div onclick="window.location.href='<?= $tmplUrl ?>';" 
                                  style="cursor: pointer; padding: 14px 16px; border-radius: 10px; border: 2px solid <?= $isSelected ? 'var(--ws-accent, #f5a623)' : 'var(--ws-border, #ebe7df)' ?>; background: <?= $isSelected ? '#fffdf7' : 'var(--ws-surface-subtle, #faf9f6)' ?>; box-shadow: <?= $isSelected ? '0 3px 12px rgba(245, 166, 35, 0.16)' : 'none' ?>; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.15s ease;">

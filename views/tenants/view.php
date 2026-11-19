@@ -37,7 +37,7 @@ $fromApplicantsHistory = ($from === 'applicants_history');
     </div>
     <div class="action-buttons">
         <?php if (!empty($tenant['active_lease_id'])): ?>
-            <a href="<?= Router::url('/leases/' . $tenant['active_lease_id'] . ($fromTenantsHistory ? '?from=history' : '')) ?>" class="btn btn-primary">View Active Lease</a>
+            <a href="<?= Router::url('/leases/' . $tenant['active_lease_id'] . '?from=tenant&tenant_id=' . (int)$tenant['id']) ?>" class="btn btn-primary">View Active Lease</a>
         <?php else: ?>
             <a href="<?= Router::url('/leases/create') ?>" class="btn btn-outline">Assign to Lease</a>
         <?php endif; ?>
@@ -144,7 +144,7 @@ $fromApplicantsHistory = ($from === 'applicants_history');
                                 $<?= number_format((float)$l['rent_amount'], 2) ?>/mo
                             </td>
                             <td>
-                                <a href="<?= Router::url('/leases/' . $l['id']) ?>" 
+                                <a href="<?= Router::url('/leases/' . $l['id'] . '?from=tenant&tenant_id=' . (int)$tenant['id']) ?>" 
                                    class="btn btn-outline btn-xs" 
                                    title="View Lease Agreement"
                                    aria-label="View Lease Agreement"

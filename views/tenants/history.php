@@ -128,7 +128,7 @@ use App\Core\Router;
                                         </svg>
                                     </a>
                                     <?php if (!empty($tenant['lease_id'])): ?>
-                                        <a href="<?= Router::url('/leases/' . $tenant['lease_id'] . '?from=history') ?>" 
+                                        <a href="<?= Router::url('/leases/' . $tenant['lease_id'] . '?from=tenants_history') ?>" 
                                            class="btn btn-outline btn-xs" 
                                            title="View Past Lease"
                                            aria-label="View Past Lease"

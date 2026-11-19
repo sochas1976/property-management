@@ -66,7 +66,7 @@ $applianceLabels = [
     <div class="action-buttons">
         <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" class="btn btn-outline">Edit Unit</a>
         <?php if (!empty($activeLease['id'])): ?>
-            <a href="<?= Router::url('/leases/' . $activeLease['id']) ?>" class="btn btn-outline">View Active Lease</a>
+            <a href="<?= Router::url('/leases/' . $activeLease['id'] . '?from=unit&unit_id=' . (int)$unit['id']) ?>" class="btn btn-outline">View Active Lease</a>
         <?php endif; ?>
         <form action="<?= Router::url('/units/' . $unit['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete <?= htmlspecialchars(addslashes($uDisplayTitle)) ?>?');" style="display:inline;">
             <button type="submit" class="btn btn-outline">Delete Unit</button>
@@ -210,7 +210,7 @@ $applianceLabels = [
                         <div>
                             <span class="text-muted text-xs">Lease Status</span>
                             <div style="margin-top: 4px;">
-                                <a href="<?= Router::url('/leases/' . $activeLease['id']) ?>" style="text-decoration: none;">
+                                <a href="<?= Router::url('/leases/' . $activeLease['id'] . '?from=unit&unit_id=' . (int)$unit['id']) ?>" style="text-decoration: none;">
                                     <span class="badge badge-success">Active Lease</span>
                                 </a>
                             </div>
