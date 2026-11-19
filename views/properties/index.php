@@ -66,7 +66,7 @@ use App\Core\Router;
                                     $uDisplayName = is_numeric($u['unit_number']) ? 'Unit ' . $u['unit_number'] : $u['unit_number'];
                                     $uBaths = rtrim(rtrim(number_format((float)$u['bathrooms'], 1), '0'), '.');
                                 ?>
-                                    <a href="<?= Router::url('/units/' . $u['id'] . '/edit') ?>" 
+                                    <a href="<?= Router::url('/units/' . $u['id']) ?>" 
                                        style="display: grid; grid-template-columns: minmax(68px, 1fr) 68px 78px 88px; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df); text-decoration: none; transition: background-color 0.15s ease;"
                                        onmouseover="this.style.backgroundColor='var(--ws-raised, #f1efe9)'"
                                        onmouseout="this.style.backgroundColor='var(--ws-surface-subtle, #faf9f6)'">

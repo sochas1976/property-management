@@ -68,6 +68,7 @@ Router::get('/properties/{id}/units/create', [UnitController::class, 'create'], 
 
 // Units
 Router::post('/units', [UnitController::class, 'store'], ['auth']);
+Router::get('/units/{id}', [UnitController::class, 'view'], ['auth']);
 Router::get('/units/{id}/edit', [UnitController::class, 'edit'], ['auth']);
 Router::post('/units/{id}/update', [UnitController::class, 'update'], ['auth']);
 Router::post('/units/{id}/delete-photo', [UnitController::class, 'deletePhoto'], ['auth']);

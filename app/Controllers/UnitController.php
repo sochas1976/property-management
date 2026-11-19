@@ -47,6 +47,53 @@ class UnitController extends Controller {
         $this->redirect('/properties/' . $data['property_id']);
     }
 
+    public function view(string $id): void {
+        Unit::syncOccupancyStatus((int)$id);
+        $unit = Unit::findById((int)$id);
+        if (!$unit) {
+            $this->setFlash('error', 'Unit not found.');
+            $this->redirect('/properties');
+        }
+
+        $property = Property::findById((int)$unit['property_id']);
+        $activeLease = Lease::findActiveByUnit((int)$id);
+
+        $computedAvailableDate = '';
+        $isPeriodicOccupied = false;
+        $today = AppDate::todayString();
+
+        if ($unit['status'] !== 'occupied') {
+            $computedAvailableDate = $today;
+        } else {
+            $isPeriodic = false;
+            if ($activeLease) {
+                if (!empty($activeLease['tenancy_type']) && $activeLease['tenancy_type'] === 'periodic') {
+                    $isPeriodic = true;
+                } elseif (!empty($activeLease['terms']) && preg_match('/periodic/i', $activeLease['terms'])) {
+                    $isPeriodic = true;
+                }
+            }
+
+            if ($isPeriodic) {
+                $isPeriodicOccupied = true;
+                $computedAvailableDate = '-----';
+            } elseif ($activeLease && !empty($activeLease['end_date'])) {
+                $computedAvailableDate = $activeLease['end_date'];
+            } else {
+                $computedAvailableDate = $unit['available_date'] ?? $today;
+            }
+        }
+
+        $this->render('units.view', [
+            'title'                 => 'Unit ' . $unit['unit_number'] . ' — ' . ($property['name'] ?? 'Property'),
+            'unit'                  => $unit,
+            'property'              => $property,
+            'activeLease'           => $activeLease,
+            'computedAvailableDate' => $computedAvailableDate,
+            'isPeriodicOccupied'    => $isPeriodicOccupied
+        ]);
+    }
+
     public function edit(string $id): void {
         $unit = Unit::findById((int)$id);
         if (!$unit) {

@@ -127,7 +127,7 @@ if (!empty($units)) {
                                         <img src="<?= Router::url($uPhotos[0]) ?>" alt="Unit photo" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; border: 1px solid var(--ws-border-subtle); flex-shrink: 0;">
                                     <?php endif; ?>
                                     <div>
-                                        <div style="font-weight: 500; color: var(--ws-text);">Unit <?= htmlspecialchars($unit['unit_number']) ?></div>
+                                        <a href="<?= Router::url('/units/' . $unit['id']) ?>" style="font-weight: 500; color: var(--ws-text); text-decoration: none;">Unit <?= htmlspecialchars($unit['unit_number']) ?></a>
                                         <?php if (!empty($uPhotos) && count($uPhotos) > 1): ?>
                                             <div class="text-muted text-xs"><?= count($uPhotos) ?> photos</div>
                                         <?php endif; ?>
@@ -159,6 +159,16 @@ if (!empty($units)) {
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; align-items: center;">
+                                    <a href="<?= Router::url('/units/' . $unit['id']) ?>" 
+                                       class="btn btn-outline btn-xs" 
+                                       title="View Unit Details"
+                                       aria-label="View Unit Details"
+                                       style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </a>
                                     <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" 
                                        class="btn btn-outline btn-xs" 
                                        title="Edit Unit"
