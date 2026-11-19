@@ -77,10 +77,10 @@ $applianceLabels = [
 <!-- Single-Column Stacked Layout -->
 <div style="display: flex; flex-direction: column; gap: 22px;">
 
-    <!-- Card 1: Property & Unit Specifications -->
+    <!-- Card 1: Property & Unit -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title">Property &amp; Unit Specifications</h2>
+            <h2 class="card-title">Property &amp; Unit</h2>
         </div>
         <div class="card-body">
             <!-- Property Summary Banner + Break Line -->
