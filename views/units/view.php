@@ -114,7 +114,7 @@ $applianceLabels = [
             <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
                     <div>
-                        <span class="text-muted text-xs">Unit / Suite</span>
+                        <span class="text-muted text-xs">Suite</span>
                         <div style="font-weight: 700; color: var(--ws-text); margin-top: 2px;"><?= htmlspecialchars($unit['unit_number']) ?></div>
                     </div>
                     <div>
