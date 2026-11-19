@@ -157,6 +157,32 @@ $applianceLabels = [
                     </div>
                 <?php endif; ?>
             </div>
+
+            <!-- Unit Pictures (Inside Property & Unit Specifications Card) -->
+            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); margin-top: 16px;">
+                <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+                    Unit Pictures
+                </div>
+                <?php if (empty($unitPhotos)): ?>
+                    <div style="text-align: center; padding: 14px 10px;">
+                        <p class="text-muted" style="margin: 0 0 10px; font-size: 13.5px;">No pictures uploaded for this unit yet.</p>
+                        <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" class="btn btn-outline btn-xs">Upload Unit Pictures</a>
+                    </div>
+                <?php else: ?>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+                        <?php foreach ($unitPhotos as $pIdx => $photoPath): ?>
+                            <div style="border-radius: 10px; overflow: hidden; border: 1px solid var(--ws-border); background: var(--ws-surface); padding: 4px;">
+                                <img src="<?= Router::url($photoPath) ?>" 
+                                     alt="Unit photo <?= $pIdx + 1 ?>" 
+                                     onclick="openUnitViewPhotoModal(<?= $pIdx ?>)"
+                                     style="width: 100%; height: 105px; object-fit: cover; border-radius: 7px; cursor: pointer; display: block; transition: transform 0.15s ease;"
+                                     onmouseover="this.style.transform='scale(1.03)'"
+                                     onmouseout="this.style.transform='scale(1)'">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -317,36 +343,6 @@ $applianceLabels = [
                     </div>
                 <?php endif; ?>
             </div>
-        </div>
-    </div>
-
-    <!-- Card 4: Unit Pictures -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Unit Pictures</h2>
-        </div>
-        <div class="card-body">
-            <?php if (empty($unitPhotos)): ?>
-                <div style="background: var(--ws-surface-subtle); padding: 24px 16px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); text-align: center;">
-                    <p class="text-muted" style="margin: 0 0 10px; font-size: 13.5px;">No pictures uploaded for this unit yet.</p>
-                    <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" class="btn btn-outline btn-xs">Upload Unit Pictures</a>
-                </div>
-            <?php else: ?>
-                <div style="background: var(--ws-surface-subtle); padding: 14px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
-                        <?php foreach ($unitPhotos as $pIdx => $photoPath): ?>
-                            <div style="border-radius: 10px; overflow: hidden; border: 1px solid var(--ws-border); background: var(--ws-surface); padding: 4px;">
-                                <img src="<?= Router::url($photoPath) ?>" 
-                                     alt="Unit photo <?= $pIdx + 1 ?>" 
-                                     onclick="openUnitViewPhotoModal(<?= $pIdx ?>)"
-                                     style="width: 100%; height: 105px; object-fit: cover; border-radius: 7px; cursor: pointer; display: block; transition: transform 0.15s ease;"
-                                     onmouseover="this.style.transform='scale(1.03)'"
-                                     onmouseout="this.style.transform='scale(1)'">
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
 
