@@ -60,23 +60,23 @@ if (!empty($units)) {
     <a href="<?= Router::url('/properties/' . $property['id'] . '?status=all') ?>" 
        class="btn <?= $unitFilter === 'all' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
        style="border-radius: 9999px; padding: 6px 16px;">
-        All Units (<?= $totalUnitsCount ?>)
+        All Units
     </a>
     <a href="<?= Router::url('/properties/' . $property['id'] . '?status=occupied') ?>" 
        class="btn <?= $unitFilter === 'occupied' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
        style="border-radius: 9999px; padding: 6px 16px;">
-        Occupied (<?= $occupiedUnitsCount ?>)
+        Occupied
     </a>
     <a href="<?= Router::url('/properties/' . $property['id'] . '?status=vacant') ?>" 
        class="btn <?= $unitFilter === 'vacant' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
        style="border-radius: 9999px; padding: 6px 16px;">
-        Vacant (<?= $vacantUnitsCount ?>)
+        Vacant
     </a>
     <?php if ($maintenanceUnitsCount > 0 || $unitFilter === 'maintenance'): ?>
         <a href="<?= Router::url('/properties/' . $property['id'] . '?status=maintenance') ?>" 
            class="btn <?= $unitFilter === 'maintenance' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
            style="border-radius: 9999px; padding: 6px 16px;">
-            Maintenance (<?= $maintenanceUnitsCount ?>)
+            Maintenance
         </a>
     <?php endif; ?>
 </div>
