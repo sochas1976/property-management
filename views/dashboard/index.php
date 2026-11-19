@@ -115,7 +115,7 @@ use App\Core\AppDate;
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding: 12px 10px; white-space: nowrap;">
-                                    <strong><?= date('M j, Y', strtotime($l['end_date'])) ?></strong>
+                                    <div style="color: var(--ws-text);"><?= date('M j, Y', strtotime($l['end_date'])) ?></div>
                                     <?php if ($daysLeft !== null): ?>
                                         <div class="text-muted text-xs" style="white-space: nowrap;">
                                             <?= $daysLeft === 0 ? 'Expires today' : ($daysLeft === 1 ? '1 day left' : ($daysLeft > 1 ? $daysLeft . ' days left' : abs($daysLeft) . ' days ago')) ?>
@@ -123,11 +123,11 @@ use App\Core\AppDate;
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding: 12px 10px; white-space: nowrap;">
-                                    <strong><?= htmlspecialchars($l['tenant_name']) ?></strong>
+                                    <div style="color: var(--ws-text);"><?= htmlspecialchars($l['tenant_name']) ?></div>
                                 </td>
                                 <td style="padding: 12px 18px 12px 10px;">
-                                    <div style="font-weight: 600; line-height: 1.25;"><?= htmlspecialchars($l['property_name']) ?></div>
-                                    <div class="text-muted text-xs">Unit <?= htmlspecialchars($l['unit_number']) ?></div>
+                                    <div style="color: var(--ws-text); line-height: 1.25;"><?= htmlspecialchars($l['property_name']) ?></div>
+                                    <div class="text-muted text-xs">Unit #<?= htmlspecialchars($l['unit_number']) ?></div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
