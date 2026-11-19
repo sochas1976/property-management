@@ -84,12 +84,7 @@ if (!empty($units)) {
 <!-- Units Section -->
 <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <h2 class="card-title">Units &amp; Floorplans</h2>
-            <span class="badge badge-subtle" style="background: var(--ws-surface, #ffffff); color: var(--ws-text, #111111); border: 1px solid var(--table-th-dark-border, #b8b0a0); font-size: 11.5px; padding: 3px 10px;">
-                <?= count($filteredUnits) ?> <?= count($filteredUnits) === 1 ? 'Unit' : 'Units' ?>
-            </span>
-        </div>
+        <h2 class="card-title">Units &amp; Floorplans</h2>
     </div>
 
     <div class="table-responsive">
@@ -195,5 +190,17 @@ if (!empty($units)) {
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
+    <div class="card-footer" style="padding: 12px 22px; background-color: var(--card-footer-bg, #faf9f6); border-top: 1px solid var(--ws-border-subtle, #ebe7df); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ws-text-muted, #737373);">
+        <span>Total Units: <strong style="color: var(--ws-text, #111111);"><?= $totalUnitsCount ?> <?= $totalUnitsCount === 1 ? 'Unit' : 'Units' ?></strong></span>
+        <span>
+            <strong class="text-success"><?= $occupiedUnitsCount ?> Occupied</strong>
+            &bull;
+            <strong class="text-warning"><?= $vacantUnitsCount ?> Vacant</strong>
+            <?php if ($maintenanceUnitsCount > 0): ?>
+                &bull;
+                <strong class="text-danger"><?= $maintenanceUnitsCount ?> Maintenance</strong>
+            <?php endif; ?>
+        </span>
     </div>
 </div>
