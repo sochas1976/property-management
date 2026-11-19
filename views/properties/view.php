@@ -29,10 +29,67 @@ use App\Core\Router;
     </div>
 </div>
 
+<?php
+$unitFilter = $_GET['status'] ?? 'all';
+$totalUnitsCount = count($units ?? []);
+$occupiedUnitsCount = 0;
+$vacantUnitsCount = 0;
+$maintenanceUnitsCount = 0;
+$filteredUnits = [];
+
+if (!empty($units)) {
+    foreach ($units as $uItem) {
+        $uSt = $uItem['status'] ?? 'vacant';
+        if ($uSt === 'occupied') {
+            $occupiedUnitsCount++;
+        } elseif ($uSt === 'maintenance') {
+            $maintenanceUnitsCount++;
+        } else {
+            $vacantUnitsCount++;
+        }
+
+        if ($unitFilter === 'all' || $uSt === $unitFilter) {
+            $filteredUnits[] = $uItem;
+        }
+    }
+}
+?>
+
+<!-- View Segmented Filter Pill Tabs (Option 3) -->
+<div style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+    <a href="<?= Router::url('/properties/' . $property['id'] . '?status=all') ?>" 
+       class="btn <?= $unitFilter === 'all' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
+       style="border-radius: 9999px; padding: 6px 16px;">
+        All Units (<?= $totalUnitsCount ?>)
+    </a>
+    <a href="<?= Router::url('/properties/' . $property['id'] . '?status=occupied') ?>" 
+       class="btn <?= $unitFilter === 'occupied' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
+       style="border-radius: 9999px; padding: 6px 16px;">
+        Occupied (<?= $occupiedUnitsCount ?>)
+    </a>
+    <a href="<?= Router::url('/properties/' . $property['id'] . '?status=vacant') ?>" 
+       class="btn <?= $unitFilter === 'vacant' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
+       style="border-radius: 9999px; padding: 6px 16px;">
+        Vacant (<?= $vacantUnitsCount ?>)
+    </a>
+    <?php if ($maintenanceUnitsCount > 0 || $unitFilter === 'maintenance'): ?>
+        <a href="<?= Router::url('/properties/' . $property['id'] . '?status=maintenance') ?>" 
+           class="btn <?= $unitFilter === 'maintenance' ? 'btn-primary' : 'btn-outline' ?> btn-sm" 
+           style="border-radius: 9999px; padding: 6px 16px;">
+            Maintenance (<?= $maintenanceUnitsCount ?>)
+        </a>
+    <?php endif; ?>
+</div>
+
 <!-- Units Section -->
 <div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
-        <h2 class="card-title">Units &amp; Floorplans (<?= count($units) ?>)</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 class="card-title">Units &amp; Floorplans</h2>
+            <span class="badge badge-subtle" style="background: var(--ws-surface, #ffffff); color: var(--ws-text, #111111); border: 1px solid var(--table-th-dark-border, #b8b0a0); font-size: 11.5px; padding: 3px 10px;">
+                <?= count($filteredUnits) ?> <?= count($filteredUnits) === 1 ? 'Unit' : 'Units' ?>
+            </span>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -49,16 +106,22 @@ use App\Core\Router;
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($units)): ?>
+                <?php if (empty($filteredUnits)): ?>
                     <tr>
                         <td colspan="7" class="text-center text-muted" style="padding: 40px;">
-                            No units added to this property yet.
-                            <br><br>
-                            <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-primary btn-sm">Add First Unit</a>
+                            <?php if ($unitFilter !== 'all' && $totalUnitsCount > 0): ?>
+                                No <?= htmlspecialchars($unitFilter) ?> units found at this property.
+                                <br><br>
+                                <a href="<?= Router::url('/properties/' . $property['id']) ?>" class="btn btn-outline btn-sm">Show All Units</a>
+                            <?php else: ?>
+                                No units added to this property yet.
+                                <br><br>
+                                <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-primary btn-sm">Add First Unit</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($units as $unit): ?>
+                    <?php foreach ($filteredUnits as $unit): ?>
                         <tr>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
