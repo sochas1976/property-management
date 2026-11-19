@@ -538,13 +538,13 @@ $fromHistory = ($from === 'history');
 
 <!-- Create Lease Agreement Modal -->
 <div id="convert-modal" class="modal-backdrop" onclick="if(event.target.id==='convert-modal') closeConvertModal();">
-    <div class="modal-content" style="max-width: 620px; background: var(--ws-surface); border-radius: 14px; padding: 18px 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; font-size: 17px; font-weight: 700;">Create Lease Agreement</h3>
-            <button type="button" onclick="closeConvertModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; line-height: 1;">&times;</button>
+    <div class="modal-content" style="max-width: 620px; background: var(--ws-surface); border-radius: 16px; overflow: hidden; border: 1.5px solid var(--ws-border); box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+        <div class="modal-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Create Lease Agreement</h3>
+            <button type="button" onclick="closeConvertModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; line-height: 1; color: var(--ws-text-muted);">&times;</button>
         </div>
 
-        <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/create-lease') ?>" method="POST">
+        <form action="<?= Router::url('/applicants/' . $applicant['id'] . '/create-lease') ?>" method="POST" style="padding: 18px 22px;">
             <?php
             // Find target unit details
             $targetUnit = null;

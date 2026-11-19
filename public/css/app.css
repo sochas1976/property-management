@@ -66,7 +66,7 @@
     --navbar-bg: #ffffff;
     --navbar-border: #eeece6;
     --card-bg: #ffffff;
-    --card-header-bg: #ffffff;
+    --card-header-bg: #d8d3c7;
     --card-footer-bg: #faf9f6;
     --table-th-bg: #ece8df;
     --table-th-text: #423e37;
@@ -149,7 +149,7 @@ html[data-theme="dark"],
     --navbar-bg: rgba(20, 22, 26, 0.94);
     --navbar-border: #262930;
     --card-bg: #191b1f;
-    --card-header-bg: #191b1f;
+    --card-header-bg: #181a20;
     --card-footer-bg: #202329;
     --table-th-bg: #21242b;
     --table-th-text: #cfd3da;
@@ -508,19 +508,20 @@ html[data-theme="light"] .theme-icon-light,
 }
 
 .card-header {
-    padding: 22px 28px;
-    background-color: var(--card-header-bg);
-    border-bottom: 1px solid var(--ws-border-subtle);
+    padding: 16px 20px;
+    background-color: var(--table-th-dark, #d8d3c7);
+    border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .card-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--ws-text);
+    color: var(--table-th-dark-text, var(--ws-text));
     letter-spacing: -0.01em;
+    margin: 0;
 }
 
 .card-body {
@@ -782,6 +783,12 @@ html[data-theme="light"] .theme-icon-light,
 
 .table th:last-child {
     border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
+
+.card-header + .table-responsive .table th:first-child,
+.card-header + .table-responsive .table th:last-child {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
 }
 
 .table td {
@@ -1248,17 +1255,19 @@ select.form-control.placeholder-selected {
 }
 
 .modal-header {
-    padding: 22px 28px;
-    background-color: var(--card-header-bg);
-    border-bottom: 1px solid var(--ws-border-subtle);
+    padding: 16px 22px;
+    background-color: var(--table-th-dark, #d8d3c7);
+    border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .modal-header h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
+    color: var(--table-th-dark-text, var(--ws-text));
+    margin: 0;
 }
 
 .modal-close {

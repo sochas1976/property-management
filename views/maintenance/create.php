@@ -6,10 +6,9 @@ use App\Core\Router;
     <a href="<?= Router::url('/maintenance') ?>">&larr; Back to Maintenance</a>
 </div>
 
-<div class="card" style="max-width: 750px; margin: 0 auto;">
+<div class="card" style="max-width: 750px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
         <h2 class="card-title">Submit Maintenance Ticket</h2>
-        <p class="text-muted text-xs">Record property defects, repair needs, and attach local photo evidence</p>
     </div>
     <div class="card-body">
         <form action="<?= Router::url('/maintenance') ?>" method="POST" enctype="multipart/form-data">

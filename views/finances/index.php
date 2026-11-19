@@ -8,8 +8,8 @@ use App\Core\Router;
         <p class="page-subtitle">Track rent roll receivables, generate invoices, and record tenant cash/ACH receipts</p>
     </div>
     <div class="action-buttons">
-        <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-invoice').classList.add('active')">+ Generate Invoice</button>
-        <button type="button" class="btn btn-primary" onclick="document.getElementById('modal-payment').classList.add('active')">💵 Record Payment</button>
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-invoice').classList.add('active')">Generate Invoice</button>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('modal-payment').classList.add('active')">Record Payment</button>
     </div>
 </div>
 
@@ -72,12 +72,15 @@ use App\Core\Router;
                 <?php else: ?>
                     <?php foreach ($invoices as $inv): ?>
                         <tr>
-                            <td><strong><?= htmlspecialchars($inv['invoice_number']) ?></strong></td>
-                            <td><?= htmlspecialchars($inv['property_name']) ?> (#<?= htmlspecialchars($inv['unit_number']) ?>)</td>
-                            <td><?= htmlspecialchars($inv['tenant_name']) ?></td>
+                            <td style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($inv['invoice_number']) ?></td>
+                            <td>
+                                <div style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($inv['property_name']) ?></div>
+                                <div class="text-muted text-xs">Unit #<?= htmlspecialchars($inv['unit_number']) ?></div>
+                            </td>
+                            <td style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($inv['tenant_name']) ?></td>
                             <td><?= htmlspecialchars($inv['due_date']) ?></td>
                             <td class="font-bold">$<?= number_format((float)$inv['amount'], 2) ?></td>
-                            <td class="text-success">$<?= number_format((float)$inv['total_paid'], 2) ?></td>
+                            <td class="text-success font-bold">$<?= number_format((float)$inv['total_paid'], 2) ?></td>
                             <td>
                                 <?php
                                 $invClassMap = [

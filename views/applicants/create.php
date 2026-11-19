@@ -93,12 +93,12 @@ use App\Core\Router;
 
                     <!-- Carousel Page Controls -->
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <button type="button" id="pdf-carousel-prev" class="btn btn-outline btn-xs" style="padding: 6px 13px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: var(--ws-surface); border: 1.5px solid var(--ws-border-strong); box-shadow: var(--shadow-sm);">&#9664; Prev</button>
+                        <button type="button" id="pdf-carousel-prev" class="btn btn-outline btn-xs" style="padding: 6px 13px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: var(--ws-surface); border: 1.5px solid var(--ws-border-strong); box-shadow: var(--shadow-sm);">Prev</button>
                         <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--ws-bg); border: 1px solid var(--ws-border-strong); padding: 3px 10px 3px 4px; border-radius: 999px;">
                             <div id="pdf-carousel-dots" style="display: flex; align-items: center; gap: 4px;"></div>
                             <span id="pdf-carousel-page-indicator" style="font-size: 11.5px; font-weight: 700; color: var(--ws-text-secondary); white-space: nowrap;">Page 1 of 1</span>
                         </div>
-                        <button type="button" id="pdf-carousel-next" class="btn btn-outline btn-xs" style="padding: 6px 13px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: var(--ws-surface); border: 1.5px solid var(--ws-border-strong); box-shadow: var(--shadow-sm);">Next &#9654;</button>
+                        <button type="button" id="pdf-carousel-next" class="btn btn-outline btn-xs" style="padding: 6px 13px; font-size: 12.5px; font-weight: 700; border-radius: 8px; background: var(--ws-surface); border: 1.5px solid var(--ws-border-strong); box-shadow: var(--shadow-sm);">Next</button>
                     </div>
 
                     <!-- Fit Group (Separated) + Zoom Group + Pop-Out / Close Controls -->
@@ -120,10 +120,10 @@ use App\Core\Router;
 
                         <div style="display: inline-flex; align-items: center; gap: 6px;">
                             <button type="button" id="pdf-modal-popout-btn" class="btn btn-outline btn-xs" title="Open in a separate desktop window to drag to your 2nd monitor" style="padding: 5px 11px; font-size: 12px; font-weight: 600;">
-                                &#8599; 2nd Display Window
+                                2nd Display Window
                             </button>
                             <button type="button" id="pdf-preview-modal-close" class="btn btn-outline btn-danger btn-xs" style="padding: 5px 12px; font-size: 12.5px; font-weight: 700;">
-                                &times; Close
+                                Close
                             </button>
                         </div>
                     </div>

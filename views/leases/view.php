@@ -141,9 +141,9 @@ if (!empty($placeholders)) {
 <!-- Full-Width Application & Lease Workflow Banner Card (Only for In-Progress Draft Workflows) -->
 <?php if ($lease['status'] === 'draft'): ?>
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div>
-            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Steps for Completion</h2>
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Steps for Completion</h2>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <?php if ($isRenewal): ?>
@@ -221,34 +221,34 @@ if (!empty($placeholders)) {
                                 </form>
                             <?php elseif ($primaryApplicant): ?>
                                 <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/cancel-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);">
-                                        &larr; Revert Back
+                                    <button type="submit" class="btn btn-outline">
+                                        Revert Back
                                     </button>
                                 </form>
                             <?php else: ?>
                                 <form action="<?= Router::url('/leases/' . $lease['id'] . '/cancel') ?>" method="POST" style="margin: 0; display: inline-flex;">
-                                    <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);">
+                                    <button type="submit" class="btn btn-outline">
                                         Cancel
                                     </button>
                                 </form>
                             <?php endif; ?>
 
-                            <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases table">
+                            <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" title="Pause workflow and return to the Leases table">
                                 Pause &amp; Save
                             </a>
 
                             <?php if ($primaryApplicant): ?>
                                 <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/send-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                     <input type="hidden" name="from" value="lease">
-                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center;">
-                                        Send Lease &rarr;
+                                    <button type="submit" class="btn btn-primary">
+                                        Send Lease
                                     </button>
                                 </form>
                             <?php else: ?>
                                 <form action="<?= Router::url('/leases/' . $lease['id'] . '/status') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                     <input type="hidden" name="status" value="active">
-                                    <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center;">
-                                        Activate Lease &rarr;
+                                    <button type="submit" class="btn btn-primary">
+                                        Activate Lease
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -271,18 +271,18 @@ if (!empty($placeholders)) {
                                 <?php if ($primaryApplicant): ?>
                                     <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/recall-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                         <input type="hidden" name="from" value="lease">
-                                        <button type="submit" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff;">
-                                            &larr; Revert Back
+                                        <button type="submit" class="btn btn-outline">
+                                            Revert Back
                                         </button>
                                     </form>
-                                    <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--ws-text);" title="Pause workflow and return to the Leases in-progress table">
+                                    <a href="<?= Router::url('/leases?paused=' . $lease['id']) ?>" class="btn btn-outline" title="Pause workflow and return to the Leases in-progress table">
                                         Pause &amp; Save Workflow
                                     </a>
                                     <form action="<?= Router::url('/applicants/' . $primaryApplicant['id'] . '/sign-lease') ?>" method="POST" style="margin: 0; display: inline-flex;">
                                         <input type="hidden" name="from" value="lease">
                                         <input type="hidden" name="sign_all" value="1">
-                                        <button type="submit" class="btn btn-primary" style="font-weight: 600; padding: 9px 18px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                                            <?= count($leaseApplicants) > 1 ? 'Mark All Signed &rarr;' : 'Mark Signed &rarr;' ?>
+                                        <button type="submit" class="btn btn-primary">
+                                            <?= count($leaseApplicants) > 1 ? 'Mark All Signed' : 'Mark Signed' ?>
                                         </button>
                                     </form>
                                 <?php endif; ?>
@@ -311,8 +311,8 @@ if (!empty($placeholders)) {
 
 <!-- Card 2: Comprehensive Lease Agreement Details -->
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Lease Agreement Details</h2>
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Lease Agreement Details</h2>
         <?php if (!empty($renewalDraft)): ?>
             <span class="badge" style="background: var(--ws-accent-subtle); color: var(--ws-accent-dark, #b26a00); border: 1.5px solid var(--ws-accent); font-weight: 700; font-size: 11.5px; padding: 3px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px;">
                 Renewal in Progress
@@ -373,8 +373,8 @@ if (!empty($placeholders)) {
                                     <?= htmlspecialchars($lease['tenant_name'] ?: 'Unassigned') ?>
                                 </strong>
                                 <?php if (!empty($lease['tenant_id'])): ?>
-                                    <a href="<?= Router::url('/tenants/' . $lease['tenant_id']) ?>" class="btn btn-outline btn-xs" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #fff;">
-                                        View Profile &rarr;
+                                    <a href="<?= Router::url('/tenants/' . $lease['tenant_id']) ?>" class="btn btn-outline btn-xs">
+                                        View Profile
                                     </a>
                                 <?php endif; ?>
                             </div>
@@ -532,9 +532,9 @@ if (!empty($placeholders)) {
 
 <!-- Attached Lease Contracts Card -->
 <div class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div>
-            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Attached Lease Contracts</h2>
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Attached Lease Contracts</h2>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <button type="button" onclick="document.getElementById('leaseUploadInput').click();" title="Attach signed contract or document" style="width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 1.5px solid var(--ws-accent, #f5a623); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ws-accent, #f5a623); font-size: 16px; font-weight: 700; line-height: 1; transition: all 0.15s ease;" onmouseover="this.style.background='rgba(245, 166, 35, 0.1)'; this.style.borderColor='var(--ws-accent-hover, #e69512)'; this.style.color='var(--ws-accent-hover, #e69512)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--ws-accent, #f5a623)'; this.style.color='var(--ws-accent, #f5a623)';">
@@ -577,11 +577,11 @@ if (!empty($placeholders)) {
 <!-- Streamlined Lease Document Generation from Configured Template (Only in Draft Review / Step 2) -->
 <?php if ($applicantStatus === 'lease_created' || ($lease['status'] === 'draft' && $applicantStatus !== 'lease_sent' && $applicantStatus !== 'converted')): ?>
 <div id="generateLeaseSection" class="card" style="margin-bottom: 24px; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-radius: 12px; overflow: hidden;">
-    <div class="card-header" style="background-color: var(--table-th-bg); border-bottom: 1.5px solid var(--table-th-border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="card-header" style="background-color: var(--table-th-dark, #d8d3c7); border-bottom: 1.5px solid var(--table-th-dark-border, #c4bcae); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
-            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700;">Generate Lease Agreement</h2>
+            <h2 class="card-title" style="margin: 0; font-size: 16px; font-weight: 700; color: var(--table-th-dark-text, var(--ws-text));">Generate Lease Agreement</h2>
         </div>
-        <a href="<?= Router::url('/leases/templates?lease_id=' . $lease['id'] . (!empty($selectedTemplate['id']) ? '&template_id=' . $selectedTemplate['id'] : '')) ?>" class="btn btn-outline" style="border: 1.5px solid var(--ws-border-strong, #d8d3c7); font-weight: 600; padding: 7px 14px; border-radius: 8px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--ws-surface-subtle, #faf9f6); color: var(--ws-text, #111); transition: all 0.15s ease;">
+        <a href="<?= Router::url('/leases/templates?lease_id=' . $lease['id'] . (!empty($selectedTemplate['id']) ? '&template_id=' . $selectedTemplate['id'] : '')) ?>" class="btn btn-outline btn-sm">
             Configure Lease Templates
         </a>
     </div>

@@ -76,7 +76,7 @@ use App\Core\AppDate;
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Lease Expiry Dates</h2>
-            <a href="<?= Router::url('/leases') ?>" class="btn btn-link">View All Leases &rarr;</a>
+            <a href="<?= Router::url('/leases') ?>" class="btn btn-outline btn-xs">View All Leases</a>
         </div>
         <div class="table-responsive" style="overflow-x: hidden;">
             <table class="table" style="table-layout: auto; width: 100%; margin-bottom: 0;">
@@ -141,7 +141,7 @@ use App\Core\AppDate;
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Urgent Maintenance Tickets</h2>
-            <a href="<?= Router::url('/maintenance') ?>" class="btn btn-link">Manage Work Orders &rarr;</a>
+            <a href="<?= Router::url('/maintenance') ?>" class="btn btn-outline btn-xs">Manage Work Orders</a>
         </div>
         <div class="table-responsive">
             <table class="table">
@@ -168,13 +168,25 @@ use App\Core\AppDate;
                                     <span class="badge <?= $pClass ?>"><?= ucfirst($ticket['priority']) ?></span>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($ticket['title']) ?></strong>
+                                    <div style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($ticket['title']) ?></div>
                                     <div class="text-muted text-xs"><?= htmlspecialchars(substr($ticket['description'], 0, 50)) ?>...</div>
                                 </td>
-                                <td><?= htmlspecialchars($ticket['property_name']) ?> #<?= htmlspecialchars($ticket['unit_number']) ?></td>
+                                <td>
+                                    <div style="font-weight: 500; color: var(--ws-text);"><?= htmlspecialchars($ticket['property_name']) ?></div>
+                                    <div class="text-muted text-xs">Unit #<?= htmlspecialchars($ticket['unit_number']) ?></div>
+                                </td>
                                 <td><span class="badge badge-subtle"><?= ucfirst(str_replace('_', ' ', $ticket['status'])) ?></span></td>
                                 <td>
-                                    <a href="<?= Router::url('/maintenance/' . $ticket['id']) ?>" class="btn btn-outline btn-xs">View</a>
+                                    <a href="<?= Router::url('/maintenance/' . $ticket['id']) ?>" 
+                                       class="btn btn-outline btn-xs" 
+                                       title="View Maintenance Ticket"
+                                       aria-label="View Maintenance Ticket"
+                                       style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

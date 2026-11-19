@@ -8,7 +8,7 @@ use App\Core\Router;
         <p class="page-subtitle">Manage buildings, residential complexes, and commercial rental facilities</p>
     </div>
     <div>
-        <a href="<?= Router::url('/properties/create') ?>" class="btn btn-primary">+ Add New Property</a>
+        <a href="<?= Router::url('/properties/create') ?>" class="btn btn-outline">Add New Property</a>
     </div>
 </div>
 
@@ -29,7 +29,7 @@ use App\Core\Router;
                                 <a href="<?= Router::url('/properties/' . $prop['id']) ?>"><?= htmlspecialchars($prop['name']) ?></a>
                             </h2>
                             <p class="property-address">
-                                📍 <?= htmlspecialchars($prop['address_line1']) ?><?= $prop['address_line2'] ? ', ' . htmlspecialchars($prop['address_line2']) : '' ?><br>
+                                <?= htmlspecialchars($prop['address_line1']) ?><?= $prop['address_line2'] ? ', ' . htmlspecialchars($prop['address_line2']) : '' ?><br>
                                 <?= htmlspecialchars($prop['city']) ?>, <?= htmlspecialchars($prop['state']) ?> <?= htmlspecialchars($prop['zip_code']) ?>
                             </p>
                         </div>
@@ -59,7 +59,7 @@ use App\Core\Router;
                 </div>
                 <div class="card-footer">
                     <span class="text-muted text-xs">Manager: <?= htmlspecialchars($prop['manager_name'] ?? 'Unassigned') ?></span>
-                    <a href="<?= Router::url('/properties/' . $prop['id']) ?>" class="btn btn-outline btn-sm">Manage &rarr;</a>
+                    <a href="<?= Router::url('/properties/' . $prop['id']) ?>" class="btn btn-outline btn-sm">Manage</a>
                 </div>
             </div>
         <?php endforeach; ?>

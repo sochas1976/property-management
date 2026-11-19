@@ -181,17 +181,17 @@ $todayDay = AppDate::today()->format('j');
                 <?php endif; ?>
 
                 <div class="table-responsive" style="margin-bottom: 20px;">
-                    <table class="table" style="width: 100%; border-collapse: collapse;">
+                    <table class="table">
                         <thead>
-                            <tr style="border-bottom: 2px solid var(--border, #e5e7eb); text-align: left; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">
-                                <th style="padding: 10px 12px; width: 38%;">Placeholder In Document</th>
-                                <th style="padding: 10px 12px; width: 36%;">Data Source Field</th>
-                                <th style="padding: 10px 12px; width: 26%;">Manual / Override Value</th>
+                            <tr>
+                                <th style="width: 38%;">Placeholder In Document</th>
+                                <th style="width: 36%;">Data Source Field</th>
+                                <th style="width: 26%;">Manual / Override Value</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($placeholders as $phIdx => $ph): ?>
-                                <tr style="border-bottom: 1px solid var(--border, #f3f4f6);">
+                                <tr>
                                     <td style="padding: 12px; vertical-align: middle;">
                                         <input type="hidden" name="placeholder_keys[<?= $phIdx ?>]" value="<?= htmlspecialchars($ph['original_text']) ?>">
                                         <div style="font-family: monospace; font-weight: 700; color: var(--ws-accent, #f5a623); font-size: 13px; margin-bottom: 4px;">

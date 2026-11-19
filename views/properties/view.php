@@ -15,14 +15,14 @@ use App\Core\Router;
             <div class="badge badge-subtle"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
             <h1 class="page-title" style="margin-top: 5px;"><?= htmlspecialchars($property['name']) ?></h1>
             <p class="page-subtitle">
-                📍 <?= htmlspecialchars($property['address_line1']) ?><?= $property['address_line2'] ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
+                <?= htmlspecialchars($property['address_line1']) ?><?= $property['address_line2'] ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
                 <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
             </p>
         </div>
     </div>
     <div class="action-buttons">
         <a href="<?= Router::url('/properties/' . $property['id'] . '/edit') ?>" class="btn btn-outline">Edit Property</a>
-        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-primary">+ Add Unit</a>
+        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-primary">Add Unit</a>
         <form action="<?= Router::url('/properties/' . $property['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this property and all its units?');" style="display:inline;">
             <button type="submit" class="btn btn-danger btn-outline">Delete Property</button>
         </form>
@@ -31,21 +31,20 @@ use App\Core\Router;
 
 <?php if (!empty($property['description'])): ?>
     <div class="card" style="margin-bottom: 25px;">
+        <div class="card-header">
+            <h2 class="card-title">Overview &amp; Notes</h2>
+        </div>
         <div class="card-body">
-            <h4 style="margin-top: 0; color: var(--text-muted); font-size: 13px; text-transform: uppercase;">Overview & Notes</h4>
             <p style="margin: 0;"><?= nl2br(htmlspecialchars($property['description'])) ?></p>
         </div>
     </div>
 <?php endif; ?>
 
 <!-- Units Section -->
-<div class="card">
+<div class="card" style="border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
-        <div>
-            <h2 class="card-title">Units & Floorplans (<?= count($units) ?>)</h2>
-            <p class="text-muted text-xs">Manage individual apartment doors, tenant occupancy, and rental rates</p>
-        </div>
-        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-outline btn-sm">+ New Unit</a>
+        <h2 class="card-title">Units &amp; Floorplans (<?= count($units) ?>)</h2>
+        <a href="<?= Router::url('/properties/' . $property['id'] . '/units/create') ?>" class="btn btn-outline btn-xs">New Unit</a>
     </div>
 
     <div class="table-responsive">
@@ -82,9 +81,9 @@ use App\Core\Router;
                                         <img src="<?= Router::url($uPhotos[0]) ?>" alt="Unit photo" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; border: 1px solid var(--ws-border-subtle); flex-shrink: 0;">
                                     <?php endif; ?>
                                     <div>
-                                        <strong>Unit <?= htmlspecialchars($unit['unit_number']) ?></strong>
+                                        <div style="font-weight: 500; color: var(--ws-text);">Unit <?= htmlspecialchars($unit['unit_number']) ?></div>
                                         <?php if (!empty($uPhotos) && count($uPhotos) > 1): ?>
-                                            <div class="text-muted text-xs">📷 <?= count($uPhotos) ?> photos</div>
+                                            <div class="text-muted text-xs"><?= count($uPhotos) ?> photos</div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -105,8 +104,8 @@ use App\Core\Router;
                             </td>
                             <td>
                                 <?php if (!empty($unit['current_tenant_name'])): ?>
-                                    <span class="font-medium text-primary">
-                                        👥 <?= htmlspecialchars($unit['current_tenant_name']) ?>
+                                    <span style="font-weight: 500; color: var(--ws-text);">
+                                        <?= htmlspecialchars($unit['current_tenant_name']) ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-muted text-xs">No active lease</span>
@@ -114,9 +113,29 @@ use App\Core\Router;
                             </td>
                             <td>
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" class="btn btn-outline btn-xs">Edit</a>
-                                    <form action="<?= Router::url('/units/' . $unit['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete Unit <?= htmlspecialchars($unit['unit_number']) ?>?');" style="display:inline;">
-                                        <button type="submit" class="btn btn-outline btn-danger btn-xs">Delete</button>
+                                    <a href="<?= Router::url('/units/' . $unit['id'] . '/edit') ?>" 
+                                       class="btn btn-outline btn-xs" 
+                                       title="Edit Unit"
+                                       aria-label="Edit Unit"
+                                       style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </a>
+                                    <form action="<?= Router::url('/units/' . $unit['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete Unit <?= htmlspecialchars($unit['unit_number']) ?>?');" style="display:inline; margin:0;">
+                                        <button type="submit" 
+                                                class="btn btn-outline btn-danger btn-xs" 
+                                                title="Delete Unit"
+                                                aria-label="Delete Unit"
+                                                style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border-radius: 8px;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
+                                        </button>
                                     </form>
                                 </div>
                             </td>

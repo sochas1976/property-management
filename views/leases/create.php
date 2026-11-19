@@ -6,10 +6,9 @@ use App\Core\Router;
     <a href="<?= Router::url('/leases') ?>">&larr; Back to Leases</a>
 </div>
 
-<div class="card" style="max-width: 800px; margin: 0 auto;">
+<div class="card" style="max-width: 800px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--ws-border-subtle); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
     <div class="card-header">
         <h2 class="card-title">Create Lease Agreement</h2>
-        <p class="text-muted text-xs">Assign a resident to an available unit and upload the signed agreement file</p>
     </div>
     <div class="card-body">
         <form action="<?= Router::url('/leases') ?>" method="POST" enctype="multipart/form-data">
