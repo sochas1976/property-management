@@ -44,18 +44,18 @@ use App\Core\Router;
                         </div>
                     </div>
 
-                    <div class="property-stats">
-                        <div class="prop-stat-item">
-                            <span class="stat-num"><?= (int)$prop['total_units'] ?></span>
-                            <span class="stat-label">Units</span>
+                    <div class="property-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-top: 16px; border-top: 1px solid var(--ws-border-subtle);">
+                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-surface-subtle, #faf9f6); border: 1px solid var(--ws-border, #ebe7df);">
+                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-text, #111111);"><?= (int)$prop['total_units'] ?></div>
+                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-text-muted, #737373); margin-top: 2px;">Units</div>
                         </div>
-                        <div class="prop-stat-item">
-                            <span class="stat-num text-success"><?= (int)$prop['occupied_units'] ?></span>
-                            <span class="stat-label">Occupied</span>
+                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-success-bg, #eaf7ee); border: 1px solid var(--ws-success-border, #c6edd1);">
+                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-success, #15803d);"><?= (int)$prop['occupied_units'] ?></div>
+                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-success, #15803d); margin-top: 2px;">Occupied</div>
                         </div>
-                        <div class="prop-stat-item">
-                            <span class="stat-num text-warning"><?= (int)$prop['vacant_units'] ?></span>
-                            <span class="stat-label">Vacant</span>
+                        <div style="padding: 10px 8px; border-radius: 10px; text-align: center; background: var(--ws-warning-bg, #fff6e5); border: 1px solid var(--ws-warning-border, #fed7aa);">
+                            <div style="font-size: 18px; font-weight: 800; line-height: 1.2; color: var(--ws-warning, #b45309);"><?= (int)$prop['vacant_units'] ?></div>
+                            <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ws-warning, #b45309); margin-top: 2px;">Vacant</div>
                         </div>
                     </div>
                 </div>
