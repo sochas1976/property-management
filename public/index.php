@@ -66,6 +66,7 @@ Router::post('/properties/{id}/update', [PropertyController::class, 'update'], [
 Router::post('/properties/{id}/delete-photo', [PropertyController::class, 'deletePhoto'], ['auth']);
 Router::post('/properties/{id}/delete', [PropertyController::class, 'delete'], ['auth']);
 Router::get('/properties/{id}/units/create', [UnitController::class, 'create'], ['auth']);
+Router::post('/properties/{id}/units/reorder', [UnitController::class, 'reorder'], ['auth']);
 
 // Units
 Router::post('/units', [UnitController::class, 'store'], ['auth']);

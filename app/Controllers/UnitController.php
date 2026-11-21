@@ -261,6 +261,31 @@ class UnitController extends Controller {
         }
     }
 
+    /**
+     * Save a custom display order for a property's units (AJAX).
+     * Expects POST order[] = list of unit IDs in the desired order.
+     */
+    public function reorder(string $propertyId): void {
+        $property = Property::findById((int)$propertyId);
+        if (!$property) {
+            $this->json(['success' => false, 'message' => 'Property not found.'], 404);
+            return;
+        }
+
+        $order = $_POST['order'] ?? [];
+        if (!is_array($order) || empty($order)) {
+            $this->json(['success' => false, 'message' => 'No unit order provided.'], 400);
+            return;
+        }
+
+        $orderedIds = array_values(array_filter(array_map('intval', $order)));
+        if (Unit::reorder((int)$propertyId, $orderedIds)) {
+            $this->json(['success' => true]);
+        } else {
+            $this->json(['success' => false, 'message' => 'Could not save unit order.'], 500);
+        }
+    }
+
     public function delete(string $id): void {
         $unit = Unit::findById((int)$id);
         if ($unit) {

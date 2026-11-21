@@ -53,6 +53,10 @@ if (!empty($units)) {
         }
     }
 }
+
+// Drag-to-reorder is only available on the unfiltered "All Units" view
+$canReorderUnits = ($unitFilter === 'all' && count($filteredUnits) > 1);
+$unitTableColspan = $canReorderUnits ? 8 : 7;
 ?>
 
 <!-- View Segmented Filter Pill Tabs (Option 3) -->
@@ -91,6 +95,9 @@ if (!empty($units)) {
         <table class="table">
             <thead>
                 <tr>
+                    <?php if ($canReorderUnits): ?>
+                        <th style="width: 36px; padding-right: 0;" aria-label="Reorder"></th>
+                    <?php endif; ?>
                     <th>Unit</th>
                     <th>Bed / Bath</th>
                     <th>Size</th>
@@ -100,10 +107,10 @@ if (!empty($units)) {
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="units-table-body" data-reorder-url="<?= Router::url('/properties/' . $property['id'] . '/units/reorder') ?>">
                 <?php if (empty($filteredUnits)): ?>
                     <tr>
-                        <td colspan="7" class="text-center text-muted" style="padding: 40px;">
+                        <td colspan="<?= $unitTableColspan ?>" class="text-center text-muted" style="padding: 40px;">
                             <?php if ($unitFilter !== 'all' && $totalUnitsCount > 0): ?>
                                 No <?= htmlspecialchars($unitFilter) ?> units found at this property.
                                 <br><br>
@@ -117,7 +124,18 @@ if (!empty($units)) {
                     </tr>
                 <?php else: ?>
                     <?php foreach ($filteredUnits as $unit): ?>
-                        <tr onclick="window.location.href='<?= Router::url('/units/' . $unit['id']) ?>'" style="cursor: pointer;" title="Click to view unit details">
+                        <tr class="unit-row" data-unit-id="<?= (int)$unit['id'] ?>" onclick="window.location.href='<?= Router::url('/units/' . $unit['id']) ?>'" style="cursor: pointer;" title="Click to view unit details">
+                            <?php if ($canReorderUnits): ?>
+                                <td class="unit-drag-cell" onclick="event.stopPropagation();" style="width: 36px; padding-right: 0; cursor: default;">
+                                    <span class="unit-drag-handle" title="Drag to reorder" aria-label="Drag to reorder">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <circle cx="9" cy="6" r="1.8"></circle><circle cx="15" cy="6" r="1.8"></circle>
+                                            <circle cx="9" cy="12" r="1.8"></circle><circle cx="15" cy="12" r="1.8"></circle>
+                                            <circle cx="9" cy="18" r="1.8"></circle><circle cx="15" cy="18" r="1.8"></circle>
+                                        </svg>
+                                    </span>
+                                </td>
+                            <?php endif; ?>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <?php
@@ -214,3 +232,181 @@ if (!empty($units)) {
         </span>
     </div>
 </div>
+
+
+<?php if ($canReorderUnits): ?>
+<style>
+    .unit-drag-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 30px;
+        border-radius: 6px;
+        color: var(--ws-text-muted, #8c867b);
+        cursor: grab;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+    .unit-drag-handle:hover {
+        background: var(--table-th-bg, #ece8df);
+        color: var(--ws-text, #111111);
+    }
+    .unit-drag-handle:active {
+        cursor: grabbing;
+    }
+    .unit-row.is-dragging {
+        opacity: 0.45;
+    }
+    .unit-row.is-drop-target td {
+        box-shadow: inset 0 2px 0 var(--ws-accent, #f5a623);
+    }
+    .unit-row.is-drop-target-after td {
+        box-shadow: inset 0 -2px 0 var(--ws-accent, #f5a623);
+    }
+    #unit-order-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--ws-text, #111111);
+        color: var(--ws-surface, #ffffff);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+        z-index: 1000;
+    }
+    #unit-order-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    #unit-order-toast.is-error {
+        background: #dc2626;
+        color: #ffffff;
+    }
+</style>
+
+<div id="unit-order-toast" role="status" aria-live="polite"></div>
+
+<script>
+(function() {
+    const tbody = document.getElementById('units-table-body');
+    if (!tbody) return;
+
+    const reorderUrl = tbody.dataset.reorderUrl;
+    let draggedRow = null;
+    let initialOrder = '';
+    let toastTimer = null;
+
+    function getRows() {
+        return Array.from(tbody.querySelectorAll('tr.unit-row'));
+    }
+
+    function currentOrder() {
+        return getRows().map(r => r.dataset.unitId);
+    }
+
+    function clearDropMarkers() {
+        getRows().forEach(r => r.classList.remove('is-drop-target', 'is-drop-target-after'));
+    }
+
+    function showToast(message, isError) {
+        const toast = document.getElementById('unit-order-toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.toggle('is-error', !!isError);
+        toast.classList.add('is-visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    }
+
+    function saveOrder(previousOrder) {
+        const formData = new FormData();
+        currentOrder().forEach(id => formData.append('order[]', id));
+
+        fetch(reorderUrl, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    showToast('Unit order saved');
+                } else {
+                    throw new Error((data && data.message) || 'Could not save unit order.');
+                }
+            })
+            .catch(err => {
+                // Restore previous order on failure
+                previousOrder.forEach(id => {
+                    const row = tbody.querySelector('tr.unit-row[data-unit-id="' + id + '"]');
+                    if (row) tbody.appendChild(row);
+                });
+                showToast(err.message || 'Could not save unit order.', true);
+            });
+    }
+
+    // Only allow dragging when the grip handle is pressed, so normal row clicks still open Unit Details
+    tbody.addEventListener('mousedown', function(e) {
+        const handle = e.target.closest('.unit-drag-handle');
+        const row = e.target.closest('tr.unit-row');
+        if (!row) return;
+        row.draggable = !!handle;
+    });
+
+    tbody.addEventListener('dragstart', function(e) {
+        const row = e.target.closest('tr.unit-row');
+        if (!row || !row.draggable) {
+            e.preventDefault();
+            return;
+        }
+        draggedRow = row;
+        initialOrder = currentOrder().join(',');
+        row.classList.add('is-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', row.dataset.unitId);
+    });
+
+    tbody.addEventListener('dragover', function(e) {
+        if (!draggedRow) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const target = e.target.closest('tr.unit-row');
+        clearDropMarkers();
+        if (!target || target === draggedRow) return;
+
+        const rect = target.getBoundingClientRect();
+        const after = (e.clientY - rect.top) > rect.height / 2;
+        target.classList.add(after ? 'is-drop-target-after' : 'is-drop-target');
+    });
+
+    tbody.addEventListener('drop', function(e) {
+        if (!draggedRow) return;
+        e.preventDefault();
+
+        const target = e.target.closest('tr.unit-row');
+        if (target && target !== draggedRow) {
+            const rect = target.getBoundingClientRect();
+            const after = (e.clientY - rect.top) > rect.height / 2;
+            tbody.insertBefore(draggedRow, after ? target.nextSibling : target);
+        }
+        clearDropMarkers();
+    });
+
+    tbody.addEventListener('dragend', function() {
+        if (!draggedRow) return;
+        draggedRow.classList.remove('is-dragging');
+        draggedRow.draggable = false;
+        clearDropMarkers();
+
+        const newOrder = currentOrder().join(',');
+        if (newOrder !== initialOrder) {
+            saveOrder(initialOrder.split(','));
+        }
+        draggedRow = null;
+    });
+})();
+</script>
+<?php endif; ?>

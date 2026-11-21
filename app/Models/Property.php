@@ -22,7 +22,7 @@ class Property {
         $properties = $db->query($sql)->fetchAll();
 
         if (!empty($properties)) {
-            $unitsRows = $db->query("SELECT * FROM units ORDER BY unit_number ASC")->fetchAll();
+            $unitsRows = $db->query("SELECT * FROM units ORDER BY sort_order ASC, unit_number ASC")->fetchAll();
             $unitsByProp = [];
             foreach ($unitsRows as $ur) {
                 $unitsByProp[(int)$ur['property_id']][] = $ur;

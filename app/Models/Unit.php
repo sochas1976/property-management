@@ -18,7 +18,7 @@ class Unit {
                    (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
             FROM units u
             WHERE u.property_id = ?
-            ORDER BY u.unit_number ASC
+            ORDER BY u.sort_order ASC, u.unit_number ASC
         ");
         $stmt->execute([$propertyId]);
         return $stmt->fetchAll();
@@ -37,7 +37,7 @@ class Unit {
                    (SELECT l.tenant_id FROM leases l WHERE l.unit_id = u.id AND l.status IN ('active', 'expiring_soon') ORDER BY l.start_date DESC LIMIT 1) AS current_tenant_id
             FROM units u
             JOIN properties p ON u.property_id = p.id
-            ORDER BY p.name ASC, u.unit_number ASC
+            ORDER BY p.name ASC, u.sort_order ASC, u.unit_number ASC
         ";
         return $db->query($sql)->fetchAll();
     }
@@ -49,7 +49,7 @@ class Unit {
             FROM units u
             JOIN properties p ON u.property_id = p.id
             WHERE u.status = 'vacant'
-            ORDER BY p.name ASC, u.unit_number ASC
+            ORDER BY p.name ASC, u.sort_order ASC, u.unit_number ASC
         ";
         return $db->query($sql)->fetchAll();
     }
@@ -67,13 +67,41 @@ class Unit {
         return $unit ?: null;
     }
 
+    /**
+     * Persist a new display order for the units of a property.
+     * $orderedIds is the list of unit IDs in the desired order.
+     */
+    public static function reorder(int $propertyId, array $orderedIds): bool {
+        $db = Database::getConnection();
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("UPDATE units SET sort_order = ? WHERE id = ? AND property_id = ?");
+            $position = 1;
+            foreach ($orderedIds as $unitId) {
+                $stmt->execute([$position++, (int)$unitId, $propertyId]);
+            }
+            $db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            return false;
+        }
+    }
+
     public static function create(array $data): int {
         $db = Database::getConnection();
+
+        // New units are appended to the end of the property's custom order
+        $orderStmt = $db->prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM units WHERE property_id = ?");
+        $orderStmt->execute([$data['property_id']]);
+        $nextOrder = (int)$orderStmt->fetchColumn();
+
         $stmt = $db->prepare("
-            INSERT INTO units (property_id, unit_number, floor, bedrooms, bathrooms, square_feet, target_rent, security_deposit, status, adults_only, furnished, pets, smoking, parking, available_date, tenant_insurance, utilities, notes, appliances, photos)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO units (sort_order, property_id, unit_number, floor, bedrooms, bathrooms, square_feet, target_rent, security_deposit, status, adults_only, furnished, pets, smoking, parking, available_date, tenant_insurance, utilities, notes, appliances, photos)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
+            $nextOrder,
             $data['property_id'],
             $data['unit_number'],
             $data['floor'] ?? 1,
