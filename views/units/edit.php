@@ -199,11 +199,12 @@ use App\Core\Router;
                 'electricity' => ['label' => 'Electricity'],
                 'heat'        => ['label' => 'Heat'],
                 'water'       => ['label' => 'Water'],
-                'internet'    => ['label' => 'Internet']
+                'internet'    => ['label' => 'Internet'],
+                'cable'       => ['label' => 'Cable']
             ];
             ?>
             <div class="form-group">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Utilities Coverage & Responsibility</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Utilities Coverage</label>
 
                 <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 12px; border: 1px solid var(--ws-border-subtle);">
                     <div style="display: flex; flex-direction: column; gap: 14px;">
@@ -265,16 +266,17 @@ use App\Core\Router;
                 }
             }
             $availableAppliances = [
-                'fridge'     => 'Fridge',
-                'stove'      => 'Stove',
-                'microwave'  => 'Microwave',
-                'dishwasher' => 'Dishwasher',
-                'washer'     => 'Washer',
-                'dryer'      => 'Dryer'
+                'fridge'             => 'Fridge',
+                'stove'              => 'Stove',
+                'microwave'          => 'Microwave',
+                'dishwasher'         => 'Dishwasher',
+                'washer'             => 'Washer',
+                'dryer'              => 'Dryer',
+                'washer_dryer_combo' => 'Washer/Dryer Combo'
             ];
             ?>
             <div class="form-group">
-                <label style="display: block; margin-bottom: 8px;">Available Appliances</label>
+                <label style="display: block; margin-bottom: 8px;">Appliances</label>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; background: var(--ws-surface-subtle); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ws-border-subtle);">
                     <?php foreach ($availableAppliances as $key => $label): ?>
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ws-text); margin: 0;">

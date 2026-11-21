@@ -29,7 +29,8 @@ $utilityTypes = [
     'electricity' => 'Electricity',
     'heat'        => 'Heat',
     'water'       => 'Water',
-    'internet'    => 'Internet'
+    'internet'    => 'Internet',
+    'cable'       => 'Cable'
 ];
 
 $currentAppliances = [];
@@ -40,12 +41,13 @@ if (!empty($unit['appliances'])) {
     }
 }
 $applianceLabels = [
-    'fridge'     => 'Fridge',
-    'stove'      => 'Stove',
-    'microwave'  => 'Microwave',
-    'dishwasher' => 'Dishwasher',
-    'washer'     => 'Washer',
-    'dryer'      => 'Dryer'
+    'fridge'             => 'Fridge',
+    'stove'              => 'Stove',
+    'microwave'          => 'Microwave',
+    'dishwasher'         => 'Dishwasher',
+    'washer'             => 'Washer',
+    'dryer'              => 'Dryer',
+    'washer_dryer_combo' => 'Washer/Dryer Combo'
 ];
 ?>
 
