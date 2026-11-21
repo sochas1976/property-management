@@ -267,7 +267,7 @@ $applianceLabels = [
                     <div>
                         <span class="text-muted text-xs">Adults Only</span>
                         <div style="font-weight: 700; color: var(--ws-text); margin-top: 2px;">
-                            <?= ($unit['adults_only'] ?? 'no') === 'yes' ? 'Yes' : 'No' ?>
+                            <?= ($unit['adults_only'] ?? 'yes') === 'yes' ? 'Yes' : 'No' ?>
                         </div>
                     </div>
                     <div>

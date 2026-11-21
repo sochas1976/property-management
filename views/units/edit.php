@@ -140,8 +140,8 @@ use App\Core\Router;
                 <div class="form-group col-6">
                     <label for="adults_only">Adults Only</label>
                     <select id="adults_only" name="adults_only" class="form-control">
-                        <option value="no" <?= ($unit['adults_only'] ?? 'no') === 'no' ? 'selected' : '' ?>>No</option>
-                        <option value="yes" <?= ($unit['adults_only'] ?? '') === 'yes' ? 'selected' : '' ?>>Yes</option>
+                        <option value="yes" <?= ($unit['adults_only'] ?? 'yes') === 'yes' ? 'selected' : '' ?>>Yes</option>
+                        <option value="no" <?= ($unit['adults_only'] ?? 'yes') === 'no' ? 'selected' : '' ?>>No</option>
                     </select>
                 </div>
                 <div class="form-group col-6">
