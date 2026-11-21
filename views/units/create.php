@@ -110,7 +110,6 @@ use App\Core\Router;
                 <div class="form-group col-6">
                     <label for="available_date">Available Date</label>
                     <input type="date" id="available_date" name="available_date" class="form-control" value="<?= \App\Core\AppDate::todayString() ?>">
-                    <small class="text-muted" id="available_date_hint" style="display: block; margin-top: 4px; font-size: 12px;">Available immediately (effective current date)</small>
                 </div>
             </div>
 
@@ -512,18 +511,10 @@ document.addEventListener('keydown', (e) => {
 
 function onUnitStatusChange(statusVal) {
     const availInput = document.getElementById('available_date');
-    const hint = document.getElementById('available_date_hint');
     if (!availInput) return;
 
     const todayVal = '<?= \App\Core\AppDate::todayString() ?>';
     availInput.value = todayVal;
-    if (hint) {
-        if (statusVal === 'occupied') {
-            hint.innerHTML = 'Occupied';
-        } else {
-            hint.innerHTML = 'Available immediately (effective current date)';
-        }
-    }
 }
 
 function onUtilityModeChange(uKey, mode) {

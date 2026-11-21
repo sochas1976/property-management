@@ -131,8 +131,6 @@ use App\Core\Router;
                             <?php else: ?>
                                 Occupied
                             <?php endif; ?>
-                        <?php else: ?>
-                            Available immediately (effective current date)
                         <?php endif; ?>
                     </small>
                 </div>
@@ -858,7 +856,7 @@ function onUnitStatusChange(statusVal) {
         // Not occupied (vacant or maintenance) -> default to current date
         availInput.type = 'date';
         availInput.value = todayVal;
-        if (hint) hint.innerHTML = 'Available immediately (effective current date)';
+        if (hint) hint.innerHTML = '';
     }
 
     if (typeof checkFormChanges === 'function') {
