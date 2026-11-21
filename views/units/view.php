@@ -345,7 +345,7 @@ $applianceLabels = [
                             <?php foreach ($currentAppliances as $appKey): 
                                 $appName = $applianceLabels[$appKey] ?? ucfirst($appKey);
                             ?>
-                                <div style="display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); font-size: 13.5px; font-weight: 600; color: var(--ws-text);">
+                                <div style="display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--ws-surface); border: 1px solid var(--ws-border-subtle); font-size: 13.5px; font-weight: 600; color: var(--ws-text); white-space: nowrap;">
                                     <span><?= htmlspecialchars($appName) ?></span>
                                 </div>
                             <?php endforeach; ?>

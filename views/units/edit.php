@@ -280,10 +280,10 @@ use App\Core\Router;
             ?>
             <div class="form-group">
                 <label style="display: block; margin-bottom: 8px;">Appliances</label>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; background: var(--ws-surface-subtle); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ws-border-subtle);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px 14px; background: var(--ws-surface-subtle); padding: 14px 16px; border-radius: 12px; border: 1px solid var(--ws-border-subtle);">
                     <?php foreach ($availableAppliances as $key => $label): ?>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ws-text); margin: 0;">
-                            <input type="checkbox" name="appliances[]" value="<?= $key ?>" <?= in_array($key, $currentAppliances, true) ? 'checked' : '' ?> style="width: 16px; height: 16px; accent-color: var(--ws-accent); cursor: pointer;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ws-text); margin: 0; white-space: nowrap;">
+                            <input type="checkbox" name="appliances[]" value="<?= $key ?>" <?= in_array($key, $currentAppliances, true) ? 'checked' : '' ?> style="width: 16px; height: 16px; accent-color: var(--ws-accent); cursor: pointer; flex-shrink: 0;">
                             <?= $label ?>
                         </label>
                     <?php endforeach; ?>
