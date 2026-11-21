@@ -83,36 +83,33 @@ $applianceLabels = [
             <h2 class="card-title">Property &amp; Unit</h2>
         </div>
         <div class="card-body">
-            <!-- Property Summary Banner + Break Line -->
-            <div style="padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1.5px solid var(--ws-border, #ebe7df);">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-radius: 12px; background: var(--ws-surface-subtle, #faf9f6); border: 1.5px solid var(--ws-border, #ebe7df);">
-                    <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
-                        <div class="property-card-photo" style="flex-shrink: 0;">
-                            <?php if (!empty($property['photo_path'])): ?>
-                                <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-thumbnail" style="width: 64px; height: 64px; border-radius: 10px; border: 1.5px solid var(--ws-border-strong, #d8d3c7); object-fit: cover; display: block;">
-                            <?php else: ?>
-                                <div class="property-thumbnail-placeholder" style="width: 64px; height: 64px; border-radius: 10px;">📷</div>
-                            <?php endif; ?>
+            <!-- Property Summary & Unit Specifications Banner -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; padding: 16px 20px; border-radius: 12px; background: var(--ws-surface-subtle, #faf9f6); border: 1.5px solid var(--ws-border, #ebe7df);">
+                <!-- Left: Property Photo & Address -->
+                <div style="display: flex; align-items: center; gap: 14px; min-width: 260px; flex: 1 1 320px;">
+                    <div class="property-card-photo" style="flex-shrink: 0;">
+                        <?php if (!empty($property['photo_path'])): ?>
+                            <img src="<?= Router::url($property['photo_path']) ?>" alt="<?= htmlspecialchars($property['name']) ?>" class="property-thumbnail" style="width: 64px; height: 64px; border-radius: 10px; border: 1.5px solid var(--ws-border-strong, #d8d3c7); object-fit: cover; display: block;">
+                        <?php else: ?>
+                            <div class="property-thumbnail-placeholder" style="width: 64px; height: 64px; border-radius: 10px;">📷</div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div class="property-type-tag" style="margin-bottom: 2px; font-size: 10.5px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
+                        <div style="font-size: 15.5px; font-weight: 700; color: var(--ws-text); line-height: 1.25;">
+                            <a href="<?= Router::url('/properties/' . $property['id']) ?>" style="color: inherit; text-decoration: none;">
+                                <?= htmlspecialchars($property['name']) ?>
+                            </a>
                         </div>
-                        <div style="min-width: 0;">
-                            <div class="property-type-tag" style="margin-bottom: 2px; font-size: 10.5px;"><?= strtoupper(str_replace('_', ' ', $property['property_type'])) ?></div>
-                            <div style="font-size: 15.5px; font-weight: 700; color: var(--ws-text); line-height: 1.25;">
-                                <a href="<?= Router::url('/properties/' . $property['id']) ?>" style="color: inherit; text-decoration: none;">
-                                    <?= htmlspecialchars($property['name']) ?>
-                                </a>
-                            </div>
-                            <div style="font-size: 13px; color: var(--ws-text-muted); margin-top: 2px;">
-                                <?= htmlspecialchars($property['address_line1']) ?><?= !empty($property['address_line2']) ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
-                                <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
-                            </div>
+                        <div style="font-size: 13px; color: var(--ws-text-muted); margin-top: 2px;">
+                            <?= htmlspecialchars($property['address_line1']) ?><?= !empty($property['address_line2']) ? ', ' . htmlspecialchars($property['address_line2']) : '' ?>,
+                            <?= htmlspecialchars($property['city']) ?>, <?= htmlspecialchars($property['state']) ?> <?= htmlspecialchars($property['zip_code']) ?>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Unit Specifications Grid -->
-            <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                <!-- Right: Suite, Floor Level, Bedrooms & Bathrooms, Square Footage -->
+                <div style="display: grid; grid-template-columns: repeat(4, minmax(110px, auto)); gap: 24px; align-items: center; padding-left: 20px; border-left: 1.5px solid var(--ws-border, #ebe7df); flex: 1 1 460px;">
                     <div>
                         <span class="text-muted text-xs">Suite</span>
                         <div style="font-weight: 700; color: var(--ws-text); margin-top: 2px;"><?= htmlspecialchars($unit['unit_number']) ?></div>
@@ -133,32 +130,20 @@ $applianceLabels = [
                             <?= !empty($unit['square_feet']) ? number_format((int)$unit['square_feet']) . ' sq ft' : '—' ?>
                         </div>
                     </div>
-                    <div>
-                        <span class="text-muted text-xs">Monthly Rent</span>
-                        <div class="text-success font-bold" style="font-size: 16px; margin-top: 2px;">
-                            $<?= number_format((float)$unit['target_rent'], 2) ?> / mo
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-muted text-xs">Security Deposit</span>
-                        <div style="font-weight: 700; color: var(--ws-text); font-size: 15px; margin-top: 2px;">
-                            $<?= number_format((float)($unit['security_deposit'] ?? 0), 2) ?>
-                        </div>
-                    </div>
                 </div>
-
-                <?php if (!empty($unit['notes'])): ?>
-                    <hr style="border: 0; border-top: 1px solid var(--ws-border-subtle); margin: 14px 0;">
-                    <div>
-                        <span class="text-muted text-xs">Unit Description &amp; Notes</span>
-                        <div style="margin-top: 4px; font-size: 14px; color: var(--ws-text); line-height: 1.55;">
-                            <?= nl2br(htmlspecialchars($unit['notes'])) ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
             </div>
 
-            <!-- Unit Pictures (Inside Property & Unit Specifications Card) -->
+            <?php if (!empty($unit['notes'])): ?>
+                <!-- Unit Description & Notes -->
+                <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); margin-top: 16px;">
+                    <span class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Unit Description &amp; Notes</span>
+                    <div style="margin-top: 6px; font-size: 14px; color: var(--ws-text); line-height: 1.55;">
+                        <?= nl2br(htmlspecialchars($unit['notes'])) ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Unit Pictures (Inside Property & Unit Card) -->
             <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle); margin-top: 16px;">
                 <div class="text-muted text-xs" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
                     Unit Pictures
@@ -194,7 +179,7 @@ $applianceLabels = [
         <div class="card-body">
             <div style="background: var(--ws-surface-subtle); padding: 16px 18px; border-radius: 10px; border: 1px solid var(--ws-border-subtle);">
                 <?php if (!empty($activeLease)): ?>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
                         <div>
                             <span class="text-muted text-xs">Current Resident</span>
                             <div style="font-weight: 700; font-size: 15px; margin-top: 2px;">
@@ -224,18 +209,38 @@ $applianceLabels = [
                             </div>
                         </div>
                         <div>
-                            <span class="text-muted text-xs">Contract Rent</span>
-                            <div class="text-success font-bold" style="margin-top: 2px;">
-                                $<?= number_format((float)$activeLease['rent_amount'], 2) ?> / mo
+                            <span class="text-muted text-xs">Monthly Rent</span>
+                            <div class="text-success font-bold" style="font-size: 15.5px; margin-top: 2px;">
+                                $<?= number_format((float)($activeLease['rent_amount'] ?? $unit['target_rent']), 2) ?> / mo
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-muted text-xs">Security Deposit</span>
+                            <div style="font-weight: 700; color: var(--ws-text); font-size: 15px; margin-top: 2px;">
+                                $<?= number_format((float)($unit['security_deposit'] ?? 0), 2) ?>
                             </div>
                         </div>
                     </div>
                 <?php else: ?>
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                        <div>
-                            <span class="text-muted text-xs">Occupancy Status</span>
-                            <div style="font-weight: 700; color: var(--ws-text); margin-top: 2px;">
-                                <?= $uStatus === 'maintenance' ? 'Under Maintenance / Turnaround' : 'Vacant — Available Immediately' ?>
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; flex: 1;">
+                            <div>
+                                <span class="text-muted text-xs">Occupancy Status</span>
+                                <div style="font-weight: 700; color: var(--ws-text); margin-top: 2px;">
+                                    <?= $uStatus === 'maintenance' ? 'Under Maintenance / Turnaround' : 'Vacant — Available Immediately' ?>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-muted text-xs">Monthly Rent</span>
+                                <div class="text-success font-bold" style="font-size: 15.5px; margin-top: 2px;">
+                                    $<?= number_format((float)$unit['target_rent'], 2) ?> / mo
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-muted text-xs">Security Deposit</span>
+                                <div style="font-weight: 700; color: var(--ws-text); font-size: 15px; margin-top: 2px;">
+                                    $<?= number_format((float)($unit['security_deposit'] ?? 0), 2) ?>
+                                </div>
                             </div>
                         </div>
                         <a href="<?= Router::url('/applicants') ?>" class="btn btn-outline btn-xs">View Applicants</a>
