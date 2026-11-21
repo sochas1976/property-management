@@ -37,6 +37,11 @@ use App\Core\Router;
         <form action="<?= Router::url('/units') ?>" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="property_id" value="<?= $property['id'] ?>">
 
+            <div class="form-group">
+                <label for="notes">Unit Description</label>
+                <textarea id="notes" name="notes" class="form-control auto-expand" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" style="overflow: hidden; resize: none; line-height: 1.6;" placeholder="Washer/dryer hookups, southern exposure, carpet condition..."></textarea>
+            </div>
+
             <?php if ($property['property_type'] === 'single_family'): ?>
             <div class="form-row">
                 <div class="form-group col-6">
@@ -229,11 +234,6 @@ use App\Core\Router;
                         </label>
                     <?php endforeach; ?>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="notes">Unit Description</label>
-                <textarea id="notes" name="notes" class="form-control auto-expand" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" style="overflow: hidden; resize: none; line-height: 1.6;" placeholder="Washer/dryer hookups, southern exposure, carpet condition..."></textarea>
             </div>
 
             <div class="form-group">

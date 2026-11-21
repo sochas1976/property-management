@@ -41,6 +41,11 @@ use App\Core\Router;
         </div>
 
         <form id="unit-edit-form" action="<?= Router::url('/units/' . $unit['id'] . '/update') ?>" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="notes">Unit Description</label>
+                <textarea id="notes" name="notes" class="form-control auto-expand" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" style="overflow: hidden; resize: none; line-height: 1.6;"><?= htmlspecialchars($unit['notes'] ?? '') ?></textarea>
+            </div>
+
             <?php if ($property['property_type'] === 'single_family'): ?>
             <div class="form-row">
                 <div class="form-group col-6">
@@ -285,11 +290,6 @@ use App\Core\Router;
                         </label>
                     <?php endforeach; ?>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="notes">Unit Description</label>
-                <textarea id="notes" name="notes" class="form-control auto-expand" rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" style="overflow: hidden; resize: none; line-height: 1.6;"><?= htmlspecialchars($unit['notes'] ?? '') ?></textarea>
             </div>
 
             <?php
