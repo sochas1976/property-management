@@ -52,8 +52,8 @@ class Property {
     public static function create(array $data): int {
         $db = Database::getConnection();
         $stmt = $db->prepare("
-            INSERT INTO properties (manager_id, name, address_line1, address_line2, city, state, zip_code, property_type, description, photo_path)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO properties (manager_id, name, address_line1, address_line2, city, state, zip_code, property_type, description, photo_path, photos)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['manager_id'] ?: null,
@@ -65,7 +65,8 @@ class Property {
             $data['zip_code'],
             $data['property_type'] ?? 'multi_family',
             $data['description'] ?: null,
-            $data['photo_path'] ?? null
+            $data['photo_path'] ?? null,
+            $data['photos'] ?? (!empty($data['photo_path']) ? json_encode([$data['photo_path']]) : null)
         ]);
         return (int)$db->lastInsertId();
     }
@@ -75,7 +76,7 @@ class Property {
         $stmt = $db->prepare("
             UPDATE properties
             SET manager_id = ?, name = ?, address_line1 = ?, address_line2 = ?,
-                city = ?, state = ?, zip_code = ?, property_type = ?, description = ?, photo_path = ?
+                city = ?, state = ?, zip_code = ?, property_type = ?, description = ?, photo_path = ?, photos = ?
             WHERE id = ?
         ");
         return $stmt->execute([
@@ -89,6 +90,7 @@ class Property {
             $data['property_type'] ?? 'multi_family',
             $data['description'] ?: null,
             $data['photo_path'] ?? null,
+            $data['photos'] ?? null,
             $id
         ]);
     }

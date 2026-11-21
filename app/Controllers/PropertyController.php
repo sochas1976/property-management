@@ -85,50 +85,183 @@ class PropertyController extends Controller {
             $this->redirect('/properties/' . $id . '/edit');
         }
 
-        // Handle photo upload — keep existing if no new file uploaded
-        $newPhoto = $this->handlePhotoUpload();
-        if ($newPhoto) {
-            // Delete old photo if it exists
-            if (!empty($property['photo_path'])) {
-                $oldFile = dirname(__DIR__, 2) . '/public' . $property['photo_path'];
-                if (file_exists($oldFile)) {
-                    unlink($oldFile);
-                }
+        // Existing photos array (respect new sorted order if provided via form)
+        $existingPhotos = [];
+        if (isset($_POST['existing_photos']) && is_array($_POST['existing_photos'])) {
+            $existingPhotos = array_values($_POST['existing_photos']);
+        } elseif (!empty($property['photos'])) {
+            $decoded = json_decode($property['photos'], true);
+            if (is_array($decoded)) {
+                $existingPhotos = $decoded;
             }
-            $data['photo_path'] = $newPhoto;
-        } else {
-            $data['photo_path'] = $property['photo_path'];
+        } elseif (!empty($property['photo_path'])) {
+            $existingPhotos = [$property['photo_path']];
         }
 
-        // Handle photo removal
-        if (!empty($data['remove_photo']) && $data['remove_photo'] === '1') {
-            if (!empty($property['photo_path'])) {
-                $oldFile = dirname(__DIR__, 2) . '/public' . $property['photo_path'];
-                if (file_exists($oldFile)) {
-                    unlink($oldFile);
+        // Process deleted photos if submitted via form
+        if (!empty($_POST['delete_photos']) && is_array($_POST['delete_photos'])) {
+            $toDelete = $_POST['delete_photos'];
+            $keptPhotos = [];
+            foreach ($existingPhotos as $photo) {
+                if (in_array($photo, $toDelete, true)) {
+                    $filePath = dirname(__DIR__, 2) . '/public' . $photo;
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
+                    }
+                } else {
+                    $keptPhotos[] = $photo;
                 }
             }
-            $data['photo_path'] = null;
+            $existingPhotos = $keptPhotos;
         }
+
+        // Upload any newly added photos (supports multiple property_photos[] or single photo)
+        $newPhotos = $this->handlePhotosUpload();
+        if (!empty($newPhotos)) {
+            $existingPhotos = array_merge($existingPhotos, $newPhotos);
+        } else {
+            $singlePhoto = $this->handlePhotoUpload();
+            if ($singlePhoto) {
+                $existingPhotos[] = $singlePhoto;
+            }
+        }
+
+        $existingPhotos = array_values(array_filter($existingPhotos));
+        $data['photos'] = !empty($existingPhotos) ? json_encode($existingPhotos) : null;
+        $data['photo_path'] = !empty($existingPhotos) ? $existingPhotos[0] : null;
 
         Property::update((int)$id, $data);
         $this->setFlash('success', 'Property updated successfully.');
         $this->redirect('/properties/' . $id);
     }
 
-    public function delete(string $id): void {
-        // Delete photo file if exists
+    public function deletePhoto(string $id): void {
         $property = Property::findById((int)$id);
-        if ($property && !empty($property['photo_path'])) {
-            $file = dirname(__DIR__, 2) . '/public' . $property['photo_path'];
-            if (file_exists($file)) {
-                unlink($file);
+        if (!$property) {
+            $this->json(['success' => false, 'message' => 'Property not found.'], 404);
+            return;
+        }
+
+        $photo = $_POST['photo'] ?? '';
+        if (empty($photo)) {
+            $this->json(['success' => false, 'message' => 'Photo path is required.'], 400);
+            return;
+        }
+
+        $photos = [];
+        if (!empty($property['photos'])) {
+            $decoded = json_decode($property['photos'], true);
+            if (is_array($decoded)) {
+                $photos = $decoded;
+            }
+        }
+        if (empty($photos) && !empty($property['photo_path'])) {
+            $photos = [$property['photo_path']];
+        }
+
+        $newPhotos = [];
+        $found = false;
+        foreach ($photos as $p) {
+            if ($p === $photo) {
+                $found = true;
+                $filePath = dirname(__DIR__, 2) . '/public' . $photo;
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+            } else {
+                $newPhotos[] = $p;
+            }
+        }
+
+        if ($found) {
+            $newPhotos = array_values($newPhotos);
+            $property['photos'] = !empty($newPhotos) ? json_encode($newPhotos) : null;
+            $property['photo_path'] = !empty($newPhotos) ? $newPhotos[0] : null;
+            Property::update((int)$id, $property);
+            $this->json(['success' => true]);
+        } else {
+            $this->json(['success' => false, 'message' => 'Photo not found on property.'], 404);
+        }
+    }
+
+    public function delete(string $id): void {
+        // Delete photo files if they exist
+        $property = Property::findById((int)$id);
+        if ($property) {
+            $photosToDelete = [];
+            if (!empty($property['photos'])) {
+                $decoded = json_decode($property['photos'], true);
+                if (is_array($decoded)) {
+                    $photosToDelete = $decoded;
+                }
+            }
+            if (!empty($property['photo_path']) && !in_array($property['photo_path'], $photosToDelete, true)) {
+                $photosToDelete[] = $property['photo_path'];
+            }
+            foreach ($photosToDelete as $photo) {
+                $file = dirname(__DIR__, 2) . '/public' . $photo;
+                if (file_exists($file)) {
+                    @unlink($file);
+                }
             }
         }
 
         Property::delete((int)$id);
         $this->setFlash('success', 'Property deleted successfully.');
         $this->redirect('/properties');
+    }
+
+    /**
+     * Handle multiple property photos upload from $_FILES['property_photos'].
+     * Returns an array of web-relative paths.
+     */
+    private function handlePhotosUpload(): array {
+        if (empty($_FILES['property_photos']) || !is_array($_FILES['property_photos']['name'])) {
+            return [];
+        }
+
+        $uploaded = [];
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        $extMap = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+            'image/gif'  => 'gif',
+        ];
+        $maxSize = 5 * 1024 * 1024; // 5 MB per photo
+        $uploadDir = dirname(__DIR__, 2) . '/public/uploads/properties';
+
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0755, true);
+        }
+
+        $names = $_FILES['property_photos']['name'];
+        $types = $_FILES['property_photos']['type'];
+        $tmpNames = $_FILES['property_photos']['tmp_name'];
+        $errors = $_FILES['property_photos']['error'];
+        $sizes = $_FILES['property_photos']['size'];
+
+        foreach ($names as $idx => $name) {
+            if (empty($name) || $errors[$idx] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            if (!in_array($types[$idx], $allowedTypes, true)) {
+                continue;
+            }
+            if ($sizes[$idx] > $maxSize) {
+                continue;
+            }
+
+            $ext = $extMap[$types[$idx]] ?? 'jpg';
+            $filename = uniqid('prop_', true) . '.' . $ext;
+            $destination = $uploadDir . '/' . $filename;
+
+            if (move_uploaded_file($tmpNames[$idx], $destination)) {
+                $uploaded[] = '/uploads/properties/' . $filename;
+            }
+        }
+
+        return $uploaded;
     }
 
     /**
