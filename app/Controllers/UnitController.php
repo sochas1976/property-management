@@ -42,6 +42,10 @@ class UnitController extends Controller {
             $data['utilities'] = null;
         }
 
+        // Upload any newly added unit photos
+        $uploadedPhotos = $this->handlePhotosUpload();
+        $data['photos'] = !empty($uploadedPhotos) ? json_encode(array_values($uploadedPhotos)) : null;
+
         Unit::create($data);
         $this->setFlash('success', 'Unit ' . htmlspecialchars($data['unit_number']) . ' added successfully.');
         $this->redirect('/properties/' . $data['property_id']);

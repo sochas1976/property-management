@@ -32,8 +32,16 @@ class PropertyController extends Controller {
             $this->redirect('/properties/create');
         }
 
-        // Handle photo upload
-        $data['photo_path'] = $this->handlePhotoUpload();
+        // Handle photo upload (supports multiple property_photos[] or single photo)
+        $uploadedPhotos = $this->handlePhotosUpload();
+        if (empty($uploadedPhotos)) {
+            $singlePhoto = $this->handlePhotoUpload();
+            if ($singlePhoto) {
+                $uploadedPhotos = [$singlePhoto];
+            }
+        }
+        $data['photos'] = !empty($uploadedPhotos) ? json_encode(array_values($uploadedPhotos)) : null;
+        $data['photo_path'] = !empty($uploadedPhotos) ? $uploadedPhotos[0] : null;
 
         $propertyId = Property::create($data);
         $this->setFlash('success', 'Property "' . htmlspecialchars($data['name']) . '" created successfully.');

@@ -284,26 +284,79 @@ function deletePropertyPhotoDynamically(propertyId, photoPath, buttonElem) {
     });
 }
 
+let stagedEditPropertyFiles = [];
+
+function syncStagedEditPropertyFiles() {
+    const dt = new DataTransfer();
+    stagedEditPropertyFiles.forEach(item => dt.items.add(item.file));
+    const input = document.getElementById('property_photos');
+    if (input) {
+        input.files = dt.files;
+    }
+}
+
 function previewNewPhotos(input) {
-    const previewContainer = document.getElementById('new-photos-preview');
-    previewContainer.innerHTML = '';
     if (!input.files || input.files.length === 0) {
         return;
     }
+    const grid = document.getElementById('unit-photos-grid');
+    const newFiles = Array.from(input.files);
 
-    Array.from(input.files).forEach((file) => {
+    newFiles.forEach((file) => {
+        const id = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        stagedEditPropertyFiles.push({ id: id, file: file });
+        syncStagedEditPropertyFiles();
+
         const reader = new FileReader();
         reader.onload = function(e) {
             const card = document.createElement('div');
-            card.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--ws-border-subtle); background: var(--ws-surface); padding: 4px;';
+            card.className = 'unit-photo-card';
+            card.dataset.stagedId = id;
+            card.style.cssText = 'position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--ws-border-subtle); background: var(--ws-surface-subtle); padding: 6px; text-align: center; user-select: none; transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;';
             card.innerHTML = `
-                <img src="${e.target.result}" style="width: 100%; height: 75px; object-fit: cover; border-radius: 6px;">
-                <div style="font-size: 11px; color: var(--ws-text-muted); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</div>
+                <img src="${e.target.result}" 
+                     alt="Property photo" 
+                     onclick="openPropertyPhotoModal(this.src)" 
+                     style="width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.15s ease; pointer-events: auto;"
+                     draggable="false"
+                     onmouseover="this.style.transform='scale(1.03)'"
+                     onmouseout="this.style.transform='scale(1)'">
+                <button type="button" 
+                        title="Delete photo" 
+                        onclick="removeStagedEditPropertyPhoto('${id}', this)" 
+                        style="position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,0.65); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s ease, transform 0.15s ease; z-index: 5;"
+                        onmouseover="this.style.background='#dc2626'; this.style.transform='scale(1.1)';"
+                        onmouseout="this.style.background='rgba(0,0,0,0.65)'; this.style.transform='scale(1)';">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </button>
             `;
-            previewContainer.appendChild(card);
+            grid.appendChild(card);
+            grid.style.display = 'grid';
         };
         reader.readAsDataURL(file);
     });
+}
+
+function removeStagedEditPropertyPhoto(stagedId, buttonElem) {
+    const card = buttonElem.closest('.unit-photo-card');
+    if (!card) return;
+    stagedEditPropertyFiles = stagedEditPropertyFiles.filter(item => item.id !== stagedId);
+    syncStagedEditPropertyFiles();
+
+    card.style.transform = 'scale(0.8)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+        card.remove();
+        const grid = document.getElementById('unit-photos-grid');
+        if (grid && grid.querySelectorAll('.unit-photo-card').length === 0) {
+            grid.style.display = 'none';
+        }
+    }, 220);
 }
 
 // ── Drag-and-Drop Photo Sorting ──
