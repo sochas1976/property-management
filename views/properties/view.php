@@ -91,7 +91,7 @@ if (!empty($units)) {
         <table class="table">
             <thead>
                 <tr>
-                    <th>Unit #</th>
+                    <th>Unit</th>
                     <th>Bed / Bath</th>
                     <th>Size</th>
                     <th>Monthly Rent</th>
@@ -117,7 +117,7 @@ if (!empty($units)) {
                     </tr>
                 <?php else: ?>
                     <?php foreach ($filteredUnits as $unit): ?>
-                        <tr>
+                        <tr onclick="window.location.href='<?= Router::url('/units/' . $unit['id']) ?>'" style="cursor: pointer;" title="Click to view unit details">
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <?php
@@ -157,7 +157,7 @@ if (!empty($units)) {
                                     <span class="text-muted text-xs">No active lease</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td onclick="event.stopPropagation();">
                                 <div style="display: flex; gap: 6px; align-items: center;">
                                     <a href="<?= Router::url('/units/' . $unit['id']) ?>" 
                                        class="btn btn-outline btn-xs" 
